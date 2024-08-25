@@ -1,15 +1,8 @@
-# build output
-dist/
-.output/
-
-# dependencies
+# Dependency directories
 node_modules/
 
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Astro build output
+.astro
 
-# macOS-specific files
-.DS_Store
+# Vercel build output
+.vercel

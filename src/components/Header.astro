@@ -1,0 +1,67 @@
+---
+import Hamburger from './Hamburger.astro';
+import Navigation from './Navigation.astro';
+import ThemeIcon from './ThemeIcon.astro';
+import Social from './Social.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+import SearchModal from './SearchModal.astro';
+---
+
+<script>
+  function setupNavigation() {
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    const header = document.querySelector('header');
+
+    if (hamburger && navLinks && header) {
+      hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('expanded');
+        header.classList.toggle('rounded-lg');
+        header.classList.toggle('rounded-t-lg');
+      });
+    }
+  }
+
+  function handleScroll() {
+    const header = document.querySelector('header');
+    if (header) {
+      if (window.scrollY > 0) {
+        header.classList.add('sticky');
+      } else {
+        header.classList.remove('sticky');
+      }
+    }
+  }
+
+  // Run on initial load
+  document.addEventListener('DOMContentLoaded', () => {
+    setupNavigation();
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+  });
+
+  // Run on subsequent Astro page changes
+  document.addEventListener('astro:page-load', () => {
+    setupNavigation();
+    handleScroll();
+  });
+</script>
+
+<header class="w-full px-4 py-2 relative top-2 z-10 rounded-lg bg-gray-50/90 dark:bg-gray-800/90">
+  <div class="flex items-center justify-between sm:flex-row">
+    <div class="flex items-center">
+      <Hamburger class="sm:hidden" />
+      <Navigation class="hidden sm:block" />
+    </div>
+
+    <div class="flex flex-row items-center space-x-3">
+      <Social platform="GitHub" username="pinglin" />
+      <Social platform="LinkedIn" username="pinglin" />
+      <Social platform="X" username="pinglin02" />
+      <Social platform="RSS" username="" />
+      <LanguageSwitch />
+      <ThemeIcon class="z-10 pl-2" />
+    </div>
+  </div>
+  <SearchModal />
+</header>

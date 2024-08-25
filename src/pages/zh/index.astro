@@ -1,19 +1,19 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { useTranslations } from '../i18n/utils';
-import { languages } from '../i18n/ui';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/utils';
+import { languages } from '../../i18n/ui';
 
-import config from '../config.json';
+import config from '../../config.json';
 
 const t = useTranslations(Astro.currentLocale as keyof typeof languages);
 ---
 
 <BaseLayout pageTitle={t('home.title')}>
   <div class="flex flex-col justify-center items-center h-full leading-loose">
-    <h1>Hello world! 👋</h1>
+    <h1>你好，世界! 👋</h1>
     <br />
     <p>
-      Press <kbd class="kbd kbd-sm">CMD</kbd> + <kbd class="kbd kbd-sm">K</kbd> to search.
+      按 <kbd class="kbd kbd-sm">CMD</kbd> + <kbd class="kbd kbd-sm">K</kbd> 進行搜尋.
     </p>
     <div
       id="globe-container"
@@ -26,7 +26,7 @@ const t = useTranslations(Astro.currentLocale as keyof typeof languages);
 </BaseLayout>
 
 <script>
-  import { initGlobe } from '../scripts/three-globle/globe.js';
+  import { initGlobe } from '../../scripts/three-globle/globe.js';
 
   document.addEventListener('DOMContentLoaded', () => {
     initGlobe();

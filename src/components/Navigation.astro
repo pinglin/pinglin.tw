@@ -1,0 +1,13 @@
+---
+import { languages, defaultLang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+
+const t = useTranslations(Astro.currentLocale as keyof typeof languages);
+const lang = Astro.currentLocale === defaultLang ? '' : `/${Astro.currentLocale}`;
+---
+
+<nav class="nav-links hidden sm:flex sm:flex-row sm:items-center sm:space-x-4">
+  <a href=`${lang}/` class="block">{t('header.home')}</a>
+  <a href=`${lang}/blog` class="block">{t('header.blog')}</a>
+  <a href=`${lang}/about` class="block">{t('header.about')}</a>
+</nav>

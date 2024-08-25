@@ -1,0 +1,76 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogPost from '../../../components/BlogPost.astro';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection('blog');
+  const localizedPosts = allPosts.filter(
+    (post: CollectionEntry<'blog'>) => post.data.lang === 'zh',
+  );
+  const uniqueTags = [
+    ...new Set(localizedPosts.map((post: CollectionEntry<'blog'>) => post.data.tags).flat()),
+  ];
+
+  return uniqueTags.map((tag) => {
+    const filteredPosts = localizedPosts.filter((post: CollectionEntry<'blog'>) =>
+      post.data.tags.includes(tag),
+    );
+    return {
+      params: { tag },
+      props: { posts: filteredPosts },
+    };
+  });
+}
+
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+
+// Group posts by year
+const postsByYear = posts.reduce(
+  (acc: Record<number, CollectionEntry<'blog'>[]>, post: CollectionEntry<'blog'>) => {
+    const year = new Date(post.data.pubDate).getFullYear();
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(post);
+    return acc;
+  },
+  {},
+);
+---
+
+<BaseLayout pageTitle={tag}>
+  <h2>Posts tagged with <span class="tag">{tag}</span></h2>
+  <br />
+  <br />
+  {
+    posts ? (
+      <ul>
+        {Object.keys(postsByYear)
+          .sort((a, b) => Number(b) - Number(a))
+          .map((year) => (
+            <>
+              <h2>{year}</h2>
+              <br />
+              <br />
+              <ul>
+                {postsByYear[year].map(
+                  (post: { slug: string; data: { title: string; pubDate: Date } }) => (
+                    <BlogPost
+                      url={'/blog/' + post.slug}
+                      title={post.data.title}
+                      pubDate={post.data.pubDate}
+                    />
+                  ),
+                )}
+              </ul>
+            </>
+          ))}
+      </ul>
+    ) : (
+      <p>No posts found with this tag.</p>
+    )
+  }
+</BaseLayout>

@@ -1,0 +1,15 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer
+  class="w-full px-4 py-4 flex items-center justify-center min-h-[50px] text-base-content dark:text-base-content"
+>
+  <div class="copyright flex items-center text-sm leading-relaxed">
+    <p
+      set:html={`
+      <a property="dct:title" rel="cc:attributionURL" href="https://pinglin.io">pinglin.io</a> &copy; ${currentYear} by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://pinglin.io/about">Ping-Lin Chang</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer">CC BY 4.0<img style="height:18px!important;display:inline-block;vertical-align:middle;margin-left:6px;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:18px!important;display:inline-block;vertical-align:middle;margin-left:3px;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""></a>
+    `}
+    />
+  </div>
+</footer>

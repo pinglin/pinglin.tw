@@ -1,0 +1,175 @@
+---
+import '../styles/global.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const { pageTitle } = Astro.props;
+---
+
+<script is:inline>
+  function getTheme() {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+      return localStorage.getItem('theme');
+    }
+    return 'wireframe'; // Default theme
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+
+  setTheme(getTheme());
+
+  document.addEventListener('astro:after-swap', () => {
+    setTheme(getTheme());
+  });
+
+  // Set initial theme
+  document.documentElement.setAttribute('data-theme', getTheme());
+</script>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tocWrapper = document.createElement('div');
+    tocWrapper.id = 'toc-wrapper';
+    tocWrapper.className = 'toc-wrapper';
+
+    const tocHeader = document.createElement('div');
+    tocHeader.className = 'toc-header';
+    tocWrapper.appendChild(tocHeader);
+
+    const tocButton = document.createElement('button');
+    tocButton.className = 'toc-button';
+    tocButton.innerHTML = `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 6.00067L21 6.00139M8 12.0007L21 12.0015M8 18.0007L21 18.0015M3.5 6H3.51M3.5 12H3.51M3.5 18H3.51M4 6C4 6.27614 3.77614 6.5 3.5 6.5C3.22386 6.5 3 6.27614 3 6C3 5.72386 3.22386 5.5 3.5 5.5C3.77614 5.5 4 5.72386 4 6ZM4 12C4 12.2761 3.77614 12.5 3.5 12.5C3.22386 12.5 3 12.2761 3 12C3 11.7239 3.22386 11.5 3.5 11.5C3.77614 11.5 4 11.7239 4 12ZM4 18C4 18.2761 3.77614 18.5 3.5 18.5C3.22386 18.5 3 18.2761 3 18C3 17.7239 3.22386 17.5 3.5 17.5C3.77614 17.5 4 17.7239 4 18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    `;
+    tocButton.setAttribute('aria-label', 'Toggle Table of Contents');
+    tocHeader.appendChild(tocButton);
+
+    const tocList = document.createElement('ul');
+    tocList.className = 'toc-list toc-hidden';
+    tocWrapper.appendChild(tocList);
+
+    const headers = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    let topLevel = 6; // Initialize with the lowest possible heading level
+
+    // First pass: determine the top heading level
+    headers.forEach((header) => {
+      const level = parseInt(header.tagName.charAt(1));
+      topLevel = Math.min(topLevel, level);
+    });
+
+    // Second pass: create TOC items with adjusted levels
+    headers.forEach((header, index) => {
+      const listItem = document.createElement('li');
+      const link = document.createElement('a');
+      link.textContent = header.textContent;
+      link.href = `#header-${index}`;
+
+      // Adjust the heading level
+      const actualLevel = parseInt(header.tagName.charAt(1));
+      const adjustedLevel = actualLevel - topLevel + 1;
+      listItem.classList.add(`toc-level-${adjustedLevel}`);
+
+      listItem.appendChild(link);
+      tocList.appendChild(listItem);
+
+      // Add id to the header
+      header.id = `header-${index}`;
+    });
+
+    document
+      .querySelector('body')
+      ?.insertBefore(tocWrapper, document.querySelector('body')?.firstChild);
+
+    const tocWrapperElement = document.getElementById('toc-wrapper');
+    if (tocWrapperElement) {
+      tocButton.addEventListener('click', () => {
+        tocList.classList.toggle('toc-hidden');
+        tocWrapperElement.classList.toggle('expanded');
+      });
+
+      const topHeader = document.querySelector('header');
+      const firstHeader = document.querySelector('[id^="header-"]');
+      let scrollThreshold = 0;
+
+      if (firstHeader && topHeader) {
+        scrollThreshold = firstHeader.offsetTop - topHeader.getBoundingClientRect().height;
+      } else {
+        console.warn('Header or first section header not found');
+      }
+
+      function updateTocPosition() {
+        const headerRect = topHeader.getBoundingClientRect();
+        const topOffset = headerRect.top + window.scrollY + 40;
+        const rightOffset = window.innerWidth - headerRect.right;
+        tocWrapperElement.style.top = `${topOffset}px`;
+        tocWrapperElement.style.right = `${rightOffset}px`;
+      }
+
+      function updateTocVisibility() {
+        if (window.scrollY > scrollThreshold) {
+          tocWrapperElement?.classList.add('visible');
+        } else {
+          tocWrapperElement?.classList.remove('visible');
+        }
+      }
+
+      function handleResize() {
+        window.location.reload();
+      }
+
+      window.addEventListener('scroll', updateTocVisibility);
+      window.addEventListener('resize', updateTocPosition);
+      window.addEventListener('resize', handleResize);
+      updateTocVisibility();
+      updateTocPosition();
+
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+
+          const targetId = this.getAttribute('href').substring(1);
+          const targetElement = document.getElementById(targetId);
+
+          if (targetElement) {
+            const headerRect = topHeader.getBoundingClientRect();
+            const yOffset = headerRect.top - 65;
+            const y = targetElement.getBoundingClientRect().top + window.scrollY + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        });
+      });
+    }
+  });
+</script>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle} | pinglin.io</title>
+  </head>
+
+  <body
+    class="flex flex-col border-l border-r border-b border-gray-200 dark:border-gray-600 rounded-b-xl dark:shadow-gray-600"
+  >
+    <Header />
+    <main class="flex-grow w-full px-4 py-8">
+      <div class="w-full max-w-none mx-auto">
+        <slot />
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>

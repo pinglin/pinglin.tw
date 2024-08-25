@@ -1,0 +1,60 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogPost from '../components/BlogPost.astro';
+
+const pageTitle = 'Blog | pinglin.io';
+
+const allPosts = await getCollection('blog', ({ data }) => data.lang === Astro.currentLocale);
+const tags = [...new Set(allPosts.map((post: CollectionEntry<'blog'>) => post.data.tags).flat())];
+
+// Group posts by year
+const postsByYear = allPosts.reduce(
+  (acc: CollectionEntry<'blog'>, post: CollectionEntry<'blog'>) => {
+    const year = new Date(post.data.pubDate).getFullYear();
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(post);
+    return acc;
+  },
+  {},
+);
+---
+
+<BaseLayout pageTitle={pageTitle}>
+  <h2>Tags</h2>
+  <div class="tags flex flex-wrap">
+    {
+      tags.sort().map((tag) => (
+        <a href={`/${Astro.currentLocale === 'en' ? '' : 'zh/'}tags/${tag}`} class="tag mr-2 mb-2">
+          {tag}
+        </a>
+      ))
+    }
+  </div>
+  <br />
+  <br />
+  <ul>
+    {
+      Object.keys(postsByYear)
+        .sort((a, b) => Number(b) - Number(a))
+        .map((year) => (
+          <>
+            <h2>{year}</h2>
+            <br />
+            <ul>
+              {postsByYear[year].map(
+                (post: { slug: string; data: { title: string; pubDate: Date } }) => (
+                  <BlogPost
+                    url={'/blog/' + post.slug}
+                    title={post.data.title}
+                    pubDate={post.data.pubDate}
+                  />
+                ),
+              )}
+            </ul>
+          </>
+        ))
+    }
+  </ul>
+</BaseLayout>

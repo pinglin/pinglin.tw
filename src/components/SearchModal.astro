@@ -1,0 +1,125 @@
+---
+
+---
+
+<div
+  id="search-modal"
+  class="items-center justify-center fixed inset-0 z-50 bg-black bg-opacity-50 hidden"
+>
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
+    <div class="relative">
+      <input
+        type="text"
+        id="search-input"
+        class="w-full p-2 pr-10 border rounded"
+        placeholder="Search..."
+      />
+      <button
+        id="close-search"
+        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div id="search-results" class="mt-4"></div>
+  </div>
+</div>
+
+<script>
+  let searchTimeout: ReturnType<typeof setTimeout>;
+  const currentLang = document.documentElement.lang || 'en';
+  async function performSearch(query: string) {
+    const response = await fetch(
+      `/api/search.json?q=${encodeURIComponent(query)}&lang=${currentLang}`,
+    );
+    const data = await response.json();
+    return data.results;
+  }
+
+  function displayResults(results: any[]) {
+    const resultsContainer = document.getElementById('search-results');
+    if (resultsContainer) {
+      resultsContainer.innerHTML = results
+        .map(
+          (result) => `
+        <div class="mb-2">
+          <a href="${result.url}" class="text-blue-500 hover:underline">${result.title}</a>
+          <p class="text-sm text-gray-600">${result.excerpt}</p>          
+        </div>
+      `,
+        )
+        .join('');
+    }
+  }
+
+  const searchModal = document.getElementById('search-modal');
+  const searchInput = document.getElementById('search-input');
+  const closeSearchButton = document.getElementById('close-search');
+
+  document.addEventListener('keydown', (e) => {
+    const userAgent = navigator.userAgent;
+    if ((userAgent?.includes('Mac') ? e.metaKey : e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      searchModal?.classList.toggle('flex');
+      searchModal?.classList.toggle('hidden');
+      searchInput?.focus();
+    }
+    if (e.key === 'Escape' && !searchModal?.classList.contains('hidden')) {
+      searchModal?.classList.toggle('flex');
+      searchModal?.classList.toggle('hidden');
+    }
+  });
+
+  searchModal?.addEventListener('click', (e) => {
+    if (e.target === searchModal) {
+      searchModal?.classList.toggle('flex');
+      searchModal?.classList.toggle('hidden');
+    }
+  });
+
+  searchInput?.addEventListener('input', (e) => {
+    const query = (e.target as HTMLInputElement).value;
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+      if (query.length >= 2) {
+        const results = await performSearch(query);
+        displayResults(results);
+      } else {
+        const resultsContainer = document.getElementById('search-results');
+        if (resultsContainer) {
+          resultsContainer.innerHTML = '';
+        }
+      }
+    }, 300);
+  });
+
+  closeSearchButton?.addEventListener('click', () => {
+    searchModal?.classList.remove('flex');
+    searchModal?.classList.add('hidden');
+  });
+
+  const clearSearchButton = document.getElementById('clear-search');
+
+  clearSearchButton?.addEventListener('click', () => {
+    if (searchInput instanceof HTMLInputElement) {
+      searchInput.value = '';
+      searchInput.focus();
+      const resultsContainer = document.getElementById('search-results');
+      if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+      }
+    }
+  });
+</script>

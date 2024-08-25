@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const pageTitle = 'About | pinglin.io';
+---
+
+<BaseLayout pageTitle={pageTitle}>
+  <div class="flex flex-col md:flex-row gap-6 items-start">
+    <div class="flex flex-col gap-4">
+      <p>哈囉，歡迎光臨！ 🤗</p>
+      <p>
+        我是張秉霖（Ping-Lin
+        Chang），朋友們都叫我秉霖。很高興能在網路上與你相遇，也很開心看到你來到這裡。
+      </p>
+      <p>歡迎透過上方任何你喜歡的管道與我聯繫。 ☝️</p>
+      <p>
+        目前，我正與我的共同創辦人 <a
+          href="https://www.linkedin.com/in/xiaofeidu/"
+          class="text-info hover:underline"
+        >
+          杜笑菲
+        </a> 一起在
+        <a href="https://www.instill.tech" class="text-info hover:underline">Instill AI</a> 展開一段令人興奮的旅程，致力於改變非結構化數據的處理和利用方式。
+        🚀
+      </p>
+    </div>
+    <div class="md:w-2/5 flex-shrink-0">
+      <img
+        src="/me.jpg"
+        class="w-full h-auto rounded-lg shadow-md hover:shadow-lg dark:shadow-gray-700 dark:hover:shadow-gray-600 transition-shadow duration-300"
+      />
+    </div>
+  </div>
+  <br />
+  <div class="flex flex-col gap-4">
+    <h2>個人簡歷</h2>
+    <p>
+      我從小在台灣屏東長大，鄉下地方資源相對有限，我小時候極度渴望能接觸更多的機會和迎接更大的挑戰。我接觸電腦和網路的時間很早，14歲時，我用
+      Microsoft FrontPage 建立了一個網站，提供 MP3
+      下載服務，那時候版權問題還不是一個需要考慮的問題，並且當時還是靠 56k 數據機撥號上網。
+    </p>
+
+    <p>
+      在我的青少年時期，搖滾樂成為了我生活的動力。我在樂團中擔任主唱和吉他手，沉浸在 Oasis、Guns N'
+      Roses、Radiohead、Nirvana 和 Beatles
+      的音樂中。這份熱情引導我度過了成長歲月，最終（奇怪地）帶領我在 2003
+      年進入國立成功大學，主修工程科學系。雖然我的學習涵蓋了廣泛的主題，但真正吸引我的是計算機科學。我在一個使用自組織映射進行圖像分割的神經網絡項目上的工作，鞏固了我對軟體開發的熱愛。
+    </p>
+
+    <p>
+      爾後認識到台灣硬體產業很強，但在基本上沒有軟體產業，我決定到英國繼續深造。我在南安普敦大學獲得了人工智能碩士學位，隨後在倫敦帝國理工學院獲得了機器人視覺博士學位。我的研究專注於視覺同時定位與地圖構建（VSLAM）、深度學習，以及高性能程式語言如
+      C/C++ 和 CUDA。這段時期我沈迷於深度研究如何使用先進技術解決現實世界問題。
+    </p>
+
+    <p>
+      完成博士學位後，我加入了倫敦大學學院，擔任博士後研究員，參與了由歐盟資助的 <a
+        href="https://www.cascade-fp7.eu/index.html"
+        class="text-info hover:underline"
+      >
+        CASCADE
+      </a> 項目，旨在推進自主機器人手術。正是在這裡，我意識到學術研究與現實世界應用之間存在著巨大的鴻溝。這個認知點燃了我踏上創業之路的決心。
+    </p>
+
+    <p>
+      我的第一個創業項目 <a href="https://umbocv.ai" class="text-info hover:underline">
+        Umbo Computer Vision
+      </a>，致力於通過即時計算機視覺革新視頻安全領域。這段經歷讓我看到了處理非結構化數據方面的一個關鍵缺口，相關的
+      AI 和資料軟體工具，在產業界裡極度困乏，所以每家公司要受惠於 AI，都還得自己成立極其昂貵的 AI
+      和資料團隊。
+    </p>
+
+    <p>
+      為了解決這個挑戰，我創立了 <a
+        href="https://www.instill.tech"
+        class="text-info hover:underline"
+      >
+        Instill AI
+      </a>，旨在為非結構化數據處理提供更高效的解決方案。隨著生成式
+      AI、大型語言模型（LLMs）、視覺語言模型（VLMs）和大型多模態模型（LMMs）在 2022
+      年之後相繼取得了重大進展，軟體工具需要跟上步伐。
+    </p>
+
+    <p>這段創業旅程仍在繼續，我希望透過我的努力，能使這些突破性的技術被所有人所使用和受益。</p>
+  </div>
+  <br />
+  <div class="flex flex-col gap-4">
+    <h2>出版物</h2>
+    <p>
+      查看我的 <a
+        href="https://scholar.google.com/citations?user=mR95vtsAAAAJ&hl=en"
+        class="text-info hover:underline"
+      >
+        Google Scholar
+      </a> 檔案以獲取更多詳細信息。
+    </p>
+  </div>
+  <br />
+  <div class="flex flex-col gap-4">
+    <h2>致謝</h2>
+    <p>
+      這個網站的建立得感謝有 <a href="https://astro.build" class="text-info hover:underline">
+        Astro
+      </a> 和 LLMs 的出現。
+    </p>
+  </div>
+</BaseLayout>
