@@ -10,10 +10,10 @@ const t = useTranslations(Astro.currentLocale as keyof typeof languages);
 
 <BaseLayout pageTitle={t('home.title')}>
   <div class="flex flex-col justify-center items-center h-full leading-loose">
-    <h1>你好，世界! 👋</h1>
+    <h2>👋 你好，我是秉霖。</h2>
     <br />
     <p>
-      按 <kbd class="kbd kbd-sm">CMD</kbd> + <kbd class="kbd kbd-sm">K</kbd> 進行搜尋.
+      按 <kbd class="kbd kbd-sm">CMD</kbd> + <kbd class="kbd kbd-sm">K</kbd> 進行搜尋。
     </p>
     <div
       id="globe-container"
@@ -26,9 +26,8 @@ const t = useTranslations(Astro.currentLocale as keyof typeof languages);
 </BaseLayout>
 
 <script>
-  import { initGlobe } from '../../scripts/three-globle/globe.js';
-
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    const { initGlobe } = await import('@/scripts/three-globe/globe.js');
     initGlobe();
     setTimeout(() => {
       document.getElementById('globe-container')?.classList.remove('opacity-0');

@@ -1,0 +1,67 @@
+<div id="scroll-top" class="fixed opacity-0 invisible bottom-4">
+  <button
+    onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+    class="p-2 rounded-lg text-gray-900 bg-gray-50/90 dark:text-gray-100 dark:bg-gray-800/90 hover:bg-gray-100/90 dark:hover:bg-gray-700/90"
+    aria-label="Scroll to top"
+  >
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M12 19V5M5 12l7-7 7 7"></path>
+    </svg>
+  </button>
+</div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const scrollButton = document.getElementById('scroll-top');
+    const tocWrapper = document.getElementById('toc-wrapper');
+    const topHeader = document.querySelector('header');
+
+    function updatePositions() {
+      if (scrollButton && tocWrapper && topHeader) {
+        const headerRect = topHeader.getBoundingClientRect();
+        const rightOffset = window.innerWidth - headerRect.right;
+
+        // Update TOC and scroll button positions with the same offset
+        scrollButton.style.transition = 'all 0.8s ease';
+        scrollButton.style.right = `${rightOffset}px`;
+        tocWrapper.style.right = `${rightOffset}px`;
+      }
+    }
+
+    function toggleScrollButton() {
+      if (scrollButton && tocWrapper) {
+        if (tocWrapper.classList.contains('visible')) {
+          scrollButton.classList.remove('invisible');
+          scrollButton.classList.add('visible');
+          scrollButton.style.opacity = '1';
+        } else {
+          scrollButton.style.opacity = '0';
+          setTimeout(() => {
+            scrollButton.classList.remove('visible');
+            scrollButton.classList.add('invisible');
+          }, 300);
+        }
+      }
+    }
+
+    const observer = new MutationObserver(() => {
+      toggleScrollButton();
+    });
+
+    if (tocWrapper) {
+      observer.observe(tocWrapper, { attributes: true });
+    }
+
+    // Update on resize
+    window.addEventListener('resize', updatePositions);
+    // Initial position
+    updatePositions();
+  });
+</script>

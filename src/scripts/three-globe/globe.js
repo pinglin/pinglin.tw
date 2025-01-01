@@ -4,8 +4,7 @@ import ThreeGlobe from 'three-globe';
 import countriesData from './countries.js';
 import config from '../../config.json';
 
-export const { globeViewWidth: renderWidth, globeViewHeight: renderHeight } =
-  config;
+export const { globeViewWidth: renderWidth, globeViewHeight: renderHeight } = config;
 
 export function initGlobe() {
   const Globe = new ThreeGlobe({ animateIn: false })
@@ -19,9 +18,7 @@ export function initGlobe() {
       return `rgb(${shade},${shade},${shade})`;
     })
     .hexPolygonAltitude(0.001)
-    .globeMaterial(
-      new THREE.MeshPhongMaterial({ opacity: 0.1, transparent: true }),
-    );
+    .globeMaterial(new THREE.MeshPhongMaterial({ opacity: 0.1, transparent: true }));
 
   const renderer = new THREE.WebGLRenderer({ alpha: true });
   renderer.setSize(renderWidth, renderHeight);
@@ -29,17 +26,9 @@ export function initGlobe() {
   document.getElementById('globe-point-cloud').appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.add(
-    new THREE.AmbientLight(0xcccccc, Math.PI),
-    new THREE.DirectionalLight(0xffffff, 0.6 * Math.PI),
-  );
+  scene.add(new THREE.AmbientLight(0xcccccc, Math.PI), new THREE.DirectionalLight(0xffffff, 0.6 * Math.PI));
 
-  const camera = new THREE.PerspectiveCamera(
-    undefined,
-    renderWidth / renderHeight,
-    undefined,
-    undefined,
-  );
+  const camera = new THREE.PerspectiveCamera(undefined, renderWidth / renderHeight, undefined, undefined);
   camera.position.z = 300;
 
   const tbControls = new TrackballControls(camera, renderer.domElement);
@@ -57,7 +46,7 @@ export function initGlobe() {
 
   function animate() {
     tbControls.update();
-    globeContainer.rotation.y -= 0.12 * clock.getDelta();
+    globeContainer.rotation.y += 0.1 * clock.getDelta();
     renderer.render(scene, camera);
     if (typeof window !== 'undefined') window.requestAnimationFrame(animate);
   }

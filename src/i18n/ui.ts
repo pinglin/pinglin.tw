@@ -1,6 +1,6 @@
 export const languages = {
   en: 'English',
-  zh: '中文',
+  'zh-tw': '繁體中文',
 };
 
 export const defaultLang = 'en';
@@ -10,12 +10,12 @@ export const ui = {
     'header.home': 'Home',
     'header.about': 'About',
     'header.blog': 'Blog',
-    'home.title': 'Home | pinglin.io',
+    'home.title': 'Home | pinglin.tw',
   },
-  zh: {
+  'zh-tw': {
     'header.home': '主頁',
     'header.about': '關於',
     'header.blog': '文章',
-    'home.title': '主頁 | pinglin.io',
+    'home.title': '主頁 | pinglin.tw',
   },
 } as const;

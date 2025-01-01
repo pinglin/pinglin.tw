@@ -7,10 +7,7 @@ interface GreetingProps {
 export function Greeting({ messages }: GreetingProps) {
   const [greeting, setGreeting] = useState(messages[0]);
 
-  const randomMessage = useCallback(
-    () => messages[Math.floor(Math.random() * messages.length)],
-    [messages],
-  );
+  const randomMessage = useCallback(() => messages[Math.floor(Math.random() * messages.length)], [messages]);
 
   return (
     <div>

@@ -1,5 +1,6 @@
 {
   "framework": "astro",
-  "devCommand": "npm run dev",
-  "buildCommand": "npm run build"
+  "devCommand": "pnpm run dev",
+  "buildCommand": "pnpm build --sourcemap",
+  "outputDirectory": "dist"
 }
