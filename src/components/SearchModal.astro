@@ -93,7 +93,7 @@
     const query = (e.target as HTMLInputElement).value;
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(async () => {
-      if (query.length >= 2) {
+      if (query.length >= 1) {
         const results = await performSearch(query);
         displayResults(results);
       } else {

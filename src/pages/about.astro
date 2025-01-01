@@ -1,43 +1,33 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const pageTitle = 'About | pinglin.io';
+const pageTitle = 'About | pinglin.tw';
 ---
 
 <BaseLayout pageTitle={pageTitle}>
   <div class="flex flex-col md:flex-row gap-6 items-start">
     <div class="flex flex-col gap-4">
-      <p>Hello and welcome! 🤗</p>
+      <p>Hello there!</p>
       <p>
-        I'm Ping-Lin Chang (張秉霖), and my friends call me Pinglin. I'm thrilled to connect with
-        you online and excited to see you here.
-      </p>
-      <p>
-        Feel free to reach out to me through any of your favorite channels listed on the top. ☝️
-      </p>
-      <p>
-        Right now, I'm on an exciting journey to transform how unstructured data is processed and
-        utilised, working alongside my co-founder <a
-          href="https://www.linkedin.com/in/xiaofeidu/"
-          class="text-info hover:underline"
-        >
+        I'm Ping-Lin Chang (張秉霖), and friends call me Pinglin. Currently, I'm co-founding
+        <a href="https://www.instill.tech" class="text-info hover:underline">Instill AI</a> with
+        <a href="https://www.linkedin.com/in/xiaofeidu/" class="text-info hover:underline">
           Xiaofei Du
-        </a> at
-        <a href="https://www.instill.tech" class="text-info hover:underline">Instill AI</a>. 🚀
+        </a>, where we're revolutionizing unstructured data processing. Some facts about me:
       </p>
+      <ul class="list-disc list-inside space-y-1">
+        <li>Entrepreneur passionate about AI and data</li>
+        <li>Proud father of one</li>
+        <li>Music enthusiast with relative pitch</li>
+        <li>Advocate for neurodiversity (I have mild dyslexia)</li>
+      </ul>
     </div>
     <div class="md:w-2/5 flex-shrink-0">
-      <img
-        src="/me.jpg"
-        class="w-full h-auto rounded-lg shadow-md hover:shadow-lg dark:shadow-gray-700 dark:hover:shadow-gray-600 transition-shadow duration-300"
-      />
+      <img src="/me.jpg" class="w-full h-auto rounded-md" />
     </div>
   </div>
-  <br />
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-2">
     <h2>Biography</h2>
-    <h3>Biography1</h3>
-    <h4>Biography2</h4>
     <p>
       I grew up in Pingtung, Taiwan. Due to the limited resources in this rural area, I had an
       intense desire to access more opportunities and face bigger challenges from a young age. I was
@@ -45,7 +35,6 @@ const pageTitle = 'About | pinglin.io';
       FrontPage, offering MP3 downloads at a time when copyright issues weren't yet a concern, and
       we were still using 56k dial-up modems to connect to the Internet.
     </p>
-
     <p>
       As my teenage years unfolded, my life was fueled by rock'n'roll. Playing in bands as a main
       vocalist and guitarist, I immersed myself in the music of Oasis, Guns N' Roses, Radiohead,
@@ -55,7 +44,6 @@ const pageTitle = 'About | pinglin.io';
       captivated me. My work on a neural network project using Self-Organizing Maps for image
       segmentation solidified my love for software development.
     </p>
-
     <p>
       Recognizing Taiwan's strength in hardware but its weakness in software, I decided to pursue
       further education abroad in the UK. I earned a master's degree in Artificial Intelligence from
@@ -64,7 +52,6 @@ const pageTitle = 'About | pinglin.io';
       and high-performance programming languages like C/C++ and CUDA. This period marked my deep
       dive into solving real-world problems using advanced technologies.
     </p>
-
     <p>
       After completing my PhD, I joined University College London as a Postdoctoral Research
       Associate, contributing to the EU-funded <a
@@ -77,15 +64,11 @@ const pageTitle = 'About | pinglin.io';
       gap between academic research and real-world application. This realization ignited my journey into
       entrepreneurship.
     </p>
-
     <p>
-      My first startup, <a href="https://umbocv.ai" class="text-info hover:underline">
-        Umbo Computer Vision
-      </a>, sought to revolutionize video security through real-time computer vision. This
-      experience illuminated a critical gap in handling unstructured data—an area with insufficient
-      tooling and often requiring expensive AI and data teams.
+      My first startup, Umbo Computer Vision, sought to revolutionize video security through
+      real-time computer vision. This experience illuminated a critical gap in handling unstructured
+      data—an area with insufficient tooling and often requiring expensive AI and data teams.
     </p>
-
     <p>
       Determined to address this challenge, I founded <a
         href="https://www.instill.tech"
@@ -97,14 +80,9 @@ const pageTitle = 'About | pinglin.io';
       in 2022, it became clear that while these technologies made significant strides, the software tooling
       needed to keep pace.
     </p>
-
-    <p>
-      The journey continues as I work to make these groundbreaking technologies accessible and
-      effective for all.
-    </p>
+    <p>I am on it.</p>
   </div>
-  <br />
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-2">
     <h2>Publications</h2>
     <p>
       Check out my <a
@@ -113,18 +91,6 @@ const pageTitle = 'About | pinglin.io';
       >
         Google Scholar
       </a> profile for more details.
-    </p>
-  </div>
-  <br />
-  <div class="flex flex-col gap-4">
-    <h2>Acknowledgement</h2>
-    <p>
-      This site wouldn't be possible without <a
-        href="https://astro.build"
-        class="text-info hover:underline"
-      >
-        Astro
-      </a> and LLMs.
     </p>
   </div>
 </BaseLayout>

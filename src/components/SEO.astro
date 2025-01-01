@@ -1,0 +1,39 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string | { url: string; alt: string };
+  url?: string;
+}
+
+const {
+  title = 'Ping-Lin Chang',
+  description = 'A space where my thoughts take flight.',
+  image = '/og-image.jpg',
+  url = Astro.url,
+} = Astro.props;
+
+// Ensure absolute URL for OG image, handling both string and object types
+const ogImageUrl = typeof image === 'string' ? image : image.url;
+const ogImage = new URL(ogImageUrl, Astro.url);
+---
+
+<!-- Standard Meta -->
+<title>{title}</title>
+<meta name="description" content={description} />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="行到水窮處，坐看雲起時。" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@pinglin02" />
+<meta name="twitter:creator" content="@pinglin02" />

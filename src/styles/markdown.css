@@ -1,0 +1,7 @@
+.markdown-content {
+  @apply prose dark:prose-invert max-w-none;
+}
+
+.markdown-content a {
+  @apply text-info hover:text-info no-underline font-normal;
+}

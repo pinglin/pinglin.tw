@@ -51,10 +51,20 @@ const postsByYear = posts.reduce(
               <br />
               <ul>
                 {postsByYear[year].map(
-                  (post: { slug: string; data: { title: string; pubDate: Date } }) => (
+                  (post: {
+                    slug: string;
+                    data: {
+                      title: string;
+                      description: string;
+                      image: { url: string; alt: string };
+                      pubDate: Date;
+                    };
+                  }) => (
                     <BlogPost
                       url={'/blog/' + post.slug}
                       title={post.data.title}
+                      description={post.data.description}
+                      image={post.data.image}
                       pubDate={post.data.pubDate}
                     />
                   ),

@@ -6,7 +6,7 @@ import MarkdownPostLayout from '../../../layouts/MarkdownPostLayout.astro';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('blog', ({ id }) => id.startsWith('zh/'));
+  const blogEntries = await getCollection('blog', ({ id }) => id.startsWith('zh-tw/'));
   return blogEntries.map((entry: CollectionEntry<'blog'>) => ({
     params: { slug: entry.slug.split('/').slice(1).join('/') },
     props: { entry },

@@ -15,6 +15,8 @@ export default {
   singleQuote: true,
   tabWidth: 2,
   trailingComma: 'all',
-  printWidth: 80,
+  printWidth: 150,
   proseWrap: 'always',
+  htmlWhitespaceSensitivity: 'strict',
+  singleAttributePerLine: false,
 };

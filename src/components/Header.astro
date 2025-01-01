@@ -25,7 +25,8 @@ import SearchModal from './SearchModal.astro';
   function handleScroll() {
     const header = document.querySelector('header');
     if (header) {
-      if (window.scrollY > 0) {
+      const headerY = header.getBoundingClientRect().y;
+      if (window.scrollY > headerY) {
         header.classList.add('sticky');
       } else {
         header.classList.remove('sticky');
