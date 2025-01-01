@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import '../styles/markdown.css';
 const { frontmatter } = Astro.props;
 
 const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', {
@@ -9,14 +10,21 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
 });
 ---
 
-<BaseLayout pageTitle={frontmatter.title}>
-  <div class="flex flex-col items-center justify-center mb-8">
-    <h1 class="my-4">{frontmatter.title}</h1>
-    <p class="my-1 text-gray-500 dark:text-gray-400">{frontmatter.description}</p>
-    <p class="my-1 text-gray-500 dark:text-gray-400 text-sm">{formattedDate}</p>
+<BaseLayout
+  pageTitle={frontmatter.title}
+  description={frontmatter.description}
+  image={frontmatter.image}
+>
+  <div class="flex flex-col mb-10">
+    <h1 class="text-center my-4">{frontmatter.title}</h1>
+    <p class="text-sm text-center text-gray-500 dark:text-gray-400">{formattedDate}</p>
+    <p class="text-md text-left my-6 text-gray-500 dark:text-gray-400">{frontmatter.description}</p>
     <div class="img-container">
       <img src={frontmatter.image.url} alt={frontmatter.image.alt} class="post-img" />
     </div>
+    <p class="text-sm text-left text-gray-500 dark:text-gray-400">{frontmatter.image.alt}</p>
   </div>
-  <slot />
+  <div class="markdown-content">
+    <slot />
+  </div>
 </BaseLayout>

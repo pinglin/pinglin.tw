@@ -15,37 +15,49 @@
 
   /* Heading styles */
   h1 {
-    @apply text-4xl font-bold;
+    @apply text-4xl font-bold my-8;
     /* Adjust size and margin as needed */
   }
 
   h2 {
-    @apply text-3xl font-semibold;
+    @apply text-3xl font-semibold my-6;
     /* Adjust size and margin as needed */
   }
 
   h3 {
-    @apply text-2xl font-medium;
+    @apply text-2xl font-medium my-4;
     /* Adjust size and margin as needed */
   }
 
   h4 {
-    @apply text-xl font-normal;
+    @apply text-xl font-normal my-2;
     /* Adjust size and margin as needed */
   }
 
   h5 {
-    @apply text-lg font-normal;
+    @apply text-lg font-normal my-2;
     /* Adjust size and margin as needed */
   }
 
   h6 {
-    @apply text-base font-normal;
+    @apply text-base font-normal my-2;
     /* Adjust size and margin as needed */
   }
 
   article {
-    @apply leading-loose;
+    @apply leading-normal;
+  }
+
+  figure img {
+    @apply rounded-md;
+  }
+
+  figure video {
+    @apply rounded-md;
+  }
+
+  figcaption {
+    @apply text-gray-600 dark:text-gray-300 !important;
   }
 }
 
@@ -53,6 +65,7 @@
   .toc-wrapper {
     @apply fixed rounded-lg opacity-0;
     @apply flex flex-col items-start;
+    @apply z-50;
   }
 
   .toc-wrapper.visible {
@@ -79,28 +92,24 @@
     @apply leading-loose text-sm;
   }
 
-  .toc-list .toc-level-1 {
+  .toc-list .toc-level-2 {
     @apply ml-0;
   }
 
-  .toc-list .toc-level-2 {
+  .toc-list .toc-level-3 {
     @apply ml-4;
   }
 
-  .toc-list .toc-level-3 {
+  .toc-list .toc-level-4 {
     @apply ml-8;
   }
 
-  .toc-list .toc-level-4 {
+  .toc-list .toc-level-5 {
     @apply ml-12;
   }
 
-  .toc-list .toc-level-5 {
-    @apply ml-16;
-  }
-
   .toc-list .toc-level-6 {
-    @apply ml-20;
+    @apply ml-16;
   }
 
   .copyright a {
@@ -116,7 +125,7 @@
   }
 
   .img-container {
-    @apply relative w-full aspect-[1200/630] overflow-hidden rounded-md mx-auto my-4;
+    @apply relative w-full aspect-[1200/630] overflow-hidden rounded-md mx-auto my-2;
   }
 
   .post-img {
@@ -145,5 +154,13 @@
     .nav-links {
       @apply absolute left-0 right-0 top-full z-10;
     }
+  }
+
+  .light-mode-img {
+    @apply block dark:hidden;
+  }
+
+  .dark-mode-img {
+    @apply hidden dark:block;
   }
 }

@@ -1,0 +1,65 @@
+<div id="imageModal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-gray-100/50 dark:bg-black/50 backdrop-blur-sm"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="relative max-w-full max-h-full">
+      <img
+        id="modalImage"
+        src=""
+        alt=""
+        class="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+      />
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  function openImageModal(imgSrc, imgAlt) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    if (modal && modalImg) {
+      modalImg.src = imgSrc;
+      modalImg.alt = imgAlt;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('figure img').forEach((img) => {
+      img.classList.add('cursor-zoom-in');
+      img.addEventListener('click', () => {
+        openImageModal(img.src, img.alt);
+      });
+    });
+
+    // Close modal on any click
+    document.getElementById('imageModal')?.addEventListener('click', () => {
+      closeImageModal();
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+  });
+
+  // Re-attach listeners after Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll('figure img').forEach((img) => {
+      img.classList.add('cursor-zoom-in');
+      img.addEventListener('click', () => {
+        openImageModal(img.src, img.alt);
+      });
+    });
+  });
+</script>

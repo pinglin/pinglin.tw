@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const pageTitle = 'About | pinglin.tw';
+---
+
+<BaseLayout pageTitle={pageTitle}>
+  <div class="flex flex-col md:flex-row gap-6 items-start">
+    <div class="flex flex-col gap-4">
+      <p>你好！</p>
+      <p>
+        我是張秉霖（Ping-Lin Chang），朋友們都叫我秉霖。目前我正在與
+        <a href="https://www.linkedin.com/in/xiaofeidu/" class="text-info hover:underline">笑菲</a>
+        共同創立 <a href="https://www.instill.tech" class="text-info hover:underline">
+          Instill AI
+        </a>， 致力於改善非結構化數據處理的方法。關於我自己的一些事實：
+      </p>
+      <ul class="list-disc list-inside space-y-1">
+        <li>熱衷於 AI 和 data 的創業家</li>
+        <li>一個孩子的父親</li>
+        <li>擁有相對音感的音樂愛好者</li>
+        <li>神經多樣性倡導者（我有輕度閱讀障礙）</li>
+      </ul>
+    </div>
+    <div class="md:w-2/5 flex-shrink-0">
+      <img src="/me.jpg" class="w-full h-auto rounded-md" />
+    </div>
+  </div>
+  <div class="flex flex-col gap-2">
+    <h2>我的背景</h2>
+    <p>
+      我在台灣的屏東成長。由於鄉下地方的資源有限，我從小就有著強烈的渴望，希望能接觸更多的機會，並面對更大的挑戰。我很早就接觸了電腦和網際網路。14歲時，我使用
+      Microsoft FrontPage 建立了一個網站，提供 MP3 下載，那時版權問題還不被關注，而且當時用的還是
+      56k 網路撥接器（modem）。
+    </p>
+    <p>
+      隨著青春期的到來，搖滾樂成為了我生活的動力。我曾在樂隊中擔任主唱和吉他手，沉浸在 Oasis、Guns
+      N' Roses、Radiohead、Nirvana 和 The Beatles
+      的音樂中。這份熱情指引我度過了成長的歲月，並最終（有點奇怪地）將我帶到了 2003
+      年進入國立成功大學，主修工程科學。雖然我的學業涵蓋了廣泛的領域，但真正吸引我的是計算機科學。我在大三時毛遂自薦提早進行了畢業專題，題目是關於使用自組織映射（Self-Organizing
+      Maps,
+      SOM）類神經網絡來進行影像分割，這項專題讓我第一次發表了學術輪文，並參加國際研討會口頭報告了我的論文內容，這段經歷讓我對軟體開發的熱愛愈加堅定。
+    </p>
+    <p>
+      我深知台灣在硬體方面的強大優勢，但在軟體領域卻存在弱點。因此，我決定前往英國繼續深造。我獲得了南安普敦大學的人工智慧碩士學位，隨後在倫敦帝國理工大學取得了機器人視覺（Robotic
+      Vision）博士學位。我的研究聚焦於視覺同時定位與建圖（Visual Simultaneous Localization and
+      Mapping, VSLAM）、深度學習（Deep Learning）以及像 C/C++ 和 CUDA
+      這類高效能程式語言。這段時間標誌著我深入探索如何運用先進技術解決現實世界問題。
+    </p>
+    <p>
+      完成博士學位後，我加入倫敦大學（University College London）擔任博士後研究員，參與了歐盟資助的<a
+        href="https://www.cascade-fp7.eu/index.html"
+        class="text-info hover:underline"
+      >
+        CASCADE
+      </a>計畫，該計畫旨在推進自主機器人手術技術。正是在這裡，我意識到學術研究與現實應用之間的巨大差距，也讓我產生了自己創業的念頭。
+    </p>
+    <p>
+      我的第一個創業公司 Umbo Computer
+      Vision，旨在通過即時計算機視覺技術徹底改變影像安防行業。這段經歷讓我深刻認識到，處理非結構化數據是一個很棘手的問題（至今仍是），這個領域的工具尚不成熟，且通常需要昂貴的人工智慧（AI）和軟體工程師來解決。
+    </p>
+    <p>
+      為了解決這一挑戰，我創立了<a
+        href="https://www.instill.tech"
+        class="text-info hover:underline"
+      >
+        Instill AI
+      </a>，致力於為非結構化數據處理提供更高效的解決方案。隨著生成式人工智慧（Generative
+      AI）、大型語言模型（Large Language Models, LLMs）、視覺語言模型（Vision Language Models,
+      VLMs）和大型多模態模型（Large Multimodal Models, LMMs）在 2022
+      年相繼崛起，我深刻意識到，儘管這些技術已經取得了顯著的進展，但相應的軟體工具卻未能跟上這些變革的步伐。
+    </p>
+    <p>目前就是在忙這些！</p>
+  </div>
+  <div class="flex flex-col gap-2">
+    <h2>論文</h2>
+    <p>
+      查看我的 <a
+        href="https://scholar.google.com/citations?user=mR95vtsAAAAJ&hl=en"
+        class="text-info hover:underline"
+      >
+        Google Scholar
+      </a> 頁面以獲取更多詳細信息。
+    </p>
+  </div>
+</BaseLayout>

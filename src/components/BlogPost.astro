@@ -2,27 +2,32 @@
 export interface Props {
   url: string;
   title: string;
+  description: string;
+  image: {
+    url: string;
+    alt: string;
+  };
   pubDate: Date;
 }
 
 const { url, title, pubDate } = Astro.props;
-const adjustedUrl = url.replace(/^\/blog\/zh\//, '/zh/blog/');
+const adjustedUrl = url.replace(/^\/blog\/zh-tw\//, '/zh-tw/blog/');
 
-const locale = Astro.currentLocale === 'zh' ? 'zh-TW' : 'en-US';
+const locale = Astro.currentLocale === 'zh-tw' ? 'zh-TW' : 'en-US';
 let formattedDate = new Date(pubDate).toLocaleDateString(locale, {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 });
 
-if (Astro.currentLocale === 'zh') {
-  formattedDate = formattedDate.replace(/\//g, '年');
+if (Astro.currentLocale === 'zh-tw') {
+  formattedDate = formattedDate.replace(/(\d+)/g, ' $1 ').replace(/\//g, '年').trim();
 }
 ---
 
 <article>
-  <div class="flex justify-between">
-    <h3 class="w-2/3 break-all"><a href={adjustedUrl}>{title}</a></h3>
-    <span>{formattedDate}</span>
+  <div class="flex justify-between items-center">
+    <p class="mr-4 w-2/3 text-lg break-words"><a href={adjustedUrl}>{title}</a></p>
+    <p class="ml-4">{formattedDate}</p>
   </div>
 </article>
