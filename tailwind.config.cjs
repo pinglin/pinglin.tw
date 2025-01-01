@@ -1,3 +1,4 @@
+import typography from '@tailwindcss/typography';
 import daisyui from 'daisyui';
 
 export default {
@@ -6,7 +7,7 @@ export default {
   daisyui: {
     themes: ['cmyk', 'night'],
   },
-  plugins: [daisyui],
+  plugins: [typography, daisyui],
   theme: {
     extend: {
       fontFamily: {

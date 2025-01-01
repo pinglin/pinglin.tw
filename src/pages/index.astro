@@ -1,16 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { useTranslations } from '../i18n/utils';
-import { languages } from '../i18n/ui';
+import { languages, defaultLang } from '../i18n/ui';
 
 import config from '../config.json';
 
-const t = useTranslations(Astro.currentLocale as keyof typeof languages);
+const t = useTranslations(
+  (Astro.currentLocale ?? defaultLang).replace('_', '-') as keyof typeof languages,
+);
 ---
 
 <BaseLayout pageTitle={t('home.title')}>
   <div class="flex flex-col justify-center items-center h-full leading-loose">
-    <h1>Hello world! 👋</h1>
+    <h2>👋 Hi, I am Pinglin.</h2>
     <br />
     <p>
       Press <kbd class="kbd kbd-sm">CMD</kbd> + <kbd class="kbd kbd-sm">K</kbd> to search.
