@@ -6,3 +6,6 @@ node_modules/
 
 # Vercel build output
 .vercel
+
+# Build output
+dist
