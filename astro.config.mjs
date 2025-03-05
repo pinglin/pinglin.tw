@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import vercel from '@astrojs/vercel';
 import preact from '@astrojs/preact';
 import tailwind from '@astrojs/tailwind';
+import sitemap from '@astrojs/sitemap';
 import { visit } from 'unist-util-visit';
 
 import { languages, defaultLang } from './src/i18n/ui';
@@ -10,7 +11,6 @@ const supportedLanguages = Object.keys(languages);
 
 export default defineConfig({
   site: 'https://pinglin.tw',
-  output: 'server',
   adapter: vercel({
     imageService: true,
     edgeMiddleware: true,
@@ -18,7 +18,7 @@ export default defineConfig({
       enabled: true,
     },
   }),
-  integrations: [preact(), tailwind()],
+  integrations: [preact(), tailwind(), sitemap()],
   markdown: {
     remarkPlugins: [
       () => (tree) => {
