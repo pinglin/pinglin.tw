@@ -60,11 +60,11 @@ Learning）。由於人類語言本身就有一定的泛化能力，基於轉換
 如何在如此變動的大環境下適應和應變呢？我們一直不斷在反思，如何最有效率地實現我們的最終目標，也就是讓每個人都能輕易使用 AI。我們公司的使命是賦與人們自動化日常任務的能力，提高個人生產力，並從繁瑣、重複的瑣事中解放出來。
 
 作為一家早期新創公司，我們最大的挑戰是實現產品市場契合度（product-market fit,
-PMF），這是一個持續的、迭代的過程，而不是一次性的里程碑。為了能讓公司生存下去，我們總是必須在「創新」和「產品可行性」之間謹慎平衡。雖然[人工通用智能（Artificial General Intelligence，AGI）](https://en.wikipedia.org/wiki/Artificial_general_intelligence)看起來可能是最終所有問題的解決方案，但我們相信僅靠它是無法實現我們的目標的。此外，儘管我們公司的強項是技術，但我們並沒有可以讓我們搞研究和訓練基礎模型的資金。所以，我們採取了一種更務實的路徑，根據軟體工具必須與 AI 一同發展的事實，我們不僅僅關注 AI 基礎模型的發展，也優先考慮資料的配套工具，因為我們深刻理解到，[僅靠 AI 模型是無法完善整條 AI 價值鏈的](https://www.instill.tech/blog/unstructured-data-etl)。
+PMF），這是一個持續的、迭代的過程，而不是一次性的里程碑。為了能讓公司生存下去，我們總是必須在「創新」和「產品可行性」之間謹慎平衡。雖然[人工通用智能（Artificial General Intelligence，AGI）](https://en.wikipedia.org/wiki/Artificial_general_intelligence)看起來可能是最終所有問題的解決方案，但我們相信僅靠它是無法實現我們的目標的。此外，儘管我們公司的強項是技術，但我們並沒有可以讓我們搞研究和訓練基礎模型的資金。所以，我們採取了一種更務實的路徑，根據軟體工具必須與 AI 一同發展的事實，我們不僅僅關注 AI 基礎模型的發展，也優先考慮資料的配套工具，因為我們深刻理解到，[僅靠 AI 模型是無法完善整條 AI 價值鏈的](https://www.instill-ai.com/blog/missing-piece-in-modern-data-stack-unstructured-data-etl)。
 
 ### 一步式非結構化資料 ETL（2022年）
 
-基於這樣的想法，我們[最初](https://www.instill.tech/blog/why-instill-ai-exists)確定了我們的目標受眾為資料工程師、資料科學家、AI 工程師和 AI 研究人員，這些需要構建非結構化資料 ETL 管道的 AI 建構者。
+基於這樣的想法，我們[最初](https://www.instill-ai.com/blog/why-instill-ai-exists)確定了我們的目標受眾為資料工程師、資料科學家、AI 工程師和 AI 研究人員，這些需要構建非結構化資料 ETL 管道的 AI 建構者。
 
 受到 dbt（主要是處理 ETL 中的 "T"）和 Airbyte（主要是 ELT 中的 "EL" 資料遷移）的啟發，我們最初構建了一個系統，將資料源和目的地與單個 DL 模型（無論是 LLM、STT/TTS 模型還是物件檢測模型）連接起來（[見圖 1](#figure-1)）。這是我們的第一個最小可行性產品（Minimum
 Viable Product，MVP），主要是用來展示如何在 ETL 框架中處理非結構化資料的概念，好讓我們可以進行種子輪融資。
@@ -143,7 +143,7 @@ Language，DSL），只是我們更喜歡用 YAML 作為 DSL。
 Core 的設計方式，並且我們還有一長串 UI/UX 改進計劃，持續不斷地優化產品體驗是我們公司的核心文化。
 
 今天，你可以使用 [Instill Core](https://github.com/instill-ai/instill-core)
-來構建聊天機器人、[植物表型分析器](https://www.instill.tech/blog/abrc-customer-success)、[複雜 PDF 解析器](https://www.instill.tech/blog/make-complex-documents-rag-ready)、[網站爬蟲](https://www.instill.tech/blog/semantic-web-crawler-insights-unstructured-data-ai)，甚至[為 AI 代理人工具構建進階 RAG 系統](https://www.instill.tech/blog/rag-tutorial)。等等。。。AI 代理人？這又是我在什麼賣弄學問的話術？其實不然，在 Instill
+來構建聊天機器人、[植物表型分析器](https://www.instill.tech/blog/abrc-customer-success)、[複雜 PDF 解析器](https://www.instill-ai.com/blog/the-best-way-to-parse-complex-pdfs-for-rag-hybrid-multimodal-parsing)、[網站爬蟲](https://www.instill-ai.com/blog/semantic-web-crawler-insights-unstructured-data-ai)，甚至[為 AI 代理人工具構建進階 RAG 系統](https://www.instill-ai.com/blog/llm-based-evaluations)。等等。。。AI 代理人？這又是我在什麼賣弄學問的話術？其實不然，在 Instill
 AI，我們將所有 AI 的軟體程式和任務都視為非結構化資料 ETL 管道。[影片 1](#video-1) 和[影片 2](#video-2) 展示了一些 AI 代理人工具的實際例子。
 
 <figure id="video-1">

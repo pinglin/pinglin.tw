@@ -25,10 +25,11 @@ Vision。這是一段從零開始打造公司的旅程。作為 CTO，我貢獻�
 ASIC 運算上部署 AI 產品。我也累積了不少建構大規模 AI 系統和產品級 AI 解決方案的經驗。這也是一堂耗資 920 萬美元的課程，讓我深刻體會到：再厲害的技術也不會自己變成爆款產品，go-to-market 才是關鍵。最後因為在公司長期發展方向上的分歧，我選擇離開創始團隊。
 
 2020 年 6 月，我和在 UCL 實驗室的同事笑菲一起創立了 Instill
-AI。我們在研究室共事多年，她在拿到博士學位後也加入過 Umbo。我們對 AI 應該如何被實作和採用成為軟體基礎建設，有著共同的想法。這篇[文章](https://www.instill.tech/blog/why-instill-ai-exists)更詳細地說明了 Instill
+AI。我們在研究室共事多年，她在拿到博士學位後也加入過 Umbo。我們對 AI 應該如何被實作和採用成為軟體基礎建設，有著共同的想法。這篇[文章](https://www.instill-ai.com/blog/why-instill-ai-exists)更詳細地說明了 Instill
 AI 的願景。
 
-創立 Instill AI 至今已經四年了。我們一直專注在實踐對[非結構化資料 ETL](https://www.instill.tech/blog/unstructured-data-etl)
+創立 Instill
+AI 至今已經四年了。我們一直專注在實踐對[非結構化資料 ETL](https://www.instill-ai.com/blog/missing-piece-in-modern-data-stack-unstructured-data-etl)
 的堅定信仰。處理非結構化資料應該要跟處理結構化資料一樣容易。[Instill Core](https://github.com/instill-ai/instill-core)
 就是我們實現理想中非結構化資料 ETL 工具的開源計畫。我們對它的設計和架構一直都很有自己的想法，更多細節可以看看這篇[文章](https://www.instill.tech/blog/vdp-open-beta)。
 
