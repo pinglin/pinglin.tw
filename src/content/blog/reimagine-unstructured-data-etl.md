@@ -79,11 +79,11 @@ milestone. To sustain our financial runway, we must carefully balance innovation
 believe it alone won't achieve our goal. Moreover, although we have the technical expertise, we lack the funding to research and train foundation
 models. Instead, we take a pragmatic approach, recognizing that software tooling must evolve alongside AI. Rather than focusing solely on AI models,
 we prioritize data tooling, understanding that
-[a model alone cannot unlock the full AI value chain](https://www.instill.tech/blog/unstructured-data-etl).
+[a model alone cannot unlock the full AI value chain](https://www.instill-ai.com/blog/missing-piece-in-modern-data-stack-unstructured-data-etl).
 
 ### One-step Unstructured Data ETL (2022)
 
-Based on our thesis, we [originally](https://www.instill.tech/blog/why-instill-ai-exists) identified our target audience as Data Engineers, Data
+Based on our thesis, we [originally](https://www.instill-ai.com/blog/why-instill-ai-exists) identified our target audience as Data Engineers, Data
 Scientists, AI Engineers, and AI Researchers—the AI Builders who need to construct unstructured data ETL pipelines.
 
 Drawing inspiration from dbt (which handles the "T" in ETL for data transformation) and Airbyte (which facilitates the "EL" in ELT for data movement),
@@ -175,13 +175,12 @@ Some developers might criticize YAML-based programming, arguing that its verbosi
 concern. That's why we chose to combine the best of both worlds—placing the YAML pipeline recipe editor and the pipeline preview canvas side by side.
 This is how the current version of Instill Core is designed, and we have a long list of UI/UX improvements planned to further enhance the experience.
 
-Today, you can use [Instill Core](https://github.com/instill-ai/instill-core) to build chatbots,
-[plant phenotype analyzer](https://www.instill.tech/blog/abrc-customer-success),
-[complex PDF parser](https://www.instill.tech/blog/make-complex-documents-rag-ready),
-[crawl websites](https://www.instill.tech/blog/semantic-web-crawler-insights-unstructured-data-ai), or even
-[an advanced RAG system](https://www.instill.tech/blog/rag-tutorial) for AI agents' tools. Wait... AI agent? Isn't that yet another pedantic buzzword
-in this article? Well, at Instill AI, we view all AI-first applications and tasks as unstructured data ETL pipelines. [Video 1](#video-1) and
-[Video 2](#video-2) offer a glimpse into what this looks like in action.
+Today, you can use [Instill Core](https://github.com/instill-ai/instill-core) to build chatbots, plant phenotype analyzer,
+[complex PDF parser](https://www.instill-ai.com/blog/the-best-way-to-parse-complex-pdfs-for-rag-hybrid-multimodal-parsing),
+[crawl websites](https://www.instill-ai.com/blog/semantic-web-crawler-insights-unstructured-data-ai), or even
+[an advanced RAG system](https://www.instill-ai.com/blog/llm-based-evaluations) for AI agents' tools. Wait... AI agent? Isn't that yet another
+pedantic buzzword in this article? Well, at Instill AI, we view all AI-first applications and tasks as unstructured data ETL pipelines.
+[Video 1](#video-1) and [Video 2](#video-2) offer a glimpse into what this looks like in action.
 
 <figure id="video-1">
   <video controls muted class="w-full rounded-md">
