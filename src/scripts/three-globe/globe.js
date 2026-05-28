@@ -8,16 +8,20 @@ export const { globeViewWidth: renderWidth, globeViewHeight: renderHeight } = co
 
 const ARC_FLIGHT_MS = 2200;
 const MAX_ARCS = 24;
-const MAX_VISITOR_RINGS = 24;
+const MAX_VISITOR_PULSES = 32;
+const MAX_POINTS = 32;
 
 // Bright cyan → soft white gradient for the glowing trail.
 const ARC_COLOR_GRADIENT = ['rgba(56,189,248,0.95)', 'rgba(244,255,255,1)', 'rgba(56,189,248,0.95)'];
-const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${1 - t})`;
-const VISITOR_RING_COLOR = (t) => `rgba(56, 189, 248, ${1 - t})`;
+const SOURCE_POINT_COLOR = 'rgba(34, 211, 238, 0.98)';
+const SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.9)';
+const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
+const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 
 export function initGlobe() {
   const arcs = [];
   const rings = [];
+  const points = [];
 
   const Globe = new ThreeGlobe({ animateIn: false })
     .showAtmosphere(false)
@@ -31,6 +35,16 @@ export function initGlobe() {
     })
     .hexPolygonAltitude(0.001)
     .globeMaterial(new THREE.MeshPhongMaterial({ opacity: 0.1, transparent: true }))
+    // Endpoint dots. The expanding rings are the animation; the dots keep the
+    // source and server locations readable between ring waves.
+    .pointsData(points)
+    .pointLat((d) => d.lat)
+    .pointLng((d) => d.lng)
+    .pointAltitude((d) => d.altitude)
+    .pointRadius((d) => d.radius)
+    .pointColor((d) => d.color)
+    .pointsMerge(false)
+    .pointsTransitionDuration(250)
     // Arcs (visitor → server, glowing dashed flow).
     .arcsData(arcs)
     .arcStartLat((d) => d.startLat)
@@ -50,9 +64,9 @@ export function initGlobe() {
     .ringLat((d) => d.lat)
     .ringLng((d) => d.lng)
     .ringColor((d) => d.color)
-    .ringMaxRadius(4)
-    .ringPropagationSpeed(2.5)
-    .ringRepeatPeriod(700);
+    .ringMaxRadius((d) => d.maxRadius)
+    .ringPropagationSpeed((d) => d.speed)
+    .ringRepeatPeriod((d) => d.repeat);
 
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(renderWidth, renderHeight);
@@ -88,29 +102,75 @@ export function initGlobe() {
   }
   if (typeof window !== 'undefined') animate();
 
-  // Dedupe key for rings so repeated polls don't pile up overlapping rings at
-  // the same coordinate.
-  const ringKey = (lat, lng) => `${lat.toFixed(3)},${lng.toFixed(3)}`;
-  const ringIndex = new Map();
+  const coordKey = (lat, lng) => `${lat.toFixed(3)},${lng.toFixed(3)}`;
+  const serverRingIndex = new Map();
+  const pointIndex = new Map();
 
-  function ensureRing(lat, lng, color) {
-    const key = ringKey(lat, lng);
-    if (ringIndex.has(key)) return;
-    const ring = { lat, lng, color, _kind: color === SERVER_RING_COLOR ? 'server' : 'visitor' };
-    ringIndex.set(key, ring);
-    rings.push(ring);
+  function refreshRings() {
+    Globe.ringsData(rings.slice());
+  }
 
-    // Cap visitor-side rings; the single server ring is sticky.
+  function upsertPoint(kind, lat, lng, color, radius, altitude) {
+    const key = `${kind}:${coordKey(lat, lng)}`;
+    const existing = pointIndex.get(key);
+    if (existing) {
+      existing.seenAt = Date.now();
+    } else {
+      const point = { kind, lat, lng, color, radius, altitude, seenAt: Date.now() };
+      pointIndex.set(key, point);
+      points.push(point);
+    }
+
+    points.sort((a, b) => {
+      if (a.kind !== b.kind) return a.kind === 'server' ? -1 : 1;
+      return b.seenAt - a.seenAt;
+    });
+    while (points.length > MAX_POINTS) {
+      const old = points.pop();
+      pointIndex.delete(`${old.kind}:${coordKey(old.lat, old.lng)}`);
+    }
+    Globe.pointsData(points.slice());
+  }
+
+  function addVisitorPulse(lat, lng) {
+    // Do not dedupe source pulses. Repeated visits from the same place should
+    // visibly restart the source animation instead of disappearing into an
+    // existing marker.
+    rings.push({
+      lat,
+      lng,
+      color: VISITOR_RING_COLOR,
+      maxRadius: 7,
+      speed: 3.2,
+      repeat: 360,
+      _kind: 'visitor',
+      _createdAt: Date.now(),
+    });
+
     let visitorCount = 0;
     for (let i = rings.length - 1; i >= 0; i--) {
       if (rings[i]._kind !== 'visitor') continue;
       visitorCount += 1;
-      if (visitorCount > MAX_VISITOR_RINGS) {
-        const old = rings.splice(i, 1)[0];
-        ringIndex.delete(ringKey(old.lat, old.lng));
-      }
+      if (visitorCount > MAX_VISITOR_PULSES) rings.splice(i, 1);
     }
-    Globe.ringsData(rings.slice());
+    refreshRings();
+  }
+
+  function ensureServerRing(lat, lng) {
+    const key = coordKey(lat, lng);
+    if (serverRingIndex.has(key)) return;
+    const ring = {
+      lat,
+      lng,
+      color: SERVER_RING_COLOR,
+      maxRadius: 5,
+      speed: 1.8,
+      repeat: 900,
+      _kind: 'server',
+    };
+    serverRingIndex.set(key, ring);
+    rings.push(ring);
+    refreshRings();
   }
 
   function addVisit(visit) {
@@ -126,13 +186,16 @@ export function initGlobe() {
     // in arcsData — so simply leaving it there gives an infinite flow.
     Globe.arcsData(arcs.slice());
 
-    ensureRing(visit.source.lat, visit.source.lng, VISITOR_RING_COLOR);
-    ensureRing(visit.server.lat, visit.server.lng, SERVER_RING_COLOR);
+    upsertPoint('visitor', visit.source.lat, visit.source.lng, SOURCE_POINT_COLOR, 0.85, 0.035);
+    upsertPoint('server', visit.server.lat, visit.server.lng, SERVER_POINT_COLOR, 0.55, 0.025);
+    addVisitorPulse(visit.source.lat, visit.source.lng);
+    ensureServerRing(visit.server.lat, visit.server.lng);
   }
 
   function setServerBeacon(server) {
     if (!server) return;
-    ensureRing(server.lat, server.lng, SERVER_RING_COLOR);
+    upsertPoint('server', server.lat, server.lng, SERVER_POINT_COLOR, 0.55, 0.025);
+    ensureServerRing(server.lat, server.lng);
   }
 
   return { addVisit, setServerBeacon };
