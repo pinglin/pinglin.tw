@@ -17,6 +17,7 @@ const SOURCE_POINT_COLOR = 'rgba(34, 211, 238, 0.98)';
 const SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.9)';
 const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
+const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
 
 export function initGlobe() {
   const arcs = [];
@@ -136,16 +137,29 @@ export function initGlobe() {
     // Do not dedupe source pulses. Repeated visits from the same place should
     // visibly restart the source animation instead of disappearing into an
     // existing marker.
-    rings.push({
-      lat,
-      lng,
-      color: VISITOR_RING_COLOR,
-      maxRadius: 7,
-      speed: 3.2,
-      repeat: 360,
-      _kind: 'visitor',
-      _createdAt: Date.now(),
-    });
+    const createdAt = Date.now();
+    rings.push(
+      {
+        lat,
+        lng,
+        color: VISITOR_CORE_RING_COLOR,
+        maxRadius: 3.8,
+        speed: 2.6,
+        repeat: 260,
+        _kind: 'visitor',
+        _createdAt: createdAt,
+      },
+      {
+        lat,
+        lng,
+        color: VISITOR_RING_COLOR,
+        maxRadius: 11,
+        speed: 4.6,
+        repeat: 320,
+        _kind: 'visitor',
+        _createdAt: createdAt,
+      },
+    );
 
     let visitorCount = 0;
     for (let i = rings.length - 1; i >= 0; i--) {
@@ -186,7 +200,7 @@ export function initGlobe() {
     // in arcsData — so simply leaving it there gives an infinite flow.
     Globe.arcsData(arcs.slice());
 
-    upsertPoint('visitor', visit.source.lat, visit.source.lng, SOURCE_POINT_COLOR, 0.85, 0.035);
+    upsertPoint('visitor', visit.source.lat, visit.source.lng, SOURCE_POINT_COLOR, 1.25, 0.045);
     upsertPoint('server', visit.server.lat, visit.server.lng, SERVER_POINT_COLOR, 0.55, 0.025);
     addVisitorPulse(visit.source.lat, visit.source.lng);
     ensureServerRing(visit.server.lat, visit.server.lng);
