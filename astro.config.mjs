@@ -78,7 +78,4 @@ export default defineConfig({
       'zh-tw': defaultLang,
     },
   },
-  build: {
-    sourcemap: true
-  }
 });
