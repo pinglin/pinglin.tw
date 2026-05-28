@@ -10,7 +10,7 @@ export interface Props {
   pubDate: Date;
 }
 
-const { url, title, pubDate } = Astro.props;
+const { url, title, image, pubDate } = Astro.props;
 const adjustedUrl = url.replace(/^\/blog\/zh-tw\//, '/zh-tw/blog/');
 
 const locale = Astro.currentLocale === 'zh-tw' ? 'zh-TW' : 'en-US';
@@ -25,9 +25,22 @@ if (Astro.currentLocale === 'zh-tw') {
 }
 ---
 
-<article>
-  <div class="flex justify-between items-center">
-    <p class="mr-4 w-2/3 text-lg break-words"><a href={adjustedUrl}>{title}</a></p>
-    <p class="ml-4">{formattedDate}</p>
-  </div>
+<article class="my-4">
+  <a
+    href={adjustedUrl}
+    class="block group rounded-lg p-2 -mx-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800/60"
+  >
+    <div class="flex justify-between items-center mb-3">
+      <p class="mr-4 text-lg break-words group-hover:underline">{title}</p>
+      <p class="ml-4 text-sm text-gray-500 dark:text-gray-400 flex-shrink-0 whitespace-nowrap">
+        {formattedDate}
+      </p>
+    </div>
+    <img
+      src={image.url}
+      alt={image.alt}
+      loading="lazy"
+      class="h-48 w-auto max-w-full rounded-md border border-gray-200 dark:border-gray-700"
+    />
+  </a>
 </article>

@@ -112,7 +112,10 @@
       function updateTocPosition() {
         const headerRect = topHeader.getBoundingClientRect();
         const topOffset = headerRect.height + 20;
-        const rightOffset = window.innerWidth - headerRect.right;
+        // Align with the header's inner content area (matching its `px-4`
+        // / 16 px padding), so the TOC button sits in line with the social
+        // icons rather than flush against the viewport edge.
+        const rightOffset = window.innerWidth - headerRect.right + 16;
 
         tocWrapperElement.style.transition = 'all 0.8s ease';
         tocWrapperElement.style.position = 'fixed';

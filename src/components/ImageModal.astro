@@ -33,7 +33,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('figure img').forEach((img) => {
+    document.querySelectorAll('figure img, .post-img').forEach((img) => {
       img.classList.add('cursor-zoom-in');
       img.addEventListener('click', () => {
         openImageModal(img.src, img.alt);
@@ -55,7 +55,7 @@
 
   // Re-attach listeners after Astro page transitions
   document.addEventListener('astro:page-load', () => {
-    document.querySelectorAll('figure img').forEach((img) => {
+    document.querySelectorAll('figure img, .post-img').forEach((img) => {
       img.classList.add('cursor-zoom-in');
       img.addEventListener('click', () => {
         openImageModal(img.src, img.alt);

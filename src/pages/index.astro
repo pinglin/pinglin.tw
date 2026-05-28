@@ -19,20 +19,92 @@ const t = useTranslations(
     </p>
     <div
       id="globe-container"
-      class="opacity-0 transition-opacity duration-1000"
+      class="relative opacity-0 transition-opacity duration-1000"
       style=`width:${config.globeViewWidth}px; height: ${config.globeViewHeight}px`
     >
       <div id="globe-point-cloud"></div>
+      <div
+        id="globe-status"
+        class="pointer-events-none absolute left-2 bottom-2 text-[11px] font-mono leading-tight text-gray-500 dark:text-gray-300/80"
+      >
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  type Visit = {
+    id: string;
+    ts: number;
+    source: { lat: number; lng: number; city?: string; country?: string };
+    server: { lat: number; lng: number; code: string; label: string };
+    demo?: boolean;
+  };
+
   document.addEventListener('DOMContentLoaded', async () => {
     const { initGlobe } = await import('@/scripts/three-globe/globe.js');
-    initGlobe();
+    const globe = initGlobe();
+
     setTimeout(() => {
       document.getElementById('globe-container')?.classList.remove('opacity-0');
     }, 100);
+
+    const status = document.getElementById('globe-status');
+    const seen = new Set<string>();
+    let lastTs = 0;
+
+    const renderStatus = (visit: Visit | null, server: Visit['server'] | null) => {
+      if (!status) return;
+      const here = visit
+        ? `${visit.source.city ?? '—'}${visit.source.country ? `, ${visit.source.country}` : ''}`
+        : '—';
+      const there = server ? `${server.label} (${server.code})` : '—';
+      status.textContent = `→ from ${here}\n→ to ${there}`;
+      status.style.whiteSpace = 'pre';
+    };
+
+    const ingest = (visits: Visit[]) => {
+      for (const v of visits) {
+        if (seen.has(v.id)) continue;
+        seen.add(v.id);
+        lastTs = Math.max(lastTs, v.ts);
+        globe.addVisit(v);
+      }
+    };
+
+    try {
+      const ownRes = await fetch('/api/visit.json', { method: 'POST' });
+      if (ownRes.ok) {
+        const { visit, server } = (await ownRes.json()) as {
+          visit: Visit;
+          server: Visit['server'];
+        };
+        globe.setServerBeacon(server);
+        ingest([visit]);
+        renderStatus(visit, server);
+      }
+    } catch {
+      /* network errors are non-fatal — the globe still spins */
+    }
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/visit.json?since=${lastTs}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const { visits, server } = (await res.json()) as {
+          visits: Visit[];
+          server: Visit['server'];
+        };
+        if (server) globe.setServerBeacon(server);
+        ingest(visits);
+      } catch {
+        /* swallow */
+      }
+    };
+
+    setInterval(poll, 4000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') poll();
+    });
   });
 </script>
