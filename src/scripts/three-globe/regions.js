@@ -1,4 +1,4 @@
-// Vercel edge region code -> { lat, lng, label } for the closest data center.
+// Vercel region code -> { lat, lng, label } for the closest data center.
 // Source: https://vercel.com/docs/edge-network/regions
 export const VERCEL_REGIONS = {
   arn1: { lat: 59.3293, lng: 18.0686, label: 'Stockholm' },
@@ -26,7 +26,16 @@ export const DEFAULT_REGION = { code: 'iad1', ...VERCEL_REGIONS.iad1 };
 
 export function regionFromVercelId(vercelId) {
   if (!vercelId) return null;
-  const code = vercelId.split('::')[0]?.split(':')[0]?.trim().toLowerCase();
+  const parts = vercelId.split('::');
+  const regionCodes = parts
+    .slice(0, -1)
+    .map((part) => part.split(':')[0]?.trim().toLowerCase())
+    .filter(Boolean);
+  // x-vercel-id can look like "lhr1::iad1::request-id": the first region is
+  // the ingress edge, and the last region before the request id is where the
+  // function executed. That execution region is the server endpoint for the
+  // traffic arc.
+  const code = regionCodes.at(-1) ?? parts[0]?.split(':')[0]?.trim().toLowerCase();
   if (!code) return null;
   const geo = VERCEL_REGIONS[code];
   return geo ? { code, ...geo } : null;
