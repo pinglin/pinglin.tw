@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="680" viewBox="0 0 1100 680">
+<rect width="100%" height="100%" fill="#1a1a2e"/>
+<style>
+text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #ffffff; }
+.title { font-size: 28px; font-weight: 700; }
+.subtitle { font-size: 15px; fill: #cccccc; }
+.axis { stroke: #444444; stroke-width: 1.2; }
+.grid { stroke: #888888; stroke-opacity: 0.15; stroke-width: 1; }
+.tick { font-size: 12px; fill: #cccccc; }
+.legend { font-size: 14px; }
+</style>
+<text class="title" x="92" y="42">Autofill Production CPU Model</text>
+<text class="subtitle" x="92" y="67">Log-log plot; component weights are tunable model inputs. Payload=512 bytes/cell</text>
+<line class="grid" x1="92.0" y1="594.0" x2="1056.0" y2="594.0"/>
+<text class="tick" x="80.0" y="598.0" text-anchor="end">10M</text>
+<line class="grid" x1="92.0" y1="468.5" x2="1056.0" y2="468.5"/>
+<text class="tick" x="80.0" y="472.5" text-anchor="end">100M</text>
+<line class="grid" x1="92.0" y1="343.0" x2="1056.0" y2="343.0"/>
+<text class="tick" x="80.0" y="347.0" text-anchor="end">1B</text>
+<line class="grid" x1="92.0" y1="217.5" x2="1056.0" y2="217.5"/>
+<text class="tick" x="80.0" y="221.5" text-anchor="end">10B</text>
+<line class="grid" x1="92.0" y1="92.0" x2="1056.0" y2="92.0"/>
+<text class="tick" x="80.0" y="96.0" text-anchor="end">100B</text>
+<line class="grid" x1="92.0" y1="92.0" x2="92.0" y2="594.0"/>
+<text class="tick" x="92.0" y="622.0" text-anchor="middle">100K</text>
+<line class="grid" x1="237.1" y1="92.0" x2="237.1" y2="594.0"/>
+<text class="tick" x="237.1" y="622.0" text-anchor="middle">200K</text>
+<line class="grid" x1="428.9" y1="92.0" x2="428.9" y2="594.0"/>
+<text class="tick" x="428.9" y="622.0" text-anchor="middle">500K</text>
+<line class="grid" x1="513.8" y1="92.0" x2="513.8" y2="594.0"/>
+<text class="tick" x="513.8" y="622.0" text-anchor="middle">750K</text>
+<line class="grid" x1="574.0" y1="92.0" x2="574.0" y2="594.0"/>
+<text class="tick" x="574.0" y="622.0" text-anchor="middle">1M</text>
+<line class="grid" x1="719.1" y1="92.0" x2="719.1" y2="594.0"/>
+<text class="tick" x="719.1" y="622.0" text-anchor="middle">2M</text>
+<line class="grid" x1="804.0" y1="92.0" x2="804.0" y2="594.0"/>
+<text class="tick" x="804.0" y="622.0" text-anchor="middle">3M</text>
+<line class="grid" x1="910.9" y1="92.0" x2="910.9" y2="594.0"/>
+<text class="tick" x="910.9" y="622.0" text-anchor="middle">5M</text>
+<line class="grid" x1="995.8" y1="92.0" x2="995.8" y2="594.0"/>
+<text class="tick" x="995.8" y="622.0" text-anchor="middle">7.5M</text>
+<line class="grid" x1="1056.0" y1="92.0" x2="1056.0" y2="594.0"/>
+<text class="tick" x="1056.0" y="622.0" text-anchor="middle">10M</text>
+<line class="axis" x1="92.0" y1="594.0" x2="1056.0" y2="594.0"/>
+<line class="axis" x1="92.0" y1="92.0" x2="92.0" y2="594.0"/>
+<text class="tick" x="574.0" y="658.0" text-anchor="middle">Cells</text>
+<text class="tick" transform="translate(16 343.0) rotate(-90)" text-anchor="middle">Modeled CPU Units (Log Scale)</text>
+<polyline fill="none" stroke="#F5A623" stroke-width="3" points="92.0,459.1 237.1,421.3 428.9,371.4 513.8,349.3 574.0,333.6 719.1,295.8 804.0,273.7 910.9,245.9 995.8,223.8 1056.0,208.1"/>
+<circle cx="92.0" cy="459.1" r="4.5" fill="#F5A623"/>
+<circle cx="237.1" cy="421.3" r="4.5" fill="#F5A623"/>
+<circle cx="428.9" cy="371.4" r="4.5" fill="#F5A623"/>
+<circle cx="513.8" cy="349.3" r="4.5" fill="#F5A623"/>
+<circle cx="574.0" cy="333.6" r="4.5" fill="#F5A623"/>
+<circle cx="719.1" cy="295.8" r="4.5" fill="#F5A623"/>
+<circle cx="804.0" cy="273.7" r="4.5" fill="#F5A623"/>
+<circle cx="910.9" cy="245.9" r="4.5" fill="#F5A623"/>
+<circle cx="995.8" cy="223.8" r="4.5" fill="#F5A623"/>
+<circle cx="1056.0" cy="208.1" r="4.5" fill="#F5A623"/>
+<polyline fill="none" stroke="#64C4CF" stroke-width="3" points="92.0,491.1 237.1,453.6 428.9,403.8 513.8,381.8 574.0,366.1 719.1,328.3 804.0,306.2 910.9,278.4 995.8,256.3 1056.0,240.6"/>
+<circle cx="92.0" cy="491.1" r="4.5" fill="#64C4CF"/>
+<circle cx="237.1" cy="453.6" r="4.5" fill="#64C4CF"/>
+<circle cx="428.9" cy="403.8" r="4.5" fill="#64C4CF"/>
+<circle cx="513.8" cy="381.8" r="4.5" fill="#64C4CF"/>
+<circle cx="574.0" cy="366.1" r="4.5" fill="#64C4CF"/>
+<circle cx="719.1" cy="328.3" r="4.5" fill="#64C4CF"/>
+<circle cx="804.0" cy="306.2" r="4.5" fill="#64C4CF"/>
+<circle cx="910.9" cy="278.4" r="4.5" fill="#64C4CF"/>
+<circle cx="995.8" cy="256.3" r="4.5" fill="#64C4CF"/>
+<circle cx="1056.0" cy="240.6" r="4.5" fill="#64C4CF"/>
+<rect x="736.0" y="114.0" width="296" height="76" rx="6" fill="#1a1a2e" stroke="#444444"/>
+<line x1="754.0" y1="138.0" x2="788.0" y2="138.0" stroke="#F5A623" stroke-width="3"/>
+<text class="legend" x="800.0" y="143.0">Temporal selector simulation</text>
+<line x1="754.0" y1="168.0" x2="788.0" y2="168.0" stroke="#64C4CF" stroke-width="3"/>
+<text class="legend" x="800.0" y="173.0">Autofill pool simulation</text>
+</svg>

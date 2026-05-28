@@ -5,3 +5,13 @@
 .markdown-content a {
   @apply text-info hover:text-info no-underline font-normal;
 }
+
+.markdown-content :not(pre) > code {
+  border-radius: 0.1875rem;
+  padding: 0.1rem 0.25rem;
+}
+
+.markdown-content :not(pre) > code::before,
+.markdown-content :not(pre) > code::after {
+  content: none;
+}

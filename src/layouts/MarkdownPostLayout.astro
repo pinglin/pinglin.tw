@@ -27,4 +27,336 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
   <div class="markdown-content">
     <slot />
   </div>
+
+  <div
+    id="mermaid-modal"
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+    aria-hidden="true"
+    role="dialog"
+  >
+    <div class="absolute top-4 right-4 flex items-center gap-2 z-10">
+      <div id="mermaid-modal-toolbar" class="mermaid-toolbar mermaid-toolbar--modal">
+        <button type="button" data-act="zoom-in"  aria-label="Zoom in">+</button>
+        <button type="button" data-act="zoom-out" aria-label="Zoom out">−</button>
+        <button type="button" data-act="reset"    aria-label="Reset">⟲</button>
+      </div>
+      <button
+        id="mermaid-modal-close"
+        class="text-white/80 hover:text-white text-3xl leading-none font-light"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+    <div
+      id="mermaid-modal-content"
+      class="w-[95vw] h-[90vh] bg-white rounded-lg p-2 overflow-hidden flex"
+    ></div>
+  </div>
 </BaseLayout>
+
+<style is:global>
+  .markdown-content .mermaid {
+    position: relative;
+    /* Subtle 50%-grey tint at low opacity — adapts to either light or dark
+       page background: a faint darkening on white pages, a faint lightening on
+       dark pages. Gives the chart card-like presence without a hard border. */
+    background: rgba(127, 127, 127, 0.08) !important;
+    border: none;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+  /* Mermaid scopes its SVG background by id (`#mermaid-X { background-color: ... }`),
+     which has higher specificity than any container rule. Force-clear it on the
+     SVG itself, plus the optional <rect class="background"> some flowchart
+     renderers emit, so the chart truly blends into the page. */
+  .markdown-content .mermaid svg {
+    display: block;
+    width: 100%;
+    height: 440px;
+    max-width: none;
+    max-height: none;
+    cursor: grab;
+    user-select: none;
+    background-color: transparent !important;
+  }
+  /* Per-chart height overrides. The first chart (3-node naïve-Temporal
+     diagram) is sparse; a shorter container keeps its nodes from being
+     oversized when fit to the viewport. The second chart (architecture,
+     6 nodes) is dense, so a taller container keeps labels readable. The
+     third chart (dirty-flag state diagram) has only 3 states + a loop-back,
+     so it stays compact. */
+  .markdown-content .mermaid[data-mermaid-index="0"] svg {
+    height: 260px;
+  }
+  .markdown-content .mermaid[data-mermaid-index="1"] svg {
+    height: 600px;
+  }
+  .markdown-content .mermaid[data-mermaid-index="2"] svg {
+    height: 300px;
+  }
+  .markdown-content .mermaid svg > rect:first-of-type,
+  .markdown-content .mermaid svg .background {
+    fill: transparent !important;
+  }
+  /* Edge-label pill backgrounds. Mermaid emits these as either an SVG <rect>
+     or an HTML <div> (depending on flowchart renderer mode); clear both. */
+  .markdown-content .mermaid svg .edgeLabel,
+  .markdown-content .mermaid svg .edgeLabel rect,
+  .markdown-content .mermaid svg .edgeLabel foreignObject,
+  .markdown-content .mermaid svg .edgeLabel .labelBkg {
+    fill: transparent !important;
+    background-color: transparent !important;
+  }
+  .markdown-content .mermaid svg .edgeLabel foreignObject div,
+  .markdown-content .mermaid svg .edgeLabel foreignObject span {
+    background-color: transparent !important;
+  }
+  /* Stop edge labels from wrapping mid-phrase. Mermaid sets a narrow
+     foreignObject width (~200 px) which forces long phrases like "schedule
+     one activity per cell" to break in the middle. Letting each line render
+     on its own line (split only by explicit <br/>) is much cleaner. */
+  .markdown-content .mermaid svg foreignObject {
+    overflow: visible !important;
+  }
+  .markdown-content .mermaid svg .edgeLabel foreignObject > div,
+  .markdown-content .mermaid svg .edgeLabel foreignObject > div > * {
+    white-space: nowrap !important;
+  }
+  /* Mermaid's HTML labels (rendered inside <foreignObject>) inherit the
+     surrounding article's font-size, which is much larger than the chart
+     wants. Pin them to a chart-appropriate size. The themeVariables.fontSize
+     handles SVG <text> elements; this rule handles the HTML side. */
+  .markdown-content .mermaid svg foreignObject,
+  .markdown-content .mermaid svg foreignObject * {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+  .markdown-content .mermaid svg:active {
+    cursor: grabbing;
+  }
+  .mermaid-toolbar {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.125rem;
+    z-index: 5;
+    backdrop-filter: blur(2px);
+  }
+  .mermaid-toolbar--modal {
+    position: static;
+    top: auto;
+    right: auto;
+  }
+  .mermaid-toolbar button {
+    background: transparent;
+    border: 0;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    color: #374151;
+    font-size: 0.875rem;
+    line-height: 1;
+    border-radius: 0.25rem;
+  }
+  .mermaid-toolbar button:hover {
+    background: #f3f4f6;
+  }
+  #mermaid-modal.is-open {
+    display: flex;
+  }
+  #mermaid-modal-content svg {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    cursor: grab;
+    user-select: none;
+  }
+  #mermaid-modal-content svg:active {
+    cursor: grabbing;
+  }
+</style>
+
+<script>
+  import svgPanZoom from 'svg-pan-zoom';
+
+  // Make every Mermaid chart an interactive widget: pan via click-drag,
+  // zoom via mouse wheel, plus a small toolbar with explicit controls and an
+  // expand button that opens the chart in a fullscreen modal (which is also
+  // pan/zoom-enabled).
+  //
+  // Mermaid renders its SVGs asynchronously after page load, so we observe
+  // each `.mermaid` container for the SVG insertion and initialise the widget
+  // once it appears. Idempotent — initialised containers are marked so we
+  // never wire one up twice.
+
+  type PanZoom = ReturnType<typeof svgPanZoom>;
+
+  const inlineInstances = new WeakMap<SVGElement, PanZoom>();
+  let modalInstance: PanZoom | null = null;
+
+  const modal = document.getElementById('mermaid-modal');
+  const modalContent = document.getElementById('mermaid-modal-content');
+  const modalClose = document.getElementById('mermaid-modal-close');
+  const modalToolbar = document.getElementById('mermaid-modal-toolbar');
+
+  // Mermaid embeds a <style> inside each SVG, scoped by the SVG's id
+  // (e.g. `#mermaid-1234 .node rect { fill: ... }`). Naively cloning + renaming
+  // the id leaves those style rules pointing at the *old* id, which kills
+  // every theme rule and the nodes render as solid-black SVG defaults.
+  // Rewriting both the id and its references in the inline <style> keeps the
+  // theme intact in the modal copy.
+  const cloneMermaidSvg = (sourceSvg: SVGElement): SVGElement => {
+    const clone = sourceSvg.cloneNode(true) as SVGElement;
+    const oldId = sourceSvg.id;
+    if (oldId) {
+      const newId = `${oldId}-modal`;
+      clone.id = newId;
+      const oldRef = `#${oldId}`;
+      const newRef = `#${newId}`;
+      clone.querySelectorAll('style').forEach((s) => {
+        if (s.textContent) s.textContent = s.textContent.split(oldRef).join(newRef);
+      });
+    }
+    clone.removeAttribute('width');
+    clone.removeAttribute('height');
+    clone.removeAttribute('style');
+    return clone;
+  };
+
+  const openModal = (sourceSvg: SVGElement) => {
+    if (!modal || !modalContent) return;
+    modalContent.innerHTML = '';
+    const clone = cloneMermaidSvg(sourceSvg);
+    modalContent.appendChild(clone);
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    // Defer pan-zoom init one frame so the SVG's measured size in the modal
+    // is correct (otherwise fit/center can latch onto a stale 0×0 layout).
+    requestAnimationFrame(() => {
+      modalInstance = svgPanZoom(clone, {
+        zoomEnabled: true,
+        controlIconsEnabled: false,
+        fit: true,
+        center: true,
+        minZoom: 0.2,
+        maxZoom: 10,
+        contain: false,
+      });
+      modalInstance.center();
+    });
+  };
+
+  const closeModal = () => {
+    if (!modal || !modalContent) return;
+    if (modalInstance) {
+      modalInstance.destroy();
+      modalInstance = null;
+    }
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    modalContent.innerHTML = '';
+  };
+
+  const initWidget = (container: HTMLElement) => {
+    if (container.dataset.widget === 'ready') return;
+    const svg = container.querySelector<SVGElement>('svg');
+    if (!svg) return;
+
+    container.dataset.widget = 'ready';
+    // svg-pan-zoom needs the svg to have width/height set. Mermaid often
+    // emits style="max-width:..." which fights with us; strip it.
+    svg.removeAttribute('style');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+
+    const instance = svgPanZoom(svg, {
+      zoomEnabled: true,
+      controlIconsEnabled: false,
+      fit: true,
+      center: true,
+      minZoom: 0.2,
+      maxZoom: 10,
+      contain: false,
+    });
+    instance.center();
+    inlineInstances.set(svg, instance);
+
+    // Toolbar
+    const toolbar = document.createElement('div');
+    toolbar.className = 'mermaid-toolbar';
+    toolbar.innerHTML = `
+      <button type="button" data-act="zoom-in"  aria-label="Zoom in">+</button>
+      <button type="button" data-act="zoom-out" aria-label="Zoom out">−</button>
+      <button type="button" data-act="reset"    aria-label="Reset">⟲</button>
+      <button type="button" data-act="expand"   aria-label="Expand">⤢</button>
+    `;
+    toolbar.addEventListener('click', (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>('button[data-act]');
+      if (!btn) return;
+      e.stopPropagation();
+      switch (btn.dataset.act) {
+        case 'zoom-in':  instance.zoomIn(); break;
+        case 'zoom-out': instance.zoomOut(); break;
+        case 'reset':    instance.resetZoom(); instance.center(); instance.fit(); break;
+        case 'expand':   openModal(svg); break;
+      }
+    });
+    container.appendChild(toolbar);
+  };
+
+  // Tag each chart with its index so per-chart CSS overrides can target it.
+  document
+    .querySelectorAll<HTMLElement>('.markdown-content .mermaid')
+    .forEach((c, i) => {
+      c.dataset.mermaidIndex = String(i);
+    });
+
+  // Initial pass — handle SVGs already in the DOM by the time this runs.
+  document.querySelectorAll<HTMLElement>('.markdown-content .mermaid').forEach(initWidget);
+
+  // Late pass — Mermaid renders post-load; observe each container for the SVG.
+  const observer = new MutationObserver((records) => {
+    for (const r of records) {
+      const target = r.target as HTMLElement;
+      if (target.classList?.contains('mermaid')) initWidget(target);
+    }
+  });
+  document.querySelectorAll<HTMLElement>('.markdown-content .mermaid').forEach((c) => {
+    observer.observe(c, { childList: true, subtree: true });
+  });
+
+  // Modal close handlers
+  if (modal && modalClose) {
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+    });
+  }
+
+  // Modal toolbar handlers (one wiring; routes to whatever modalInstance is current)
+  if (modalToolbar) {
+    modalToolbar.addEventListener('click', (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>('button[data-act]');
+      if (!btn || !modalInstance) return;
+      e.stopPropagation();
+      switch (btn.dataset.act) {
+        case 'zoom-in':  modalInstance.zoomIn(); break;
+        case 'zoom-out': modalInstance.zoomOut(); break;
+        case 'reset':    modalInstance.resetZoom(); modalInstance.center(); modalInstance.fit(); modalInstance.zoomBy(0.8); modalInstance.center(); break;
+      }
+    });
+  }
+</script>
