@@ -26,11 +26,17 @@ const t = useTranslations(Astro.currentLocale as keyof typeof languages);
 </BaseLayout>
 
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
+  const initHomeGlobe = async () => {
     const { initGlobe } = await import('@/scripts/three-globe/globe.js');
     initGlobe();
     setTimeout(() => {
       document.getElementById('globe-container')?.classList.remove('opacity-0');
     }, 100);
-  });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHomeGlobe, { once: true });
+  } else {
+    initHomeGlobe();
+  }
 </script>

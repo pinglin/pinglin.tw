@@ -41,7 +41,7 @@ const t = useTranslations(
     demo?: boolean;
   };
 
-  document.addEventListener('DOMContentLoaded', async () => {
+  const initHomeGlobe = async () => {
     const { initGlobe } = await import('@/scripts/three-globe/globe.js');
     const globe = initGlobe();
 
@@ -106,5 +106,11 @@ const t = useTranslations(
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') poll();
     });
-  });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHomeGlobe, { once: true });
+  } else {
+    initHomeGlobe();
+  }
 </script>
