@@ -23,6 +23,13 @@ tags: ['工程', '架構']
 
 換句話說，Collection 做的事，是把「一堆檔案和連結」變成「一個我真的可以發問的資料庫」。
 
+這也是為什麼我們不把 Collection 看成「AI spreadsheet」而已。它背後其實有幾個更核心的產品和架構判斷：
+
+- **Table 是跨來源工作的自然介面**：當資料來自很多地方，又需要比較、萃取、校正和追蹤狀態時，table 比 chat 或 search 更接近人真正工作的方式。
+- **可信度要落在 schema 和 execution 裡**：如果某個欄位不能允許有 AI 幻覺，這件事不能只寫在 prompt 裡。欄位定義、欄位狀態和 UI 都要能表達「這裡沒有足夠證據」，而不是讓模型硬生出一個答案。
+- **同一個 primitive 可以服務 extraction，也可以服務 generation**：做資料整理時，Collection 把分散的 context 收斂成可靠欄位；做內容生成時，同一組欄位和 DAG 則可以約束輸出的風格、角色和事實一致性。用途不同，但底層需要的是同一個 engine。
+- **Knowledge work 會同時處理多種輸入與輸出 modality**：文件、圖片、影片、音訊、URL 和 feeds 都可能是輸入；輸出也不會永遠只有文字。Collection 要提供的是能承載這些 modality 的共同工作介面。
+
 所以以產品概念來說，Collection 有四個核心設計重點：
 
 - **Structured context**：把檔案、URL、live feeds、錄音等非結構化輸入，整理成可以查詢的欄位。
@@ -134,7 +141,7 @@ flowchart TD
   C -.->|"Finalize · dirty flag set<br/>(re-queue · attempts++)"| Q
 ```
 
-Dirty flag 把問題從「取消已經過時的 work」，轉成「確保過時的結果不會被寫回」。對 LLM-backed cell computation 來說，這才是比較合理的保證：retries、reclaims 和 dirty requeues 都可能讓同一個 work 再跑一次，但使用者最後看到的 cell 會收斂到最新 signal，而 compare-and-swap guard 會防止舊 claim 覆蓋新結果。三個 states、三條 edges，就足夠表達整個 dirty-flag 機制；其他 cancel signals、janitor reclaim、transient retries，也都可以掛在同一個 shape 上。
+Dirty flag 把問題從「取消已經過時的 work」，轉成「確保過時的結果不會被寫回」。對 LLM-backed cell computation 來說，這才是比較合理的保證：retries、reclaims 和 dirty requeues 都可能讓同一個 work 再跑一次，但使用者最後看到的 cell 會收斂到最新 signal，而 compare-and-swap guard 會防止舊 claim 覆蓋新結果。三個 states、三條 edges，就足夠表達整個 dirty-flag 機制；其他 cancel signals、janitor reclaim、transient retries，也都可以掛在同一個狀態模型上。
 
 ### 兩個 binaries，各自擴展
 

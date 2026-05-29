@@ -30,6 +30,18 @@ competitor URLs becomes a market-watch sheet that re-grades when pages change; a
 and decision; a research corpus — files, links, and live feeds intermixed — becomes a knowledge base your downstream agents can reason over. A
 Collection is what turns "a folder of stuff and a stack of links" into "a database I can ask questions of".
 
+That's also why we don't think of Collections as "AI spreadsheets" alone. That product choice reflects a few deeper architecture bets:
+
+- **The table is the natural interface for cross-source work** — when data comes from many places and the job is comparison, extraction, correction,
+  and state tracking, a table is closer to how people actually work than chat or search.
+- **Trust has to be enforced by schema and execution** — if a cell should not be guessed, that cannot live only in the prompt. The column definition,
+  cell state, and UI all need a way to represent "there is not enough evidence" instead of letting the model force an answer.
+- **The same primitive serves extraction and generation** — when organizing data, Collection compresses scattered context into reliable fields; when
+  generating content, the same fields and DAG constrain style, role, and factual consistency. The use case is different, but the underlying engine is
+  the same.
+- **Knowledge work is becoming multi-modal on both sides** — documents, images, videos, audio, URLs, and feeds all become inputs; outputs will not
+  stay text-only. Collection needs to be the shared interface that can carry those modalities.
+
 So the Collection product concept rests on four pillars:
 
 - **Structured context** — Collections turn files, URLs, live feeds, recordings, and other unstructured inputs into queryable fields.
@@ -143,7 +155,7 @@ That's it for the topology.
 
 ## Three decisions that did most of the work
 
-The shape above is the obvious half. The non-obvious half is three smaller decisions that paid for themselves daily.
+The architecture above is the obvious half. The non-obvious half is three smaller decisions that paid for themselves daily.
 
 ### Separate state columns, not overloaded ones
 
@@ -184,7 +196,7 @@ flowchart TD
 Dirty flags shift the guarantee from "cancel obsolete work" to "obsolete work cannot win". That is the right guarantee for LLM-backed cell
 computation: retries, reclaims, and dirty requeues can run the work again, but the visible cell converges to the latest signal, and the
 compare-and-swap guard prevents an old claim from overwriting a fresher one. Three states and three edges express the entire dirty-flag mechanic; the
-rest of the state machine (cancel signals, janitor reclaim, transient retries) hangs off this same shape.
+rest of the state machine (cancel signals, janitor reclaim, transient retries) hangs off this same state model.
 
 ### Two binaries, decoupled
 
@@ -304,7 +316,7 @@ frontend doesn't need to know any of the above exists.
 The current architecture's design target is the 100K–10M-cell range per collection, with the bottleneck shifting from orchestration overhead to LLM
 throughput, queue-claim contention, and completion aggregation. The next walls — partitioned column workflows for very wide columns, dedicated task
 queues per collection, true batch LLM inference, per-cell version vectors so we don't recompute cells whose upstream values haven't changed,
-hash-partitioning the cell table at very large scale — are all written down. None are urgent. All follow the same shape of question: at the next order
+hash-partitioning the cell table at very large scale — are all written down. None are urgent. They all come from the same question: at the next order
 of magnitude, where does this design break first?
 
 ## Lessons
