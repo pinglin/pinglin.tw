@@ -16,15 +16,15 @@ const MAX_POINTS = MAX_HISTORY_ARCS * 2 + MAX_ARCS * 2 + 8;
 const ARC_COLOR_GRADIENT = ['rgba(56,189,248,0.95)', 'rgba(244,255,255,1)', 'rgba(56,189,248,0.95)'];
 const SOURCE_POINT_COLOR = 'rgba(34, 211, 238, 0.98)';
 const SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.9)';
-const HISTORY_ARC_COLOR = ['rgba(148,163,184,0.2)', 'rgba(203,213,225,0.4)', 'rgba(148,163,184,0.2)'];
-const HISTORY_SOURCE_POINT_COLOR = 'rgba(148, 163, 184, 0.55)';
-const HISTORY_SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.38)';
+const HISTORY_ARC_COLOR = ['rgba(14,165,233,0.38)', 'rgba(250,204,21,0.58)', 'rgba(244,114,182,0.38)'];
+const HISTORY_SOURCE_POINT_COLOR = 'rgba(14, 165, 233, 0.88)';
+const HISTORY_SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.72)';
 const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
 const GLOBE_OCCLUSION_MATERIAL = new THREE.MeshPhongMaterial({
-  color: 0x0f172a,
-  opacity: 0.32,
+  color: 0xf8fafc,
+  opacity: 0.42,
   transparent: true,
   depthTest: true,
   depthWrite: true,
@@ -63,7 +63,7 @@ function hashSeed(value) {
 function offsetHistoricalLocation(lat, lng, id, role) {
   const seed = hashSeed(`${id}:${role}`);
   const angle = ((seed % 360) * Math.PI) / 180;
-  const radius = 0.16 + (((seed >>> 8) % 100) / 100) * 0.42;
+  const radius = 1.15 + (((seed >>> 8) % 100) / 100) * 2.35;
   const lngScale = Math.max(0.35, Math.cos((lat * Math.PI) / 180));
 
   return {
@@ -385,8 +385,8 @@ export function initGlobe() {
         endLat: serverPoint.lat,
         endLng: serverPoint.lng,
         color: HISTORY_ARC_COLOR,
-        stroke: 0.12 + weight * 0.22,
-        altitudeScale: 0.28,
+        stroke: 0.2 + weight * 0.26,
+        altitudeScale: 0.32,
         dashLength: 1,
         dashGap: 0,
         dashInitialGap: 0,
@@ -397,8 +397,8 @@ export function initGlobe() {
         sourcePoint.lat,
         sourcePoint.lng,
         HISTORY_SOURCE_POINT_COLOR,
-        0.55 + weight * 0.45,
-        0.018,
+        0.95 + weight * 0.55,
+        0.038,
         route,
         `history-source:${item.id}`,
       );
@@ -407,8 +407,8 @@ export function initGlobe() {
         serverPoint.lat,
         serverPoint.lng,
         HISTORY_SERVER_POINT_COLOR,
-        0.35 + weight * 0.35,
-        0.016,
+        0.7 + weight * 0.45,
+        0.032,
         route,
         `history-server:${item.id}`,
       );
