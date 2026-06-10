@@ -15,6 +15,7 @@ interface Props {
 }
 
 const { pageTitle: title, description, image } = Astro.props;
+const lang = Astro.currentLocale ?? 'en';
 ---
 
 <script is:inline>
@@ -40,7 +41,7 @@ const { pageTitle: title, description, image } = Astro.props;
   document.documentElement.setAttribute('data-theme', getTheme());
 </script>
 
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />

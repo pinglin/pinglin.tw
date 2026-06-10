@@ -1,8 +1,11 @@
 import type { APIRoute } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ url }) => {
   const query = url.searchParams.get('q') || '';
+  const lang = url.searchParams.get('lang') || 'en';
 
   if (query.length < 1) {
     return new Response(JSON.stringify({ results: [] }), {
@@ -21,7 +24,7 @@ export const GET: APIRoute = async ({ url }) => {
       const title = post.data.title.toLowerCase();
       const body = post.body.toLowerCase();
 
-      return title.includes(searchText) || body.includes(searchText);
+      return post.data.lang === lang && (title.includes(searchText) || body.includes(searchText));
     })
     .map((post: CollectionEntry<'blog'>) => ({
       title: post.data.title,

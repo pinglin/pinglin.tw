@@ -67,25 +67,34 @@
   const searchModal = document.getElementById('search-modal');
   const searchInput = document.getElementById('search-input');
   const closeSearchButton = document.getElementById('close-search');
+  const searchResults = document.getElementById('search-results');
+
+  function openSearch() {
+    searchModal?.classList.remove('hidden');
+    searchModal?.classList.add('flex');
+    if (searchInput instanceof HTMLInputElement) {
+      window.requestAnimationFrame(() => searchInput.focus());
+    }
+  }
+
+  function closeSearch() {
+    searchModal?.classList.remove('flex');
+    searchModal?.classList.add('hidden');
+  }
 
   document.addEventListener('keydown', (e) => {
-    const userAgent = navigator.userAgent;
-    if ((userAgent?.includes('Mac') ? e.metaKey : e.ctrlKey) && e.key === 'k') {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
-      searchModal?.classList.toggle('flex');
-      searchModal?.classList.toggle('hidden');
-      searchInput?.focus();
+      openSearch();
     }
     if (e.key === 'Escape' && !searchModal?.classList.contains('hidden')) {
-      searchModal?.classList.toggle('flex');
-      searchModal?.classList.toggle('hidden');
+      closeSearch();
     }
   });
 
   searchModal?.addEventListener('click', (e) => {
     if (e.target === searchModal) {
-      searchModal?.classList.toggle('flex');
-      searchModal?.classList.toggle('hidden');
+      closeSearch();
     }
   });
 
@@ -96,18 +105,14 @@
       if (query.length >= 1) {
         const results = await performSearch(query);
         displayResults(results);
-      } else {
-        const resultsContainer = document.getElementById('search-results');
-        if (resultsContainer) {
-          resultsContainer.innerHTML = '';
-        }
+      } else if (searchResults) {
+        searchResults.innerHTML = '';
       }
     }, 300);
   });
 
   closeSearchButton?.addEventListener('click', () => {
-    searchModal?.classList.remove('flex');
-    searchModal?.classList.add('hidden');
+    closeSearch();
   });
 
   const clearSearchButton = document.getElementById('clear-search');
@@ -116,10 +121,7 @@
     if (searchInput instanceof HTMLInputElement) {
       searchInput.value = '';
       searchInput.focus();
-      const resultsContainer = document.getElementById('search-results');
-      if (resultsContainer) {
-        resultsContainer.innerHTML = '';
-      }
+      if (searchResults) searchResults.innerHTML = '';
     }
   });
 </script>
