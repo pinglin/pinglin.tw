@@ -41,13 +41,9 @@ const t = useTranslations(
     demo?: boolean;
   };
 
-  type HistoricalTraffic = {
-    id: string;
-    count: number;
-    firstTs: number;
-    lastTs: number;
-    source: Visit['source'];
-    server: Visit['server'];
+  type HistoricalVisit = Visit & {
+    legacyCount?: number;
+    legacyFirstTs?: number;
   };
 
   const VISIT_HISTORY_MS = 24 * 60 * 60 * 1000;
@@ -92,7 +88,7 @@ const t = useTranslations(
         if (!res.ok) return;
         const { visits, history, server } = (await res.json()) as {
           visits: Visit[];
-          history?: HistoricalTraffic[];
+          history?: HistoricalVisit[];
           server: Visit['server'];
         };
         if (server) globe.setServerBeacon(server);

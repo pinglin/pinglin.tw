@@ -8,9 +8,9 @@ export const { globeViewWidth: renderWidth, globeViewHeight: renderHeight } = co
 
 const ARC_FLIGHT_MS = 2200;
 const MAX_ARCS = 24;
-const MAX_HISTORY_ARCS = 500;
+const MAX_HISTORY_ARCS = Number.POSITIVE_INFINITY;
 const MAX_VISITOR_PULSES = 32;
-const MAX_POINTS = 256;
+const MAX_POINTS = MAX_HISTORY_ARCS * 2 + MAX_ARCS * 2 + 8;
 
 // Bright cyan → soft white gradient for the glowing trail.
 const ARC_COLOR_GRADIENT = ['rgba(56,189,248,0.95)', 'rgba(244,255,255,1)', 'rgba(56,189,248,0.95)'];
@@ -40,6 +40,27 @@ function formatVisitTime(ts) {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(ts));
+}
+
+function hashSeed(value) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function offsetHistoricalLocation(lat, lng, id, role) {
+  const seed = hashSeed(`${id}:${role}`);
+  const angle = ((seed % 360) * Math.PI) / 180;
+  const radius = 0.16 + (((seed >>> 8) % 100) / 100) * 0.42;
+  const lngScale = Math.max(0.35, Math.cos((lat * Math.PI) / 180));
+
+  return {
+    lat: Math.max(-89, Math.min(89, lat + Math.sin(angle) * radius)),
+    lng: lng + (Math.cos(angle) * radius) / lngScale,
+  };
 }
 
 export function initGlobe() {
@@ -220,14 +241,14 @@ export function initGlobe() {
   });
   renderer.domElement.addEventListener('pointerleave', hideTooltip);
 
-  function upsertPoint(kind, lat, lng, color, radius, altitude, route = null) {
-    const key = `${kind}:${coordKey(lat, lng)}`;
+  function upsertPoint(kind, lat, lng, color, radius, altitude, route = null, pointKey = null) {
+    const key = pointKey ?? `${kind}:${coordKey(lat, lng)}`;
     const existing = pointIndex.get(key);
     if (existing) {
       existing.seenAt = Date.now();
       if (route) existing.route = route;
     } else {
-      const point = { kind, lat, lng, color, radius, altitude, route, seenAt: Date.now() };
+      const point = { key, kind, lat, lng, color, radius, altitude, route, seenAt: Date.now() };
       pointIndex.set(key, point);
       points.push(point);
     }
@@ -238,7 +259,7 @@ export function initGlobe() {
     });
     while (points.length > MAX_POINTS) {
       const old = points.pop();
-      pointIndex.delete(`${old.kind}:${coordKey(old.lat, old.lng)}`);
+      pointIndex.delete(old.key);
     }
     Globe.pointsData(points.slice());
   }
@@ -339,19 +360,21 @@ export function initGlobe() {
 
     for (const item of history.slice(0, MAX_HISTORY_ARCS)) {
       if (!item?.source || !item?.server) continue;
+      const sourcePoint = offsetHistoricalLocation(item.source.lat, item.source.lng, item.id, 'source');
+      const serverPoint = offsetHistoricalLocation(item.server.lat, item.server.lng, item.id, 'server');
+      const count = item.legacyCount ?? 1;
       const route = {
         from: formatSource(item.source),
         to: formatServer(item.server),
-        count: item.count,
-        firstSeen: formatVisitTime(item.firstTs),
-        lastSeen: formatVisitTime(item.lastTs),
+        visitedAt: formatVisitTime(item.ts),
+        ...(item.legacyCount ? { count: item.legacyCount, firstSeen: formatVisitTime(item.legacyFirstTs) } : {}),
       };
-      const weight = Math.min(1, Math.log10(item.count + 1) / 2);
+      const weight = Math.min(1, Math.log10(count + 1) / 2);
       historyArcs.push({
-        startLat: item.source.lat,
-        startLng: item.source.lng,
-        endLat: item.server.lat,
-        endLng: item.server.lng,
+        startLat: sourcePoint.lat,
+        startLng: sourcePoint.lng,
+        endLat: serverPoint.lat,
+        endLng: serverPoint.lng,
         color: HISTORY_ARC_COLOR,
         stroke: 0.12 + weight * 0.22,
         altitudeScale: 0.28,
@@ -360,8 +383,26 @@ export function initGlobe() {
         dashInitialGap: 0,
         animateTime: 0,
       });
-      upsertPoint('history-source', item.source.lat, item.source.lng, HISTORY_SOURCE_POINT_COLOR, 0.55 + weight * 0.45, 0.018, route);
-      upsertPoint('history-server', item.server.lat, item.server.lng, HISTORY_SERVER_POINT_COLOR, 0.35 + weight * 0.35, 0.016, route);
+      upsertPoint(
+        'history-source',
+        sourcePoint.lat,
+        sourcePoint.lng,
+        HISTORY_SOURCE_POINT_COLOR,
+        0.55 + weight * 0.45,
+        0.018,
+        route,
+        `history-source:${item.id}`,
+      );
+      upsertPoint(
+        'history-server',
+        serverPoint.lat,
+        serverPoint.lng,
+        HISTORY_SERVER_POINT_COLOR,
+        0.35 + weight * 0.35,
+        0.016,
+        route,
+        `history-server:${item.id}`,
+      );
     }
 
     Globe.arcsData([...historyArcs, ...arcs]);
