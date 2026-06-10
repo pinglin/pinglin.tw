@@ -59,7 +59,7 @@ const t = useTranslations(
         ? `${visit.source.city ?? '—'}${visit.source.country ? `, ${visit.source.country}` : ''}`
         : '—';
       const there = server ? `${server.label} (${server.code})` : '—';
-      status.textContent = `→ from ${here}\n→ to ${there}`;
+      status.textContent = `You are\n→ from ${here}\n→ to ${there}`;
       status.style.whiteSpace = 'pre';
     };
 

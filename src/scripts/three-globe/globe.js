@@ -19,6 +19,17 @@ const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
 
+function formatSource(source) {
+  if (!source) return '—';
+  const place = [source.city, source.country].filter(Boolean).join(', ');
+  return place || `${source.lat.toFixed(2)}, ${source.lng.toFixed(2)}`;
+}
+
+function formatServer(server) {
+  if (!server) return '—';
+  return `${server.label} (${server.code})`;
+}
+
 export function initGlobe() {
   const arcs = [];
   const rings = [];
@@ -72,7 +83,30 @@ export function initGlobe() {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(renderWidth, renderHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-  document.getElementById('globe-point-cloud').appendChild(renderer.domElement);
+  const globeRoot = document.getElementById('globe-point-cloud');
+  const globeContainer = document.getElementById('globe-container');
+  globeRoot.appendChild(renderer.domElement);
+  renderer.domElement.style.cursor = 'grab';
+
+  const tooltip = document.createElement('div');
+  tooltip.style.cssText = [
+    'position:absolute',
+    'z-index:20',
+    'display:none',
+    'min-width:150px',
+    'max-width:220px',
+    'padding:8px 10px',
+    'border:1px solid rgba(148,163,184,0.35)',
+    'border-radius:8px',
+    'background:rgba(15,23,42,0.92)',
+    'box-shadow:0 12px 30px rgba(15,23,42,0.22)',
+    'color:white',
+    'font:11px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+    'pointer-events:none',
+    'white-space:normal',
+    'transform:translate(12px, -50%)',
+  ].join(';');
+  globeContainer?.appendChild(tooltip);
 
   const scene = new THREE.Scene();
   scene.add(new THREE.AmbientLight(0xcccccc, Math.PI), new THREE.DirectionalLight(0xffffff, 0.6 * Math.PI));
@@ -87,9 +121,9 @@ export function initGlobe() {
     zoomSpeed: 0.8,
   });
 
-  const globeContainer = new THREE.Object3D();
-  globeContainer.add(Globe);
-  scene.add(globeContainer);
+  const globeObject = new THREE.Object3D();
+  globeObject.add(Globe);
+  scene.add(globeObject);
 
   const clock = new THREE.Clock();
   let autoRotate = true;
@@ -97,7 +131,7 @@ export function initGlobe() {
 
   function animate() {
     tbControls.update();
-    if (autoRotate) globeContainer.rotation.y += 0.1 * clock.getDelta();
+    if (autoRotate) globeObject.rotation.y += 0.1 * clock.getDelta();
     renderer.render(scene, camera);
     if (typeof window !== 'undefined') window.requestAnimationFrame(animate);
   }
@@ -111,13 +145,70 @@ export function initGlobe() {
     Globe.ringsData(rings.slice());
   }
 
-  function upsertPoint(kind, lat, lng, color, radius, altitude) {
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+
+  function setTooltip(point, event) {
+    if (!tooltip || !globeContainer || !point?.route) return;
+    const rect = globeContainer.getBoundingClientRect();
+    tooltip.replaceChildren();
+
+    const title = document.createElement('div');
+    title.textContent = point.kind === 'server' ? 'Destination' : 'Source';
+    title.style.cssText = 'margin-bottom:5px;color:rgba(226,232,240,0.72);font-size:10px;text-transform:uppercase;letter-spacing:0.08em';
+    tooltip.appendChild(title);
+
+    for (const [label, value] of [
+      ['from', point.route.from],
+      ['to', point.route.to],
+    ]) {
+      const row = document.createElement('div');
+      const labelEl = document.createElement('span');
+      labelEl.textContent = label;
+      labelEl.style.color = 'rgba(226,232,240,0.7)';
+      row.append(labelEl, ` ${value}`);
+      tooltip.appendChild(row);
+    }
+
+    tooltip.style.left = `${event.clientX - rect.left}px`;
+    tooltip.style.top = `${event.clientY - rect.top}px`;
+    tooltip.style.display = 'block';
+  }
+
+  function hideTooltip() {
+    if (tooltip) tooltip.style.display = 'none';
+    renderer.domElement.style.cursor = 'grab';
+  }
+
+  function findPointIntersection(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+
+    const hit = raycaster.intersectObject(globeObject, true).find((intersection) => intersection.object.__globeObjType === 'point');
+    return hit?.object?.__data ?? null;
+  }
+
+  renderer.domElement.addEventListener('pointermove', (event) => {
+    const point = findPointIntersection(event);
+    if (point?.route) {
+      renderer.domElement.style.cursor = 'pointer';
+      setTooltip(point, event);
+    } else {
+      hideTooltip();
+    }
+  });
+  renderer.domElement.addEventListener('pointerleave', hideTooltip);
+
+  function upsertPoint(kind, lat, lng, color, radius, altitude, route = null) {
     const key = `${kind}:${coordKey(lat, lng)}`;
     const existing = pointIndex.get(key);
     if (existing) {
       existing.seenAt = Date.now();
+      if (route) existing.route = route;
     } else {
-      const point = { kind, lat, lng, color, radius, altitude, seenAt: Date.now() };
+      const point = { kind, lat, lng, color, radius, altitude, route, seenAt: Date.now() };
       pointIndex.set(key, point);
       points.push(point);
     }
@@ -189,6 +280,10 @@ export function initGlobe() {
 
   function addVisit(visit) {
     if (!visit?.source || !visit?.server) return;
+    const route = {
+      from: formatSource(visit.source),
+      to: formatServer(visit.server),
+    };
     arcs.push({
       startLat: visit.source.lat,
       startLng: visit.source.lng,
@@ -200,8 +295,8 @@ export function initGlobe() {
     // in arcsData — so simply leaving it there gives an infinite flow.
     Globe.arcsData(arcs.slice());
 
-    upsertPoint('visitor', visit.source.lat, visit.source.lng, SOURCE_POINT_COLOR, 1.25, 0.045);
-    upsertPoint('server', visit.server.lat, visit.server.lng, SERVER_POINT_COLOR, 0.55, 0.025);
+    upsertPoint('visitor', visit.source.lat, visit.source.lng, SOURCE_POINT_COLOR, 1.25, 0.045, route);
+    upsertPoint('server', visit.server.lat, visit.server.lng, SERVER_POINT_COLOR, 0.55, 0.025, route);
     addVisitorPulse(visit.source.lat, visit.source.lng);
     ensureServerRing(visit.server.lat, visit.server.lng);
   }
