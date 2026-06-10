@@ -42,8 +42,10 @@ function formatServer(server) {
 function formatVisitTime(ts) {
   if (!Number.isFinite(ts)) return '—';
   return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   }).format(new Date(ts));
 }
 
@@ -110,8 +112,8 @@ export function initGlobe() {
     'position:absolute',
     'z-index:20',
     'display:none',
-    'min-width:min(320px, calc(100vw - 32px))',
-    'max-width:min(380px, calc(100vw - 32px))',
+    'min-width:min(240px, calc(100vw - 32px))',
+    'max-width:min(300px, calc(100vw - 32px))',
     'padding:8px 10px',
     'border:1px solid rgba(148,163,184,0.35)',
     'border-radius:8px',
