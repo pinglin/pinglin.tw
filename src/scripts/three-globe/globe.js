@@ -8,6 +8,7 @@ export const { globeViewWidth: renderWidth, globeViewHeight: renderHeight } = co
 
 const ARC_FLIGHT_MS = 2200;
 const MAX_ARCS = 24;
+const MAX_HISTORY_ARCS = 500;
 const MAX_VISITOR_PULSES = 32;
 const MAX_POINTS = 256;
 
@@ -15,6 +16,9 @@ const MAX_POINTS = 256;
 const ARC_COLOR_GRADIENT = ['rgba(56,189,248,0.95)', 'rgba(244,255,255,1)', 'rgba(56,189,248,0.95)'];
 const SOURCE_POINT_COLOR = 'rgba(34, 211, 238, 0.98)';
 const SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.9)';
+const HISTORY_ARC_COLOR = ['rgba(148,163,184,0.2)', 'rgba(203,213,225,0.4)', 'rgba(148,163,184,0.2)'];
+const HISTORY_SOURCE_POINT_COLOR = 'rgba(148, 163, 184, 0.55)';
+const HISTORY_SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.38)';
 const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
@@ -30,8 +34,17 @@ function formatServer(server) {
   return `${server.label} (${server.code})`;
 }
 
+function formatVisitTime(ts) {
+  if (!Number.isFinite(ts)) return '—';
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(ts));
+}
+
 export function initGlobe() {
   const arcs = [];
+  const historyArcs = [];
   const rings = [];
   const points = [];
 
@@ -63,13 +76,13 @@ export function initGlobe() {
     .arcStartLng((d) => d.startLng)
     .arcEndLat((d) => d.endLat)
     .arcEndLng((d) => d.endLng)
-    .arcColor(() => ARC_COLOR_GRADIENT)
-    .arcStroke(0.45)
-    .arcAltitudeAutoScale(0.45)
-    .arcDashLength(0.4)
-    .arcDashGap(2)
-    .arcDashInitialGap(1)
-    .arcDashAnimateTime(ARC_FLIGHT_MS)
+    .arcColor((d) => d.color)
+    .arcStroke((d) => d.stroke)
+    .arcAltitudeAutoScale((d) => d.altitudeScale)
+    .arcDashLength((d) => d.dashLength)
+    .arcDashGap((d) => d.dashGap)
+    .arcDashInitialGap((d) => d.dashInitialGap)
+    .arcDashAnimateTime((d) => d.animateTime)
     .arcsTransitionDuration(0)
     // Rings (pulsing endpoints).
     .ringsData(rings)
@@ -154,13 +167,19 @@ export function initGlobe() {
     tooltip.replaceChildren();
 
     const title = document.createElement('div');
-    title.textContent = point.kind === 'server' ? 'Destination' : 'Source';
+    const isServerPoint = point.kind === 'server' || point.kind === 'history-server';
+    const isHistoryPoint = point.kind === 'history-source' || point.kind === 'history-server';
+    title.textContent = isHistoryPoint ? `Historical ${isServerPoint ? 'destination' : 'source'}` : isServerPoint ? 'Destination' : 'Source';
     title.style.cssText = 'margin-bottom:5px;color:rgba(226,232,240,0.72);font-size:10px;text-transform:uppercase;letter-spacing:0.08em';
     tooltip.appendChild(title);
 
     for (const [label, value] of [
       ['from', point.route.from],
       ['to', point.route.to],
+      ...(point.route.visitedAt ? [['visited', point.route.visitedAt]] : []),
+      ...(point.route.firstSeen ? [['first seen', point.route.firstSeen]] : []),
+      ...(point.route.lastSeen ? [['last seen', point.route.lastSeen]] : []),
+      ...(point.route.count ? [['visits', point.route.count.toLocaleString()]] : []),
     ]) {
       const row = document.createElement('div');
       const labelEl = document.createElement('span');
@@ -283,17 +302,25 @@ export function initGlobe() {
     const route = {
       from: formatSource(visit.source),
       to: formatServer(visit.server),
+      visitedAt: formatVisitTime(visit.ts),
     };
     arcs.push({
       startLat: visit.source.lat,
       startLng: visit.source.lng,
       endLat: visit.server.lat,
       endLng: visit.server.lng,
+      color: ARC_COLOR_GRADIENT,
+      stroke: 0.45,
+      altitudeScale: 0.45,
+      dashLength: 0.4,
+      dashGap: 2,
+      dashInitialGap: 1,
+      animateTime: ARC_FLIGHT_MS,
     });
     while (arcs.length > MAX_ARCS) arcs.shift();
     // three-globe loops the dash animation indefinitely while the arc stays
     // in arcsData — so simply leaving it there gives an infinite flow.
-    Globe.arcsData(arcs.slice());
+    Globe.arcsData([...historyArcs, ...arcs]);
 
     upsertPoint('visitor', visit.source.lat, visit.source.lng, SOURCE_POINT_COLOR, 1.25, 0.045, route);
     upsertPoint('server', visit.server.lat, visit.server.lng, SERVER_POINT_COLOR, 0.55, 0.025, route);
@@ -307,5 +334,38 @@ export function initGlobe() {
     ensureServerRing(server.lat, server.lng);
   }
 
-  return { addVisit, setServerBeacon };
+  function setHistory(history) {
+    historyArcs.length = 0;
+
+    for (const item of history.slice(0, MAX_HISTORY_ARCS)) {
+      if (!item?.source || !item?.server) continue;
+      const route = {
+        from: formatSource(item.source),
+        to: formatServer(item.server),
+        count: item.count,
+        firstSeen: formatVisitTime(item.firstTs),
+        lastSeen: formatVisitTime(item.lastTs),
+      };
+      const weight = Math.min(1, Math.log10(item.count + 1) / 2);
+      historyArcs.push({
+        startLat: item.source.lat,
+        startLng: item.source.lng,
+        endLat: item.server.lat,
+        endLng: item.server.lng,
+        color: HISTORY_ARC_COLOR,
+        stroke: 0.12 + weight * 0.22,
+        altitudeScale: 0.28,
+        dashLength: 1,
+        dashGap: 0,
+        dashInitialGap: 0,
+        animateTime: 0,
+      });
+      upsertPoint('history-source', item.source.lat, item.source.lng, HISTORY_SOURCE_POINT_COLOR, 0.55 + weight * 0.45, 0.018, route);
+      upsertPoint('history-server', item.server.lat, item.server.lng, HISTORY_SERVER_POINT_COLOR, 0.35 + weight * 0.35, 0.016, route);
+    }
+
+    Globe.arcsData([...historyArcs, ...arcs]);
+  }
+
+  return { addVisit, setServerBeacon, setHistory };
 }

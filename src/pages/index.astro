@@ -41,6 +41,15 @@ const t = useTranslations(
     demo?: boolean;
   };
 
+  type HistoricalTraffic = {
+    id: string;
+    count: number;
+    firstTs: number;
+    lastTs: number;
+    source: Visit['source'];
+    server: Visit['server'];
+  };
+
   const VISIT_HISTORY_MS = 24 * 60 * 60 * 1000;
 
   const initHomeGlobe = async () => {
@@ -74,15 +83,20 @@ const t = useTranslations(
       }
     };
 
-    const fetchVisits = async (since = lastTs) => {
+    const fetchVisits = async (since = lastTs, includeHistory = false) => {
       try {
-        const res = await fetch(`/api/visit.json?since=${since}`, { cache: 'no-store' });
+        const historyParam = includeHistory ? '&history=1' : '';
+        const res = await fetch(`/api/visit.json?since=${since}${historyParam}`, {
+          cache: 'no-store',
+        });
         if (!res.ok) return;
-        const { visits, server } = (await res.json()) as {
+        const { visits, history, server } = (await res.json()) as {
           visits: Visit[];
+          history?: HistoricalTraffic[];
           server: Visit['server'];
         };
         if (server) globe.setServerBeacon(server);
+        if (history) globe.setHistory(history);
         ingest(visits);
       } catch {
         /* swallow */
@@ -104,11 +118,11 @@ const t = useTranslations(
       /* network errors are non-fatal — the globe still spins */
     }
 
-    await fetchVisits(Date.now() - VISIT_HISTORY_MS);
+    await fetchVisits(Date.now() - VISIT_HISTORY_MS, true);
 
     setInterval(() => fetchVisits(), 4000);
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') fetchVisits();
+      if (document.visibilityState === 'visible') fetchVisits(lastTs, true);
     });
   };
 
