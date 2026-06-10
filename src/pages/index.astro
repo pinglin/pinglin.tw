@@ -41,12 +41,7 @@ const t = useTranslations(
     demo?: boolean;
   };
 
-  type HistoricalVisit = Visit & {
-    legacyCount?: number;
-    legacyFirstTs?: number;
-  };
-
-  const VISIT_HISTORY_MS = 24 * 60 * 60 * 1000;
+  const VISIT_HISTORY_MS = 365 * 24 * 60 * 60 * 1000;
 
   const initHomeGlobe = async () => {
     const { initGlobe } = await import('@/scripts/three-globe/globe.js');
@@ -71,28 +66,28 @@ const t = useTranslations(
     };
 
     const ingest = (visits: Visit[]) => {
+      const newVisits: Visit[] = [];
       for (const v of visits) {
         if (seen.has(v.id)) continue;
         seen.add(v.id);
         lastTs = Math.max(lastTs, v.ts);
-        globe.addVisit(v);
+        newVisits.push(v);
       }
+      if (newVisits.length === 1) globe.addVisit(newVisits[0]);
+      if (newVisits.length > 1) globe.addVisits(newVisits);
     };
 
-    const fetchVisits = async (since = lastTs, includeHistory = false) => {
+    const fetchVisits = async (since = lastTs) => {
       try {
-        const historyParam = includeHistory ? '&history=1' : '';
-        const res = await fetch(`/api/visit.json?since=${since}${historyParam}`, {
+        const res = await fetch(`/api/visit.json?since=${since}`, {
           cache: 'no-store',
         });
         if (!res.ok) return;
-        const { visits, history, server } = (await res.json()) as {
+        const { visits, server } = (await res.json()) as {
           visits: Visit[];
-          history?: HistoricalVisit[];
           server: Visit['server'];
         };
         if (server) globe.setServerBeacon(server);
-        if (history) globe.setHistory(history);
         ingest(visits);
       } catch {
         /* swallow */
@@ -114,11 +109,11 @@ const t = useTranslations(
       /* network errors are non-fatal — the globe still spins */
     }
 
-    await fetchVisits(Date.now() - VISIT_HISTORY_MS, true);
+    await fetchVisits(Date.now() - VISIT_HISTORY_MS);
 
     setInterval(() => fetchVisits(), 4000);
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') fetchVisits(lastTs, true);
+      if (document.visibilityState === 'visible') fetchVisits(lastTs);
     });
   };
 

@@ -13,20 +13,9 @@ type Visit = {
   demo?: boolean;
 };
 
-type HistoricalTraffic = {
-  id: string;
-  count: number;
-  firstTs: number;
-  lastTs: number;
-  source: Visit['source'];
-  server: Visit['server'];
-};
-
-const BUFFER_LIMIT = 1000;
-const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const BUFFER_LIMIT = 10000;
+const MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
 const REDIS_KEY = 'globe:visits';
-const REDIS_HISTORY_KEY = 'globe:history';
-const REDIS_HISTORY_VISITS_KEY = 'globe:history:visits';
 
 const REDIS_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -36,38 +25,6 @@ const REDIS_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_R
 const redis = REDIS_URL && REDIS_TOKEN ? new Redis({ url: REDIS_URL, token: REDIS_TOKEN }) : null;
 
 const localBuffer: Visit[] = [];
-const localHistoricalVisits: Visit[] = [];
-const localHistory = new Map<string, HistoricalTraffic>();
-
-function routeId(v: Visit) {
-  return [v.source.lat.toFixed(2), v.source.lng.toFixed(2), v.source.country ?? '', v.server.code].join(':');
-}
-
-function historyFromVisit(v: Visit, existing?: HistoricalTraffic | null): HistoricalTraffic {
-  const id = routeId(v);
-  const source = {
-    ...v.source,
-    // Store/render historical locations at city-ish precision. Recent visits
-    // keep the original Vercel coordinates for the live 24-hour layer.
-    lat: Number(v.source.lat.toFixed(2)),
-    lng: Number(v.source.lng.toFixed(2)),
-  };
-  return {
-    id,
-    count: (existing?.count ?? 0) + 1,
-    firstTs: existing?.firstTs ?? v.ts,
-    lastTs: v.ts,
-    source,
-    server: v.server,
-  };
-}
-
-function parseHistoryValue(value: unknown): HistoricalTraffic | null {
-  if (!value) return null;
-  const parsed = typeof value === 'string' ? (JSON.parse(value) as HistoricalTraffic) : (value as HistoricalTraffic);
-  if (!parsed || typeof parsed.count !== 'number' || !parsed.source || !parsed.server) return null;
-  return parsed;
-}
 
 async function pushVisit(v: Visit) {
   if (redis) {
@@ -80,24 +37,6 @@ async function pushVisit(v: Visit) {
   const cutoff = Date.now() - MAX_AGE_MS;
   while (localBuffer.length > 0 && localBuffer[0].ts < cutoff) localBuffer.shift();
   while (localBuffer.length > BUFFER_LIMIT) localBuffer.shift();
-}
-
-async function pushHistoricalVisit(v: Visit) {
-  if (redis) {
-    await redis.lpush(REDIS_HISTORY_VISITS_KEY, JSON.stringify(v));
-    return;
-  }
-  localHistoricalVisits.push(v);
-}
-
-async function upsertHistory(v: Visit) {
-  const id = routeId(v);
-  if (redis) {
-    const existing = parseHistoryValue(await redis.hget(REDIS_HISTORY_KEY, id));
-    await redis.hset(REDIS_HISTORY_KEY, { [id]: JSON.stringify(historyFromVisit(v, existing)) });
-    return;
-  }
-  localHistory.set(id, historyFromVisit(v, localHistory.get(id)));
 }
 
 function parseVisitValue(value: unknown): Visit | null {
@@ -116,32 +55,6 @@ async function readRecent(since: number): Promise<Visit[]> {
     return parsed.filter((v) => v.ts > cutoff).sort((a, b) => a.ts - b.ts);
   }
   return localBuffer.filter((v) => v.ts > cutoff);
-}
-
-async function readHistoricalVisits(recent: Visit[]): Promise<Visit[]> {
-  const exactHistory = redis
-    ? (await redis.lrange(REDIS_HISTORY_VISITS_KEY, 0, -1)).map(parseVisitValue).filter((v): v is Visit => Boolean(v))
-    : localHistoricalVisits;
-
-  const legacyValues = redis ? Object.values((await redis.hgetall<Record<string, unknown>>(REDIS_HISTORY_KEY)) ?? {}) : [...localHistory.values()];
-  const legacyHistory = legacyValues
-    .map(parseHistoryValue)
-    .filter((v): v is HistoricalTraffic => Boolean(v))
-    .map((v) => ({
-      id: `legacy:${v.id}`,
-      ts: v.lastTs,
-      source: v.source,
-      server: v.server,
-      legacyCount: v.count,
-      legacyFirstTs: v.firstTs,
-    }));
-
-  const deduped = new Map<string, Visit>();
-  for (const visit of [...exactHistory, ...recent, ...legacyHistory]) {
-    if (!deduped.has(visit.id)) deduped.set(visit.id, visit);
-  }
-
-  return [...deduped.values()].sort((a, b) => b.ts - a.ts);
 }
 
 function readSource(headers: globalThis.Headers) {
@@ -184,7 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
     server,
     ...(realSource ? {} : { demo: true }),
   };
-  await Promise.all([pushVisit(visit), pushHistoricalVisit(visit), upsertHistory(visit)]);
+  await pushVisit(visit);
 
   return new Response(JSON.stringify({ visit, server }), {
     status: 200,
@@ -194,10 +107,8 @@ export const POST: APIRoute = async ({ request }) => {
 
 export const GET: APIRoute = async ({ url, request }) => {
   const since = parseInt(url.searchParams.get('since') ?? '0', 10) || 0;
-  const includeHistory = url.searchParams.get('history') === '1';
   const recent = await readRecent(since);
-  const history = includeHistory ? await readHistoricalVisits(recent) : [];
-  return new Response(JSON.stringify({ visits: recent, history, server: readServer(request.headers), now: Date.now() }), {
+  return new Response(JSON.stringify({ visits: recent, server: readServer(request.headers), now: Date.now() }), {
     status: 200,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   });
