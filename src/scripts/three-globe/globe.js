@@ -110,8 +110,8 @@ export function initGlobe() {
     'position:absolute',
     'z-index:20',
     'display:none',
-    'min-width:150px',
-    'max-width:220px',
+    'min-width:min(320px, calc(100vw - 32px))',
+    'max-width:min(380px, calc(100vw - 32px))',
     'padding:8px 10px',
     'border:1px solid rgba(148,163,184,0.35)',
     'border-radius:8px',
@@ -120,7 +120,7 @@ export function initGlobe() {
     'color:white',
     'font:11px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
     'pointer-events:none',
-    'white-space:normal',
+    'white-space:nowrap',
     'transform:translate(12px, -50%)',
   ].join(';');
   globeContainer?.appendChild(tooltip);
@@ -192,6 +192,7 @@ export function initGlobe() {
       ...(point.route.visitedAt ? [['visited', point.route.visitedAt]] : []),
     ]) {
       const row = document.createElement('div');
+      row.style.whiteSpace = 'nowrap';
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
       labelEl.style.color = 'rgba(226,232,240,0.7)';
