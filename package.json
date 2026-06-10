@@ -5,6 +5,9 @@
   "private": true,
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "astro dev --host",
     "build": "astro build",

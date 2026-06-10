@@ -9,7 +9,7 @@ export const { globeViewWidth: renderWidth, globeViewHeight: renderHeight } = co
 const ARC_FLIGHT_MS = 2200;
 const MAX_ARCS = 24;
 const MAX_VISITOR_PULSES = 32;
-const MAX_POINTS = 32;
+const MAX_POINTS = 256;
 
 // Bright cyan → soft white gradient for the glowing trail.
 const ARC_COLOR_GRADIENT = ['rgba(56,189,248,0.95)', 'rgba(244,255,255,1)', 'rgba(56,189,248,0.95)'];

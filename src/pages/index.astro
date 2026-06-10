@@ -41,6 +41,8 @@ const t = useTranslations(
     demo?: boolean;
   };
 
+  const VISIT_HISTORY_MS = 24 * 60 * 60 * 1000;
+
   const initHomeGlobe = async () => {
     const { initGlobe } = await import('@/scripts/three-globe/globe.js');
     const globe = initGlobe();
@@ -72,6 +74,21 @@ const t = useTranslations(
       }
     };
 
+    const fetchVisits = async (since = lastTs) => {
+      try {
+        const res = await fetch(`/api/visit.json?since=${since}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const { visits, server } = (await res.json()) as {
+          visits: Visit[];
+          server: Visit['server'];
+        };
+        if (server) globe.setServerBeacon(server);
+        ingest(visits);
+      } catch {
+        /* swallow */
+      }
+    };
+
     try {
       const ownRes = await fetch('/api/visit.json', { method: 'POST' });
       if (ownRes.ok) {
@@ -87,24 +104,11 @@ const t = useTranslations(
       /* network errors are non-fatal — the globe still spins */
     }
 
-    const poll = async () => {
-      try {
-        const res = await fetch(`/api/visit.json?since=${lastTs}`, { cache: 'no-store' });
-        if (!res.ok) return;
-        const { visits, server } = (await res.json()) as {
-          visits: Visit[];
-          server: Visit['server'];
-        };
-        if (server) globe.setServerBeacon(server);
-        ingest(visits);
-      } catch {
-        /* swallow */
-      }
-    };
+    await fetchVisits(Date.now() - VISIT_HISTORY_MS);
 
-    setInterval(poll, 4000);
+    setInterval(() => fetchVisits(), 4000);
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') poll();
+      if (document.visibilityState === 'visible') fetchVisits();
     });
   };
 

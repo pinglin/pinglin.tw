@@ -13,8 +13,8 @@ type Visit = {
   demo?: boolean;
 };
 
-const BUFFER_LIMIT = 50;
-const MAX_AGE_MS = 5 * 60 * 1000;
+const BUFFER_LIMIT = 1000;
+const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const REDIS_KEY = 'globe:visits';
 
 const REDIS_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
