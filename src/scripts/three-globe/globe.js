@@ -22,6 +22,15 @@ const HISTORY_SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.38)';
 const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
+const GLOBE_OCCLUSION_MATERIAL = new THREE.MeshPhongMaterial({
+  color: 0x0f172a,
+  opacity: 0.32,
+  transparent: true,
+  depthTest: true,
+  depthWrite: true,
+  side: THREE.FrontSide,
+  shininess: 8,
+});
 
 function formatSource(source) {
   if (!source) return '—';
@@ -80,7 +89,7 @@ export function initGlobe() {
       return `rgb(${shade},${shade},${shade})`;
     })
     .hexPolygonAltitude(0.001)
-    .globeMaterial(new THREE.MeshPhongMaterial({ opacity: 0.1, transparent: true }))
+    .globeMaterial(GLOBE_OCCLUSION_MATERIAL)
     // Endpoint dots. The expanding rings are the animation; the dots keep the
     // source and server locations readable between ring waves.
     .pointsData(points)
