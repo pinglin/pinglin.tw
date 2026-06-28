@@ -19,9 +19,9 @@ const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
 const LIGHT_GLOBE_PALETTE = {
-  landShadeMin: 72,
-  landShadeVariation: 54,
-  chinaLandColor: 'rgb(48,48,48)',
+  landShadeMin: 112,
+  landShadeVariation: 44,
+  chinaLandColor: 'rgb(88,88,88)',
   globeColor: 0xf8fafc,
   globeOpacity: 0.46,
 };
