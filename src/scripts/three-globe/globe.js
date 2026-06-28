@@ -18,8 +18,8 @@ const SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.9)';
 const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
-const DEFAULT_LAND_SHADE_MIN = 140;
-const DEFAULT_LAND_SHADE_VARIATION = 115;
+const DEFAULT_LAND_SHADE_MIN = 105;
+const DEFAULT_LAND_SHADE_VARIATION = 70;
 const CHINA_LAND_COLOR = 'rgb(92,92,92)';
 const GLOBE_OCCLUSION_MATERIAL = new THREE.MeshPhongMaterial({
   color: 0xf8fafc,
