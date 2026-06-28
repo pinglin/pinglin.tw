@@ -18,28 +18,62 @@ const SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.9)';
 const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
-const DEFAULT_LAND_SHADE_MIN = 105;
-const DEFAULT_LAND_SHADE_VARIATION = 70;
-const CHINA_LAND_COLOR = 'rgb(92,92,92)';
-const GLOBE_OCCLUSION_MATERIAL = new THREE.MeshPhongMaterial({
-  color: 0xf8fafc,
-  opacity: 0.42,
-  transparent: true,
-  depthTest: true,
-  depthWrite: true,
-  side: THREE.FrontSide,
-  shininess: 8,
-});
+const LIGHT_GLOBE_PALETTE = {
+  landShadeMin: 72,
+  landShadeVariation: 54,
+  chinaLandColor: 'rgb(48,48,48)',
+  globeColor: 0xf8fafc,
+  globeOpacity: 0.46,
+};
+const DARK_GLOBE_PALETTE = {
+  landShadeMin: 172,
+  landShadeVariation: 50,
+  chinaLandColor: 'rgb(232,232,232)',
+  globeColor: 0x0f172a,
+  globeOpacity: 0.62,
+};
+
+function getGlobePalette() {
+  if (typeof document === 'undefined') return LIGHT_GLOBE_PALETTE;
+  return document.documentElement.getAttribute('data-theme') === 'night' ? DARK_GLOBE_PALETTE : LIGHT_GLOBE_PALETTE;
+}
+
+function createGlobeMaterial() {
+  const palette = getGlobePalette();
+  return new THREE.MeshPhongMaterial({
+    color: palette.globeColor,
+    opacity: palette.globeOpacity,
+    transparent: true,
+    depthTest: true,
+    depthWrite: true,
+    side: THREE.FrontSide,
+    shininess: 8,
+  });
+}
 
 function isChinaFeature(feature) {
   const properties = feature?.properties;
   return properties?.ISO_A3 === 'CHN' || properties?.ADM0_A3 === 'CHN' || properties?.ADMIN === 'China';
 }
 
-function getLandHexColor(feature) {
-  if (isChinaFeature(feature)) return CHINA_LAND_COLOR;
+function getFeatureColorKey(feature) {
+  const properties = feature?.properties;
+  return properties?.ISO_A3 ?? properties?.ADM0_A3 ?? properties?.ADMIN ?? properties?.NAME ?? '';
+}
 
-  const shade = Math.floor(Math.random() * DEFAULT_LAND_SHADE_VARIATION + DEFAULT_LAND_SHADE_MIN);
+function getStableLandShade(feature) {
+  const key = getFeatureColorKey(feature);
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  const palette = getGlobePalette();
+  return palette.landShadeMin + (hash % palette.landShadeVariation);
+}
+
+function getLandHexColor(feature) {
+  const palette = getGlobePalette();
+  if (isChinaFeature(feature)) return palette.chinaLandColor;
+
+  const shade = getStableLandShade(feature);
   return `rgb(${shade},${shade},${shade})`;
 }
 
@@ -68,16 +102,17 @@ export function initGlobe() {
   const arcs = [];
   const rings = [];
   const points = [];
+  const globeMaterial = createGlobeMaterial();
 
   const Globe = new ThreeGlobe({ animateIn: false })
     .showAtmosphere(false)
     .hexPolygonsData(countriesData.features)
     .hexPolygonResolution(3)
-    .hexPolygonMargin(0.1)
+    .hexPolygonMargin(0.035)
     .hexPolygonUseDots(true)
     .hexPolygonColor(getLandHexColor)
     .hexPolygonAltitude(0.001)
-    .globeMaterial(GLOBE_OCCLUSION_MATERIAL)
+    .globeMaterial(globeMaterial)
     // Endpoint dots. The expanding rings are the animation; the dots keep the
     // source and server locations readable between ring waves.
     .pointsData(points)
@@ -159,6 +194,23 @@ export function initGlobe() {
   const clock = new THREE.Clock();
   let autoRotate = true;
   tbControls.addEventListener('start', () => (autoRotate = false));
+
+  function applyGlobeTheme() {
+    const palette = getGlobePalette();
+    globeMaterial.color.setHex(palette.globeColor);
+    globeMaterial.opacity = palette.globeOpacity;
+    globeMaterial.needsUpdate = true;
+    Globe.hexPolygonColor(getLandHexColor);
+    Globe.hexPolygonsData(countriesData.features.slice());
+  }
+
+  const themeObserver =
+    typeof window.MutationObserver === 'undefined'
+      ? null
+      : new window.MutationObserver((mutations) => {
+        if (mutations.some((mutation) => mutation.attributeName === 'data-theme')) applyGlobeTheme();
+      });
+  themeObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   function animate() {
     tbControls.update();
