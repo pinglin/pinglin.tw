@@ -18,6 +18,9 @@ const SERVER_POINT_COLOR = 'rgba(244, 114, 182, 0.9)';
 const SERVER_RING_COLOR = (t) => `rgba(244, 114, 182, ${0.75 * (1 - t)})`;
 const VISITOR_RING_COLOR = (t) => `rgba(34, 211, 238, ${1 - t})`;
 const VISITOR_CORE_RING_COLOR = (t) => `rgba(255, 255, 255, ${0.9 * (1 - t)})`;
+const DEFAULT_LAND_SHADE_MIN = 140;
+const DEFAULT_LAND_SHADE_VARIATION = 115;
+const CHINA_LAND_COLOR = 'rgb(92,92,92)';
 const GLOBE_OCCLUSION_MATERIAL = new THREE.MeshPhongMaterial({
   color: 0xf8fafc,
   opacity: 0.42,
@@ -27,6 +30,18 @@ const GLOBE_OCCLUSION_MATERIAL = new THREE.MeshPhongMaterial({
   side: THREE.FrontSide,
   shininess: 8,
 });
+
+function isChinaFeature(feature) {
+  const properties = feature?.properties;
+  return properties?.ISO_A3 === 'CHN' || properties?.ADM0_A3 === 'CHN' || properties?.ADMIN === 'China';
+}
+
+function getLandHexColor(feature) {
+  if (isChinaFeature(feature)) return CHINA_LAND_COLOR;
+
+  const shade = Math.floor(Math.random() * DEFAULT_LAND_SHADE_VARIATION + DEFAULT_LAND_SHADE_MIN);
+  return `rgb(${shade},${shade},${shade})`;
+}
 
 function formatSource(source) {
   if (!source) return '—';
@@ -60,10 +75,7 @@ export function initGlobe() {
     .hexPolygonResolution(3)
     .hexPolygonMargin(0.1)
     .hexPolygonUseDots(true)
-    .hexPolygonColor(() => {
-      const shade = Math.floor(Math.random() * 115 + 140); // Range: 100-255
-      return `rgb(${shade},${shade},${shade})`;
-    })
+    .hexPolygonColor(getLandHexColor)
     .hexPolygonAltitude(0.001)
     .globeMaterial(GLOBE_OCCLUSION_MATERIAL)
     // Endpoint dots. The expanding rings are the animation; the dots keep the
