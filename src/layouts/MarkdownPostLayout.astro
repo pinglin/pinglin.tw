@@ -20,7 +20,24 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
     <p class="text-sm text-center text-gray-500 dark:text-gray-400">{formattedDate}</p>
     <p class="text-md text-left my-6 text-gray-500 dark:text-gray-400">{frontmatter.description}</p>
     <div class="img-container">
-      <img src={frontmatter.image.url} alt={frontmatter.image.alt} class="post-img" />
+      {
+        frontmatter.image.urlLight ? (
+          <>
+            <img
+              src={frontmatter.image.urlLight}
+              alt={frontmatter.image.alt}
+              class="post-img dark:hidden"
+            />
+            <img
+              src={frontmatter.image.url}
+              alt={frontmatter.image.alt}
+              class="post-img hidden dark:block"
+            />
+          </>
+        ) : (
+          <img src={frontmatter.image.url} alt={frontmatter.image.alt} class="post-img" />
+        )
+      }
     </div>
     <p class="text-sm text-left text-gray-500 dark:text-gray-400">{frontmatter.image.alt}</p>
   </div>
@@ -36,9 +53,9 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
   >
     <div class="absolute top-4 right-4 flex items-center gap-2 z-10">
       <div id="mermaid-modal-toolbar" class="mermaid-toolbar mermaid-toolbar--modal">
-        <button type="button" data-act="zoom-in"  aria-label="Zoom in">+</button>
+        <button type="button" data-act="zoom-in" aria-label="Zoom in">+</button>
         <button type="button" data-act="zoom-out" aria-label="Zoom out">−</button>
-        <button type="button" data-act="reset"    aria-label="Reset">⟲</button>
+        <button type="button" data-act="reset" aria-label="Reset">⟲</button>
       </div>
       <button
         id="mermaid-modal-close"
@@ -51,7 +68,8 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
     <div
       id="mermaid-modal-content"
       class="w-[95vw] h-[90vh] bg-white rounded-lg p-2 overflow-hidden flex"
-    ></div>
+    >
+    </div>
   </div>
 </BaseLayout>
 
@@ -87,13 +105,13 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
      6 nodes) is dense, so a taller container keeps labels readable. The
      third chart (dirty-flag state diagram) has only 3 states + a loop-back,
      so it stays compact. */
-  .markdown-content .mermaid[data-mermaid-index="0"] svg {
+  .markdown-content .mermaid[data-mermaid-index='0'] svg {
     height: 260px;
   }
-  .markdown-content .mermaid[data-mermaid-index="1"] svg {
+  .markdown-content .mermaid[data-mermaid-index='1'] svg {
     height: 600px;
   }
-  .markdown-content .mermaid[data-mermaid-index="2"] svg {
+  .markdown-content .mermaid[data-mermaid-index='2'] svg {
     height: 300px;
   }
   .markdown-content .mermaid svg > rect:first-of-type,
@@ -305,21 +323,29 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
       if (!btn) return;
       e.stopPropagation();
       switch (btn.dataset.act) {
-        case 'zoom-in':  instance.zoomIn(); break;
-        case 'zoom-out': instance.zoomOut(); break;
-        case 'reset':    instance.resetZoom(); instance.center(); instance.fit(); break;
-        case 'expand':   openModal(svg); break;
+      case 'zoom-in':
+        instance.zoomIn();
+        break;
+      case 'zoom-out':
+        instance.zoomOut();
+        break;
+      case 'reset':
+        instance.resetZoom();
+        instance.center();
+        instance.fit();
+        break;
+      case 'expand':
+        openModal(svg);
+        break;
       }
     });
     container.appendChild(toolbar);
   };
 
   // Tag each chart with its index so per-chart CSS overrides can target it.
-  document
-    .querySelectorAll<HTMLElement>('.markdown-content .mermaid')
-    .forEach((c, i) => {
-      c.dataset.mermaidIndex = String(i);
-    });
+  document.querySelectorAll<HTMLElement>('.markdown-content .mermaid').forEach((c, i) => {
+    c.dataset.mermaidIndex = String(i);
+  });
 
   // Initial pass — handle SVGs already in the DOM by the time this runs.
   document.querySelectorAll<HTMLElement>('.markdown-content .mermaid').forEach(initWidget);
@@ -353,9 +379,19 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
       if (!btn || !modalInstance) return;
       e.stopPropagation();
       switch (btn.dataset.act) {
-        case 'zoom-in':  modalInstance.zoomIn(); break;
-        case 'zoom-out': modalInstance.zoomOut(); break;
-        case 'reset':    modalInstance.resetZoom(); modalInstance.center(); modalInstance.fit(); modalInstance.zoomBy(0.8); modalInstance.center(); break;
+      case 'zoom-in':
+        modalInstance.zoomIn();
+        break;
+      case 'zoom-out':
+        modalInstance.zoomOut();
+        break;
+      case 'reset':
+        modalInstance.resetZoom();
+        modalInstance.center();
+        modalInstance.fit();
+        modalInstance.zoomBy(0.8);
+        modalInstance.center();
+        break;
       }
     });
   }

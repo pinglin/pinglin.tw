@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="470" viewBox="0 0 1100 470">
+<rect width="100%" height="100%" fill="#1a1a2e" rx="8"/>
+<style>
+text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #c9c9d4; font-size: 16px; }
+.title { font-size: 30px; font-weight: 700; fill: #ffffff; }
+.subtitle { font-size: 17px; fill: #c9c9d4; }
+.lab { fill: #ffffff; font-weight: 600; }
+.tick { font-size: 14.5px; fill: #8f8f9c; }
+.onmark { font-weight: 600; font-size: 15px; }
+.axis { stroke: #55556a; stroke-width: 1.2; }
+.grid { stroke: #3a3a4e; stroke-width: 1; }
+.leader { stroke: #8f8f9c; stroke-width: 1; }
+</style>
+
+<text class="title" x="60" y="42">What the GPU is doing, second by second</text>
+<text class="subtitle" x="60" y="68">The same 12-second window in two regimes. A decode step is ~15 ms, so a decoding GPU reads as a continuous band.</text>
+<rect x="60" y="89" width="13" height="13" rx="3" fill="#d95926"/>
+<text x="80" y="100">prefill chunk (compute-bound)</text>
+<rect x="390.79999999999995" y="89" width="13" height="13" rx="3" fill="#3987e5"/>
+<text x="410.79999999999995" y="100">decode steps (bandwidth-bound)</text>
+<rect x="730.8" y="89" width="13" height="13" rx="3" fill="#199e70"/>
+<text x="750.8" y="100">prefix-cache (APC) restore</text>
+<text class="lab" x="60" y="140">A · Chats only, warm prefix cache</text>
+<text class="lab" x="1056" y="140" text-anchor="end" style="fill:#3987e5">chat decodes at 60–70 tok/s</text>
+<rect x="61.0" y="150" width="247.0" height="40" rx="4" fill="#3987e5"/>
+<rect x="310.0" y="150" width="56.1" height="40" rx="4" fill="#199e70"/>
+<rect x="368.1" y="150" width="686.9" height="40" rx="4" fill="#3987e5"/>
+<text class="onmark" x="712" y="175" text-anchor="middle" style="fill:#ffffff">decoding: every in-flight chat advances each step</text>
+<line class="leader" x1="338" y1="192" x2="338" y2="206"/>
+<text x="338" y="222" text-anchor="middle">new turn arrives → APC restores the ~23k-token prefix in &lt;1 s</text>
+<text class="lab" x="60" y="280">B · Cold 60k-token benchmark prefill in flight</text>
+<text class="lab" x="1056" y="280" text-anchor="end" style="fill:#d95926">concurrent chat: 0.67 tok/s measured</text>
+<rect x="60.0" y="290" width="126.7" height="40" rx="4" fill="#d95926"/>
+<rect x="190.5" y="290" width="4" height="40" rx="1.5" fill="#3987e5"/>
+<rect x="200.3" y="290" width="126.7" height="40" rx="4" fill="#d95926"/>
+<rect x="330.7" y="290" width="4" height="40" rx="1.5" fill="#3987e5"/>
+<rect x="340.5" y="290" width="126.7" height="40" rx="4" fill="#d95926"/>
+<rect x="471.0" y="290" width="4" height="40" rx="1.5" fill="#3987e5"/>
+<rect x="480.8" y="290" width="126.7" height="40" rx="4" fill="#d95926"/>
+<rect x="611.3" y="290" width="4" height="40" rx="1.5" fill="#3987e5"/>
+<rect x="621.1" y="290" width="126.7" height="40" rx="4" fill="#d95926"/>
+<rect x="751.5" y="290" width="4" height="40" rx="1.5" fill="#3987e5"/>
+<rect x="761.3" y="290" width="126.7" height="40" rx="4" fill="#d95926"/>
+<rect x="891.8" y="290" width="4" height="40" rx="1.5" fill="#3987e5"/>
+<rect x="901.6" y="290" width="126.7" height="40" rx="4" fill="#d95926"/>
+<rect x="1032.1" y="290" width="4" height="40" rx="1.5" fill="#3987e5"/>
+<text class="onmark" x="124" y="310" text-anchor="middle" style="fill:#0b0b0b" font-size="13">2,048-token<tspan x="124" dy="16">chunk</tspan></text>
+<line class="leader" x1="192" y1="332" x2="192" y2="346"/>
+<text x="198" y="362">one decode step granted between chunks (drawn wider than its true ~15 ms);</text>
+<text x="198" y="382">the whole batch lives on these scraps</text>
+<line class="axis" x1="60" y1="408" x2="1056" y2="408"/>
+<line class="axis" x1="60" y1="408" x2="60" y2="413"/>
+<text class="tick" x="60" y="430" text-anchor="middle">0 s</text>
+<line class="axis" x1="226" y1="408" x2="226" y2="413"/>
+<text class="tick" x="226" y="430" text-anchor="middle">2 s</text>
+<line class="axis" x1="392" y1="408" x2="392" y2="413"/>
+<text class="tick" x="392" y="430" text-anchor="middle">4 s</text>
+<line class="axis" x1="558" y1="408" x2="558" y2="413"/>
+<text class="tick" x="558" y="430" text-anchor="middle">6 s</text>
+<line class="axis" x1="724" y1="408" x2="724" y2="413"/>
+<text class="tick" x="724" y="430" text-anchor="middle">8 s</text>
+<line class="axis" x1="890" y1="408" x2="890" y2="413"/>
+<text class="tick" x="890" y="430" text-anchor="middle">10 s</text>
+<line class="axis" x1="1056" y1="408" x2="1056" y2="413"/>
+<text class="tick" x="1056" y="430" text-anchor="middle">12 s</text>
+</svg>

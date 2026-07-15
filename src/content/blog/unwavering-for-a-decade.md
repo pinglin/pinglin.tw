@@ -8,6 +8,7 @@ image:
   url: '/blog/unwavering-for-a-decade/trolltunga.jpg'
   alt: 'TrollTunga in Norway during the winter'
 tags: ['life']
+hidden: true
 ---
 
 After a decade-long hiatus from blogging, I've decided it's time to share my story of perseverance and determination in building a venture. A recent

@@ -5,12 +5,13 @@ export interface Props {
   description: string;
   image: {
     url: string;
+    urlLight?: string;
     alt: string;
   };
   pubDate: Date;
 }
 
-const { url, title, image, pubDate } = Astro.props;
+const { url, title, description, image, pubDate } = Astro.props;
 const adjustedUrl = url.replace(/^\/blog\/zh-tw\//, '/zh-tw/blog/');
 
 const locale = Astro.currentLocale === 'zh-tw' ? 'zh-TW' : 'en-US';
@@ -36,11 +37,31 @@ if (Astro.currentLocale === 'zh-tw') {
         {formattedDate}
       </p>
     </div>
-    <img
-      src={image.url}
-      alt={image.alt}
-      loading="lazy"
-      class="h-48 w-auto max-w-full rounded-md border border-gray-200 dark:border-gray-700"
-    />
+    {
+      image.urlLight ? (
+        <>
+          <img
+            src={image.urlLight}
+            alt={image.alt}
+            loading="lazy"
+            class="h-48 w-auto max-w-full rounded-md border border-gray-200 dark:border-gray-700 dark:hidden"
+          />
+          <img
+            src={image.url}
+            alt={image.alt}
+            loading="lazy"
+            class="h-48 w-auto max-w-full rounded-md border border-gray-200 dark:border-gray-700 hidden dark:block"
+          />
+        </>
+      ) : (
+        <img
+          src={image.url}
+          alt={image.alt}
+          loading="lazy"
+          class="h-48 w-auto max-w-full rounded-md border border-gray-200 dark:border-gray-700"
+        />
+      )
+    }
+    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{description}</p>
   </a>
 </article>

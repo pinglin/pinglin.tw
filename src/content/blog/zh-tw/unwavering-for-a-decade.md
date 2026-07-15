@@ -8,6 +8,7 @@ image:
   url: '/blog/unwavering-for-a-decade/trolltunga.jpg'
   alt: '挪威冬天時的 TrollTunga'
 tags: ['生活']
+hidden: true
 ---
 
 停更部落格十年後，我決定是時候分享我這段創業路上的故事了。最近某天早上一覺起來，突然有些感觸，讓我想重新開始寫點東西 - 雖然不確定我準備好要分享這些故事了沒，但我知道我應該開始把它們記錄下來。
