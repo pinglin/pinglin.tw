@@ -1,11 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import HomeGlobe from '../../components/HomeGlobe.astro';
 import { useTranslations } from '../../i18n/utils';
-import { languages } from '../../i18n/ui';
+import { languages, defaultLang } from '../../i18n/ui';
 
-import config from '../../config.json';
-
-const t = useTranslations(Astro.currentLocale as keyof typeof languages);
+const t = useTranslations(
+  (Astro.currentLocale ?? defaultLang).replace('_', '-') as keyof typeof languages,
+);
 ---
 
 <BaseLayout pageTitle={t('home.title')}>
@@ -15,28 +16,6 @@ const t = useTranslations(Astro.currentLocale as keyof typeof languages);
     <p>
       按 <kbd class="kbd kbd-sm">CMD</kbd> + <kbd class="kbd kbd-sm">K</kbd> 進行搜尋。
     </p>
-    <div
-      id="globe-container"
-      class="opacity-0 transition-opacity duration-1000"
-      style=`width:${config.globeViewWidth}px; height: ${config.globeViewHeight}px`
-    >
-      <div id="globe-point-cloud"></div>
-    </div>
+    <HomeGlobe statusHeading="你目前的連線" fromLabel="從" toLabel="到" />
   </div>
 </BaseLayout>
-
-<script>
-  const initHomeGlobe = async () => {
-    const { initGlobe } = await import('@/scripts/three-globe/globe.js');
-    initGlobe();
-    setTimeout(() => {
-      document.getElementById('globe-container')?.classList.remove('opacity-0');
-    }, 100);
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHomeGlobe, { once: true });
-  } else {
-    initHomeGlobe();
-  }
-</script>

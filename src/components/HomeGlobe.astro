@@ -1,0 +1,123 @@
+---
+import config from '../config.json';
+
+interface Props {
+  statusHeading: string;
+  fromLabel: string;
+  toLabel: string;
+}
+
+const { statusHeading, fromLabel, toLabel } = Astro.props;
+---
+
+<div
+  id="globe-container"
+  class="relative opacity-0 transition-opacity duration-1000"
+  style=`width:${config.globeViewWidth}px; height: ${config.globeViewHeight}px`
+  data-status-heading={statusHeading}
+  data-from-label={fromLabel}
+  data-to-label={toLabel}
+>
+  <div id="globe-point-cloud"></div>
+  <div
+    id="globe-status"
+    class="pointer-events-none absolute left-2 bottom-2 text-[11px] font-mono leading-tight text-gray-500 dark:text-gray-300/80"
+  >
+  </div>
+</div>
+
+<script>
+  type Visit = {
+    id: string;
+    ts: number;
+    source: { lat: number; lng: number; city?: string; country?: string };
+    server: { lat: number; lng: number; code: string; label: string };
+    demo?: boolean;
+  };
+
+  const VISIT_HISTORY_MS = 365 * 24 * 60 * 60 * 1000;
+
+  const initHomeGlobe = async () => {
+    const { initGlobe } = await import('@/scripts/three-globe/globe.js');
+    const globe = initGlobe();
+    const container = document.getElementById('globe-container');
+
+    setTimeout(() => {
+      container?.classList.remove('opacity-0');
+    }, 100);
+
+    const status = document.getElementById('globe-status');
+    const statusHeading = container?.dataset.statusHeading ?? 'You are';
+    const fromLabel = container?.dataset.fromLabel ?? 'from';
+    const toLabel = container?.dataset.toLabel ?? 'to';
+    const seen = new Set<string>();
+    let lastTs = 0;
+
+    const renderStatus = (visit: Visit | null, server: Visit['server'] | null) => {
+      if (!status) return;
+      const here = visit
+        ? `${visit.source.city ?? '—'}${visit.source.country ? `, ${visit.source.country}` : ''}`
+        : '—';
+      const there = server ? `${server.label} (${server.code})` : '—';
+      status.textContent = `${statusHeading}\n→ ${fromLabel} ${here}\n→ ${toLabel} ${there}`;
+      status.style.whiteSpace = 'pre';
+    };
+
+    const ingest = (visits: Visit[]) => {
+      const newVisits: Visit[] = [];
+      for (const visit of visits) {
+        if (seen.has(visit.id)) continue;
+        seen.add(visit.id);
+        lastTs = Math.max(lastTs, visit.ts);
+        newVisits.push(visit);
+      }
+      if (newVisits.length === 1) globe.addVisit(newVisits[0]);
+      if (newVisits.length > 1) globe.addVisits(newVisits);
+    };
+
+    const fetchVisits = async (since = lastTs) => {
+      try {
+        const response = await fetch(`/api/visit.json?since=${since}`, {
+          cache: 'no-store',
+        });
+        if (!response.ok) return;
+        const { visits, server } = (await response.json()) as {
+          visits: Visit[];
+          server: Visit['server'];
+        };
+        if (server) globe.setServerBeacon(server);
+        ingest(visits);
+      } catch {
+        /* Network errors are non-fatal — the globe still spins. */
+      }
+    };
+
+    try {
+      const ownResponse = await fetch('/api/visit.json', { method: 'POST' });
+      if (ownResponse.ok) {
+        const { visit, server } = (await ownResponse.json()) as {
+          visit: Visit;
+          server: Visit['server'];
+        };
+        globe.setServerBeacon(server);
+        ingest([visit]);
+        renderStatus(visit, server);
+      }
+    } catch {
+      /* Network errors are non-fatal — the globe still spins. */
+    }
+
+    await fetchVisits(Date.now() - VISIT_HISTORY_MS);
+
+    setInterval(() => fetchVisits(), 4000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') fetchVisits(lastTs);
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHomeGlobe, { once: true });
+  } else {
+    initHomeGlobe();
+  }
+</script>
