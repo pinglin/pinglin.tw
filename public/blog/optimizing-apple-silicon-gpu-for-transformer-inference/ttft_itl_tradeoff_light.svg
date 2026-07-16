@@ -15,7 +15,7 @@ text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; f
 <text class="title" x="74" y="42">One knob, two latencies</text>
 <text class="subtitle" x="74" y="68">Chunk size trades a prompt's TTFT against every concurrent stream's ITL.</text>
 <text class="subtitle" x="74" y="88">Modeled from this box's measured rates: ~1.5 s per 2,048-token chunk at document scale, ~15 ms decode steps,</text>
-<text class="subtitle" x="74" y="108">~50 ms per-chunk overhead, ~2,400 tok/s average prefill.</text>
+<text class="subtitle" x="74" y="108">~50 ms per-chunk overhead, ~1,365 tok/s average prefill.</text>
 <line class="axis" x1="74" y1="490.0" x2="1056" y2="490.0"/>
 <text class="tick" x="64" y="494.0" text-anchor="end">0.1 s</text>
 <line class="grid" x1="74" y1="376.7" x2="1056" y2="376.7"/>
@@ -24,17 +24,17 @@ text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; f
 <text class="tick" x="64" y="267.3" text-anchor="end">10 s</text>
 <line class="grid" x1="74" y1="150.0" x2="1056" y2="150.0"/>
 <text class="tick" x="64" y="154.0" text-anchor="end">100 s</text>
-<line x1="74" y1="218.2" x2="1056" y2="218.2" stroke="#898781" stroke-width="1" stroke-dasharray="2 4"/>
-<text class="tick" x="1056" y="234.2" text-anchor="end">prefill-compute floor: 60,000 tokens ÷ ~2,400 tok/s ≈ 25 s</text>
+<line x1="74" y1="190.4" x2="1056" y2="190.4" stroke="#898781" stroke-width="1" stroke-dasharray="2 4"/>
+<text class="tick" x="1056" y="206.4" text-anchor="end">prefill-compute floor: 60,000 tokens ÷ ~1,365 tok/s ≈ 44 s</text>
 <rect x="401.3" y="150" width="163.7" height="340" fill="#1baf7a" fill-opacity="0.13"/>
 <text class="onmark" x="483" y="168" text-anchor="middle" style="fill:#1baf7a">sweet spot for this traffic</text>
 <line x1="728.7" y1="150" x2="728.7" y2="490" stroke="#898781" stroke-width="1" stroke-dasharray="5 4"/>
 <text x="737" y="168">this box today: 2,048-token chunks</text>
-<path d="M74.0 179.0 L155.8 187.6 L237.7 194.8 L319.5 200.6 L401.3 205.1 L483.2 208.6 L565.0 211.3 L646.8 213.2 L728.7 214.6 L810.5 215.7 L892.3 216.4 L974.2 216.9 L1056.0 217.3" fill="none" stroke="#eb6834" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M74.0 164.5 L155.8 170.8 L237.7 175.8 L319.5 179.6 L401.3 182.5 L483.2 184.7 L565.0 186.3 L646.8 187.5 L728.7 188.3 L810.5 188.9 L892.3 189.4 L974.2 189.7 L1056.0 189.9" fill="none" stroke="#eb6834" stroke-width="2.5" stroke-linejoin="round"/>
 <path d="M74.0 485.9 L155.8 470.8 L237.7 455.3 L319.5 439.3 L401.3 423.0 L483.2 406.5 L565.0 389.9 L646.8 373.1 L728.7 356.2 L810.5 339.3 L892.3 322.3 L974.2 305.4 L1056.0 288.4" fill="none" stroke="#2a78d6" stroke-width="2.5" stroke-linejoin="round"/>
 <text class="lab" x="87" y="158" style="fill:#eb6834">TTFT: the 60k-token prompt itself</text>
 <text class="lab" x="475" y="439" style="fill:#2a78d6">ITL: a concurrent interactive stream, during the prefill</text>
-<circle cx="728.7" cy="214.6" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="728.7" cy="188.3" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
 <circle cx="728.7" cy="356.2" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
 <line class="axis" x1="74" y1="490" x2="74" y2="495"/>
 <text class="tick" x="74" y="512" text-anchor="middle">128</text>

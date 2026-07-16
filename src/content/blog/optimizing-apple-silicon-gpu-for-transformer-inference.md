@@ -26,7 +26,7 @@ can throw more GPUs at the problem. This is the other story: one Metal box, two 
 
 ## The setup
 
-The model is a 35B-parameter mixture-of-experts with roughly 3B active parameters, quantized to mxfp4 (about 2 GB of weights touched per output
+The model is a 35B-parameter mixture-of-experts with roughly 3B active parameters, quantized to mxfp8 (about 3 GB of weights touched per output
 token), served with a batched MLX engine ([mlx-vlm](https://github.com/Blaizzy/mlx-vlm)) behind an OpenAI-compatible endpoint. The M4 Max has 128 GB
 of unified memory at 546 GB/s.
 
@@ -42,40 +42,42 @@ The chats are just my concrete case: they stand in for any interactive stream (a
 other end), the way the benchmarks stand in for any batch workload.
 
 Averaged across a day, the box reads **77 input tokens for every output token** it writes, a 77:1 input:output ratio. The GPU's job here is
-overwhelmingly prompt-reading, not token-writing. Keep that ratio in mind; it decides one of the optimization calls below.
+overwhelmingly prompt-reading, not token-writing. Keep that ratio in mind; it comes back later.
 
 ## Two jobs, two bottlenecks
 
 A transformer serves a request in two phases, and they stress opposite parts of the machine.
 
-**Decode is memory-bandwidth-bound.** Each decode step reads the model's active weights from memory once and emits one token per in-flight sequence.
-The arithmetic is one division:
+**Decode scales with memory bandwidth.** Each decode step reads the model's active weights from memory once and emits one token per in-flight
+sequence. The arithmetic is one division:
 
 ```text
-ceiling:  546 GB/s ÷ ~2 GB per step ≈ 270 tok/s
-measured: 60–70 tok/s (about a quarter of the naive bound)
+ceiling:  546 GB/s ÷ ~3 GB per step ≈ 180 tok/s
+measured: 60–70 tok/s (about a third of the naive bound)
 ```
 
 That naive division leaves out a lot:
 
-- **KV-cache reads.** Every new token has to attend to the entire context so far; to avoid recomputing it each time, every processed token leaves
-  behind a key/value cache entry (~20 KB per token for this model), and attention re-reads that cache in full on every step. A chat sitting at 23k
-  tokens therefore adds roughly half a gigabyte to every step's reads (23k tokens × 20 KB), a quarter of the weights again.
-  [kipply](https://kipp.ly/p/transformer-inference-arithmetic) calls this the "sometimes-significant factor";
-  [DeepMind's scaling book](https://jax-ml.github.io/scaling-book/inference/) puts it straight into the floor: minimum step time = (batch × KV cache +
-  parameters) ÷ bandwidth.
+- **KV-cache reads.** This is a hybrid model: only about a quarter of its layers use full attention (the rest are linear), so only those layers keep a
+  growing key/value cache, ~20 KB per token overall, that they re-read in full on every step. A chat sitting at 23k tokens therefore adds roughly half
+  a gigabyte to every step's reads (23k tokens × 20 KB), a sixth of the weights again. [kipply](https://kipp.ly/p/transformer-inference-arithmetic)
+  calls this the "sometimes-significant factor"; [DeepMind's scaling book](https://jax-ml.github.io/scaling-book/inference/) puts it straight into the
+  floor: minimum step time = (batch × KV cache + parameters) ÷ bandwidth.
 - **Kernels run below peak bandwidth.** kipply budgets real kernels at 72–90% of theoretical; even hand-tuned FasterTransformer decoding a 13B model
   on an A100 measured 22 ms per token (~45 tok/s) where her arithmetic predicted 18.5 ms (~54 tok/s).
 - **Everything between the matmuls.** Softmax, layernorm, residuals: small memory-bound passes the weights-only division doesn't count.
 - **This stack's own taxes.** mlx-vlm's per-step overhead, and a MoE gathering its experts from scattered memory instead of one contiguous read.
 
-So a quarter of naive is an unremarkable place to land, and, more to the point, every line item above is still a memory cost.
+So a third of the naive bound is an unremarkable place to land, and note what it means: this box is nowhere near saturating its bandwidth. Decode here
+is bandwidth-shaped (the rate scales with bandwidth) rather than bandwidth-bound (pinned at the roofline); proving the latter would need
+achieved-bandwidth counters I did not capture.
 
 The ceiling is set by bandwidth, not capacity: my whole memory footprint (weights + KV caches + prefix cache) peaks around 40–50 GB of the 128 GB.
-Buying more memory would change nothing for a single stream's speed. So how do you serve several at once? Not with more memory, but because batching
-shares the step: at batch N, one weight read advances all N sequences by a token each, so decode-only multi-tenancy is nearly free. If decoding were
-all the GPU did, every tenant would see 60+ tok/s. But the real cost of that traffic is never decode-only, and that is exactly what the rest of this
-post is about.
+Buying more memory would change nothing for a single stream's speed. So how do you serve several at once? Not with more memory, but by sharing the
+step: at batch N the attention and shared-expert weights are read once for all N sequences. It's a mixture-of-experts, so the routed experts a batch
+touches are the union of its tokens' choices rather than one fixed set, which makes decode batching cheap but not free. Cheap enough, though, that
+decode sharing was never the multi-tenant problem. If decoding were all the GPU did, every tenant would see 60+ tok/s. But the real cost of that
+traffic is never decode-only, and that is exactly what the rest of this post is about.
 
 **Prefill is compute-bound.** Before a request can decode its first token, its entire prompt must be pushed through the model. That's large matrix
 multiplies across the full sequence (all 40 GPU cores saturated), processed in 2,048-token chunks that each take one to two seconds at document scale.
@@ -99,8 +101,8 @@ almost always occupying the GPU, and every decoder in the batch lives on the one
 during a single 60k-token prefill, a concurrent chat stream decoded at 0.67 tok/s. Here is roughly how it felt:
 
 <figure id="figure-2">
-  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/chat_decode_rate_light.svg" class="dark:hidden" alt="A line chart of one chat stream's decode rate over sixty seconds. It holds near 65 tokens per second, collapses to a measured 0.67 tokens per second for the twenty-five seconds a 60k-token benchmark prefill is in flight, then recovers instantly." />
-  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/chat_decode_rate_dark.svg" class="hidden dark:block" alt="A line chart of one chat stream's decode rate over sixty seconds. It holds near 65 tokens per second, collapses to a measured 0.67 tokens per second for the twenty-five seconds a 60k-token benchmark prefill is in flight, then recovers instantly." />
+  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/chat_decode_rate_light.svg" class="dark:hidden" alt="A line chart of one chat stream's decode rate over sixty seconds. It holds near 65 tokens per second, collapses to a measured 0.67 tokens per second for the roughly forty-four seconds a 60k-token benchmark prefill is in flight, then recovers instantly." />
+  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/chat_decode_rate_dark.svg" class="hidden dark:block" alt="A line chart of one chat stream's decode rate over sixty seconds. It holds near 65 tokens per second, collapses to a measured 0.67 tokens per second for the roughly forty-four seconds a 60k-token benchmark prefill is in flight, then recovers instantly." />
   <figcaption>Figure 2. Decode rate of one warm chat stream while a 60k-token benchmark prefill arrives and completes.</figcaption>
 </figure>
 
@@ -117,17 +119,17 @@ per token noted above. Chat-scale contexts are the mild case. A benchmark sequen
 to **every step, for everyone**:
 
 <figure id="figure-3">
-  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/kv_reread_tax_light.svg" class="dark:hidden" alt="A stacked horizontal bar chart of bytes read per decode step. Chats alone read about 2 gigabytes of weights per step, giving roughly 65 tokens per second. Adding one resident 130k-token benchmark sequence adds 2.6 gigabytes of KV reads per step, roughly halving the rate." />
-  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/kv_reread_tax_dark.svg" class="hidden dark:block" alt="A stacked horizontal bar chart of bytes read per decode step. Chats alone read about 2 gigabytes of weights per step, giving roughly 65 tokens per second. Adding one resident 130k-token benchmark sequence adds 2.6 gigabytes of KV reads per step, roughly halving the rate." />
-  <figcaption>Figure 3. Bytes read per decode step. That sequence's KV (2.6 GB) is larger than the weights themselves (2.0 GB), pushing each step from ~2 GB to
-  ~4.6 GB of reads, so one long resident sequence roughly halves the shared step rate even with no prefill running.</figcaption>
+  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/kv_reread_tax_light.svg" class="dark:hidden" alt="A stacked horizontal bar chart of bytes read per decode step. Chats alone read about 3 gigabytes of weights per step, giving roughly 65 tokens per second. Adding one resident 130k-token benchmark sequence adds 2.6 gigabytes of KV reads per step, roughly halving the rate." />
+  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/kv_reread_tax_dark.svg" class="hidden dark:block" alt="A stacked horizontal bar chart of bytes read per decode step. Chats alone read about 3 gigabytes of weights per step, giving roughly 65 tokens per second. Adding one resident 130k-token benchmark sequence adds 2.6 gigabytes of KV reads per step, roughly halving the rate." />
+  <figcaption>Figure 3. Bytes read per decode step. That sequence's KV (2.6 GB) is nearly as large as the weights themselves (3.0 GB), pushing each step from ~3 GB to
+  ~5.6 GB of reads, so one long resident sequence still cuts the shared step rate by roughly half even with no prefill running.</figcaption>
 </figure>
 
-The obvious optimization is KV-cache quantization: halve the bytes, halve the overhead. But mlx-vlm does not currently support quantized KV alongside
-APC (automatic prefix cache), so using it means giving up APC. On a 77:1 input:output workload that settles it: skipping tens of thousands of prefill
-tokens on every warm turn is worth far more than cheaper KV reads during decode, so I kept the prefix cache. mlx-vlm will soon support running both
-together, see [#1559](https://github.com/Blaizzy/mlx-vlm/issues/1559). If your input:output ratio runs the other way, decode-heavy, then quantizing
-the KV cache is exactly the optimization to reach for.
+The obvious optimization is KV-cache quantization: fewer KV bytes per step, less overhead. But mlx-vlm does not currently support quantized KV
+alongside APC (automatic prefix cache), so using it means giving up APC. For the chat tenant that settles it: its multi-turn sessions re-hit the same
+~23k-token prefix every turn, so avoiding that prefill beats cheaper KV reads during decode, and I kept the prefix cache. mlx-vlm will soon support
+running both together, see [#1559](https://github.com/Blaizzy/mlx-vlm/issues/1559). If your input:output ratio runs the other way, decode-heavy, then
+quantizing the KV cache is exactly the optimization to reach for.
 
 ## The two key optimizations
 
@@ -143,10 +145,11 @@ Silicon: not faster decode (see the bandwidth division above), but a bigger cach
 its chunks instead of letting queued prefills claim them back-to-back. Interactive streams keep receiving steps no matter how deep the prefill queue
 gets, which is close in spirit to the policy-level idea behind Sarathi's stall-free batching.
 
-With both optimizations in place, chats hold 60–70 tok/s even with a benchmark running at the same time. The GPU never got faster; it just stopped
-being asked to do the wrong thing at the wrong time. Inspired by how [DistServe](https://arxiv.org/abs/2401.09670) and
-[Splitwise](https://arxiv.org/abs/2311.18677) split prefill and decode across separate hardware, in the long run the right answer is to put workloads
-of different character on their own dedicated compute (budget permitting 🤑).
+With both optimizations in place, chats stream at 60–70 tok/s in the windows between prefill chunks instead of crawling, so the interactive feel comes
+back, even though the GPU still spends most of a benchmark run prefilling. The GPU never got faster; it just stopped being asked to do the wrong thing
+at the wrong time. Inspired by how [DistServe](https://arxiv.org/abs/2401.09670) and [Splitwise](https://arxiv.org/abs/2311.18677) split prefill and
+decode across separate hardware, in the long run the right answer is to put workloads of different character on their own dedicated compute (budget
+permitting 🤑).
 
 ## Trade-off: TTFT vs. ITL
 
@@ -167,7 +170,7 @@ per extra chunk boundary (kernel launches, re-touching the prefix KV) that makes
 decode-first scheduling starves prefill entirely.
 
 A concrete example: the TTFT curve below is one long-document prompt's own TTFT. Its first token cannot appear until all 60,000 of its prompt tokens
-are prefilled, so no chunk size takes it below the ~25 s compute floor; chunk size only decides how much overhead it pays on top of that floor, and
+are prefilled, so no chunk size takes it below the ~44 s compute floor; chunk size only decides how much overhead it pays on top of that floor, and
 how long the other streams wait meanwhile. Neither extreme of chunk size is usually what we want; the point is to find the sweet spot for your use
 case:
 
@@ -175,12 +178,12 @@ case:
   <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/ttft_itl_tradeoff_light.svg" class="dark:hidden" alt="A log-log line chart of prefill chunk size versus latency in seconds. An orange curve, the 60k-token prompt's own TTFT, falls from about 55 seconds at 128-token chunks toward its 25-second prefill-compute floor, drawn as a dotted line. A blue curve, the inter-token latency a concurrent interactive stream experiences during that prefill, rises almost linearly from about 0.1 seconds to 6 seconds. A shaded band between 512- and 1,024-token chunks marks the sweet spot, and a dashed line marks this box's current 2,048-token setting." />
   <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/ttft_itl_tradeoff_dark.svg" class="hidden dark:block" alt="A log-log line chart of prefill chunk size versus latency in seconds. An orange curve, the 60k-token prompt's own TTFT, falls from about 55 seconds at 128-token chunks toward its 25-second prefill-compute floor, drawn as a dotted line. A blue curve, the inter-token latency a concurrent interactive stream experiences during that prefill, rises almost linearly from about 0.1 seconds to 6 seconds. A shaded band between 512- and 1,024-token chunks marks the sweet spot, and a dashed line marks this box's current 2,048-token setting." />
   <figcaption>Figure 4. Chunk size trades the benchmark prompt's own TTFT against the interactive stream's ITL, modeled from this box's measured rates
-  (assumptions in the chart). The orange curve can never drop below the ~25 s prefill-compute floor; left of the band you pay real TTFT for little
+  (assumptions in the chart). The orange curve can never drop below the ~44 s prefill-compute floor; left of the band you pay real TTFT for little
   extra smoothness, and right of it the interactive stream's ITL grows linearly while TTFT barely improves.</figcaption>
 </figure>
 
 For this case, the comfortable sweet spot sits around 512–1,024 tokens per chunk: concurrent chats keep their token gaps at roughly 0.4–0.8 s while a
-60k-token prompt pays a 15–30% TTFT premium over its ~25 s floor. My current 2,048-token setting sits to the right of that band: a deliberate lean
+60k-token prompt pays a 15–30% TTFT premium over its ~44 s floor. My current 2,048-token setting sits to the right of that band: a deliberate lean
 toward benchmark completion times, whose cost is a worst-case 1.5-second (0.67 tok/s) gap in the interactive chat's decode. This is exactly the point
 of the admission gate: it keeps a decode window open between prefill chunks, so the chat streams at a full 60–70 tok/s during it. What the chat feels,
 then, is normal-speed streaming punctuated by periodic brief stalls, not the 0.67 tok/s crawl from the opening.
@@ -211,7 +214,7 @@ laptop falls on the full spectrum.
 | Groq LPU                                       | 230 MB SRAM per chip      | 80 TB/s on-die | ~146×       | ~9,500 tok/s on paper (see below) |
 | SSD offload tier (e.g. Phison aiDAPTIV+)       | TB-scale NAND             | ~7–14 GB/s     | ~0.01–0.03× | ~1–2 tok/s (see below)            |
 
-\* Naive scaling of my measured 65 tok/s by the bandwidth ratio: same ~2 GB-per-step MoE, batch one, software efficiency held constant. Real numbers
+\* Naive scaling of my measured 65 tok/s by the bandwidth ratio: same ~3 GB-per-step MoE, batch one, software efficiency held constant. Real numbers
 move with the serving stack and batch depth; read the column as physics headroom, not a benchmark.
 
 † Unannounced. Apple skipped an M4 Ultra, so the current Mac Studio tops out at the M3 Ultra; the M5 Ultra figure assumes UltraFusion doubles the M5
@@ -226,9 +229,7 @@ and NVIDIA's
 runs on a DGX B200 (8 TB/s per GPU) with EAGLE-3 speculative decoding on top, which is itself a bandwidth play: draft tokens cheaply so each expensive
 full-weight read verifies several tokens instead of one. When a vendor advertises astonishing tokens per second, the first question isn't "what
 scheduler"; it's "what memory system, and how many bytes per token." And this lever isn't datacenter-only:
-[mlx-vlm supports speculative decoding too](https://github.com/Blaizzy/mlx-vlm/blob/main/docs/usage.md) (EAGLE-3 included), so the same trick runs on
-my M4 Max. It is the cleanest proof the speed is bandwidth and not compute: it wins not by computing more but by amortizing the one expensive
-weight-read this whole post is about across several tokens.
+[mlx-vlm supports speculative decoding too](https://github.com/Blaizzy/mlx-vlm/blob/main/docs/usage.md) (EAGLE-3 included).
 
 **Groq pushes the capacity-versus-bandwidth trade to its limit.**
 [The 80 TB/s comes from keeping weights in on-chip SRAM](https://groq.com/blog/the-groq-lpu-explained), but at ~230 MB per chip, a model spans
@@ -241,11 +242,13 @@ opposite pole of the same design space: one flat 128 GB pool, one chip, and ever
 **SSD offload is the same division with a tiny numerator, and only decode pays it in full.** Offload tiers like
 [Phison's aiDAPTIV+](https://www.phison.com/en/aidaptiv-plus-ai-data-storage-solution) extend GPU memory with NAND: TB-scale capacity, but a fast NVMe
 drive reads at ~7–15 GB/s (PCIe Gen4 to Gen5), and even a small stripe only reaches a few tens of GB/s. Put per-step bytes there and the division is
-merciless: 14 GB/s ÷ ~2 GB per step is a ~7 tok/s ceiling before any software efficiency, slower than a base M4. Prefill forgives more: a
-document-scale chunk computes for ~1.5 s while its ~2 GB of weights stream in under ~150 ms, so an engine that overlaps transfers with matmuls keeps
-TTFT mostly intact. The rule that falls out: SSDs belong under bytes read once per turn, never bytes read once per step. A prefix cache spilled to SSD
-is the good case (restoring a 23k-token prefix, ~460 MB of KV, costs well under 100 ms against the tens of seconds of prefill it avoids); weights you
-touch every token stay in fast memory. That split is also why these tiers are pitched at fine-tuning and batch work rather than interactive serving.
+merciless: 14 GB/s ÷ ~3 GB per step is a ~5 tok/s ceiling before any software efficiency, slower than a base M4. And prefill is no refuge for this
+model: a 2,048-token chunk routes its tokens through nearly every expert in each MoE layer, so it touches most of the model's tens of gigabytes, not
+the ~3 GB active for one token. Streaming that from an SSD takes seconds, comparable to or longer than the ~1.5 s the chunk spends computing, so the
+offload tier bottlenecks prefill too. The rule that falls out: SSDs belong under bytes read once per turn, never bytes read once per step. A prefix
+cache spilled to SSD is the good case (restoring a 23k-token prefix, ~460 MB of KV, costs well under 100 ms against the tens of seconds of prefill it
+avoids); weights you touch every token stay in fast memory. That split is also why these tiers are pitched at fine-tuning and batch work rather than
+interactive serving.
 
 **The laptop's real deficit isn't bandwidth; it's prefill compute.** Per watt, 546 GB/s in a laptop that draws around a hundred watts at the wall is
 the same order of bandwidth-per-watt as an H100's 3.35 TB/s at 700 W for the module alone. What the datacenter parts actually run away with is matmul
@@ -261,15 +264,15 @@ above showed, capacity buys cache, and cache avoids prefill.
 - **Decode speed is a bandwidth division, not a capacity function.** 546 GB/s ÷ bytes-per-step sets the ceiling. On Apple Silicon the upgrade that
   moves it is an Ultra-class chip (~819 GB/s of bandwidth, roughly +50%), not more RAM.
 - **SOTA tokens-per-second is mostly purchased bandwidth.** From an SSD tier's ~10 GB/s through a MacBook's 546 GB/s of LPDDR and Blackwell's 8 TB/s
-  of HBM3e to Groq's 80 TB/s of SRAM, single-stream decode tracks the memory system nearly linearly. Scheduling cleverness moves you toward the
-  ceiling; hardware moves the ceiling.
+  of HBM3e to Groq's 80 TB/s of SRAM, single-stream decode scales with the memory system (though not linearly across such different hardware).
+  Scheduling cleverness moves you toward the ceiling; hardware moves the ceiling.
 - **Prefill is where multi-tenant damage comes from.** Decode batching shares a step almost for free; a single document-scale prefill squeezes every
   decoder to ~1 tok/s.
-- **TTFT and ITL trade against each other, and chunk size is the deciding factor.** If chunks are bigger, they favor prompt completion; if smaller,
-  they favor streaming smoothness. Draw the two curves for your own box and pick the sweet spot on purpose instead of inheriting a default.
+- **TTFT and ITL trade against each other, and chunk size is the main lever.** If chunks are bigger, they favor prompt completion; if smaller, they
+  favor streaming smoothness. Draw the two curves for your own box and pick the sweet spot on purpose instead of inheriting a default.
 - **Memory capacity buys cache, and cache lets you skip prefill.** That's the whole value chain. Size the prefix cache to your concurrent sessions
   before touching anything else.
-- **Match the optimization to your use case.** Whether to quantize the KV cache comes down to your input:output ratio: on a prefill-heavy workload
-  like 77:1 the prefix cache wins, but flip it to decode-heavy and quantizing is exactly the move.
+- **Match the optimization to your use case.** Whether to quantize the KV cache comes down to how much your prefixes repeat: high reuse (multi-turn
+  chats hitting the same prefix) favors the prefix cache; low reuse with long live contexts favors quantizing KV.
 - **You can emulate the datacenter answers with policy.** Chunked prefill + admission control approximates stall-free batching; routing batch
   workloads to other hardware approximates P/D disaggregation.

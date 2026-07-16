@@ -142,7 +142,7 @@ def fig_rate(P, path):
         return B - (v / VMAX) * (B - T)
 
     def rate(t):
-        if 15 <= t < 40:
+        if 8 <= t < 52:
             return 0.67
         return 65 + 1.3 * math.sin(t * 1.7) + 0.8 * math.sin(t * 0.6)
 
@@ -157,9 +157,9 @@ def fig_rate(P, path):
         s.append(f'<text class="tick" x="{L - 10}" y="{y(v) + 4:.1f}" text-anchor="end">{v}</text>')
     s.append(f'<text class="tick" x="{L + 8}" y="{T + 16}">tok/s</text>')
 
-    s.append(f'<rect x="{x(15):.1f}" y="{T}" width="{x(40) - x(15):.1f}" height="{B - T}" fill="{P["WASH"]}"/>')
-    s.append(f'<text class="lab" x="{x(27.5):.0f}" y="{T + 20}" text-anchor="middle" style="fill:{P["PREFILL"]}">'
-             f'benchmark prefill in flight (60k-token document)</text>')
+    s.append(f'<rect x="{x(8):.1f}" y="{T}" width="{x(52) - x(8):.1f}" height="{B - T}" fill="{P["WASH"]}"/>')
+    s.append(f'<text class="lab" x="{x(30):.0f}" y="{T + 20}" text-anchor="middle" style="fill:{P["PREFILL"]}">'
+             f'benchmark prefill in flight (60k-token document, ~44 s)</text>')
 
     s.append(f'<line x1="{L}" y1="{y(60):.1f}" x2="{R}" y2="{y(60):.1f}" stroke="{P["MUTED"]}" '
              f'stroke-width="1" stroke-dasharray="5 4"/>')
@@ -176,8 +176,8 @@ def fig_rate(P, path):
     d = "M" + " L".join(f"{px:.1f} {py:.1f}" for px, py in pts)
     s.append(f'<path d="{d}" fill="none" stroke="{P["DECODE"]}" stroke-width="2.5" stroke-linejoin="round"/>')
 
-    s.append(f'<circle cx="{x(27.5):.0f}" cy="{y(0.67):.1f}" r="5" fill="{P["DECODE"]}" stroke="{P["HALO"]}" stroke-width="2"/>')
-    s.append(f'<text class="lab" x="{x(27.5):.0f}" y="{y(0.67) - 14:.0f}" text-anchor="middle">0.67 tok/s measured</text>')
+    s.append(f'<circle cx="{x(30):.0f}" cy="{y(0.67):.1f}" r="5" fill="{P["DECODE"]}" stroke="{P["HALO"]}" stroke-width="2"/>')
+    s.append(f'<text class="lab" x="{x(30):.0f}" y="{y(0.67) - 14:.0f}" text-anchor="middle">0.67 tok/s measured</text>')
 
     for sec in range(0, 61, 10):
         s.append(f'<line class="axis" x1="{x(sec):.0f}" y1="{B}" x2="{x(sec):.0f}" y2="{B + 5}"/>')
@@ -191,7 +191,7 @@ def fig_rate(P, path):
 def fig_kv(P, path):
     W, H = 1100, 400
     L, R = 390, 1000
-    GMAX = 5.0
+    GMAX = 6.0
 
     def x(gb):
         return L + (gb / GMAX) * (R - L)
@@ -202,13 +202,13 @@ def fig_kv(P, path):
              f"sequence's KV cache (~20 KB/token) on top of the weights.</text>")
     s.append(legend(60, 100, [(P["DECODE"], "active weights re-read"), (P["PREFILL"], "resident KV re-read")]))
 
-    for g in range(0, 6):
+    for g in range(0, 7):
         s.append(f'<line class="grid" x1="{x(g):.0f}" y1="130" x2="{x(g):.0f}" y2="320"/>')
 
     rows = [
-        ("Chats alone, short contexts", 150, [(2.0, P["DECODE"], "weights ~2.0 GB", P["ON_DECODE"])], "≈ 65 tok/s", P["DECODE"]),
+        ("Chats alone, short contexts", 150, [(3.0, P["DECODE"], "weights ~3.0 GB", P["ON_DECODE"])], "≈ 65 tok/s", P["DECODE"]),
         ("+ one 130k-token benchmark sequence", 240,
-         [(2.0, P["DECODE"], "weights ~2.0 GB", P["ON_DECODE"]), (2.6, P["PREFILL"], "KV ~2.6 GB", P["ON_PREFILL"])],
+         [(3.0, P["DECODE"], "weights ~3.0 GB", P["ON_DECODE"]), (2.6, P["PREFILL"], "KV ~2.6 GB", P["ON_PREFILL"])],
          "≈ ½ the rate", P["PREFILL"]),
     ]
     for label, yy, segs, res, rescolor in rows:
@@ -224,10 +224,10 @@ def fig_kv(P, path):
 
     yax = 320
     s.append(f'<line class="axis" x1="{L}" y1="{yax}" x2="{R}" y2="{yax}"/>')
-    for g in range(0, 6):
+    for g in range(0, 7):
         s.append(f'<line class="axis" x1="{x(g):.0f}" y1="{yax}" x2="{x(g):.0f}" y2="{yax + 5}"/>')
-        anchor = "end" if g == 5 else "middle"
-        lab = f"{g} GB" if g == 5 else str(g)
+        anchor = "end" if g == 6 else "middle"
+        lab = f"{g} GB" if g == 6 else str(g)
         s.append(f'<text class="tick" x="{x(g):.0f}" y="{yax + 22}" text-anchor="{anchor}">{lab}</text>')
     s.append("</svg>\n")
     with open(path, "w") as f:
@@ -238,7 +238,7 @@ def fig_kv(P, path):
 def fig_tradeoff(P, path):
     """TTFT-vs-ITL trade-off as a function of prefill chunk size, log-log.
     Modeled from the post's measured rates: 2,048-token chunks take ~1.5 s at
-    document scale (ITL curve), a 60k-token prompt averages ~2,400 tok/s
+    document scale (ITL curve), a 60k-token prompt averages ~1,365 tok/s
     (TTFT floor), decode steps ~15 ms, per-chunk overhead ~50 ms."""
     W, H = 1100, 600
     L, R, T, B = 74, 1056, 150, 490
@@ -253,22 +253,22 @@ def fig_tradeoff(P, path):
         return c / 1365.33 + 0.015
 
     def ttft(c):
-        return 25.0 + (60000.0 / c) * 0.065
+        return 44.0 + (60000.0 / c) * 0.065
 
     s = [svg_open(P, W, H)]
     s.append(f'<text class="title" x="{L}" y="42">One knob, two latencies</text>')
     s.append(f'<text class="subtitle" x="{L}" y="68">Chunk size trades a prompt\'s TTFT against every concurrent stream\'s ITL.</text>')
     s.append(f'<text class="subtitle" x="{L}" y="88">Modeled from this box\'s measured rates: ~1.5 s per 2,048-token chunk at document scale, '
              f'~15 ms decode steps,</text>')
-    s.append(f'<text class="subtitle" x="{L}" y="108">~50 ms per-chunk overhead, ~2,400 tok/s average prefill.</text>')
+    s.append(f'<text class="subtitle" x="{L}" y="108">~50 ms per-chunk overhead, ~1,365 tok/s average prefill.</text>')
 
     for v, lab in [(0.1, "0.1 s"), (1, "1 s"), (10, "10 s"), (100, "100 s")]:
         cls = "axis" if v == 0.1 else "grid"
         s.append(f'<line class="{cls}" x1="{L}" y1="{y(v):.1f}" x2="{R}" y2="{y(v):.1f}"/>')
         s.append(f'<text class="tick" x="{L - 10}" y="{y(v) + 4:.1f}" text-anchor="end">{lab}</text>')
 
-    s.append(f'<line x1="{L}" y1="{y(25):.1f}" x2="{R}" y2="{y(25):.1f}" stroke="{P["MUTED"]}" stroke-width="1" stroke-dasharray="2 4"/>')
-    s.append(f'<text class="tick" x="{R}" y="{y(25) + 16:.1f}" text-anchor="end">prefill-compute floor: 60,000 tokens ÷ ~2,400 tok/s ≈ 25 s</text>')
+    s.append(f'<line x1="{L}" y1="{y(44):.1f}" x2="{R}" y2="{y(44):.1f}" stroke="{P["MUTED"]}" stroke-width="1" stroke-dasharray="2 4"/>')
+    s.append(f'<text class="tick" x="{R}" y="{y(44) + 16:.1f}" text-anchor="end">prefill-compute floor: 60,000 tokens ÷ ~1,365 tok/s ≈ 44 s</text>')
     s.append(f'<rect x="{x(512):.1f}" y="{T}" width="{x(1024) - x(512):.1f}" height="{B - T}" fill="{P["CACHE"]}" fill-opacity="0.13"/>')
     s.append(f'<text class="onmark" x="{x(724):.0f}" y="{T + 18}" text-anchor="middle" style="fill:{P["CACHE"]}">sweet spot for this traffic</text>')
 

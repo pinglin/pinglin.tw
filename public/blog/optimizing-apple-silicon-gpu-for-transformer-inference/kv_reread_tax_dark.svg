@@ -19,32 +19,35 @@ text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; f
 <rect x="326.4" y="89" width="13" height="13" rx="3" fill="#d95926"/>
 <text x="346.4" y="100">resident KV re-read</text>
 <line class="grid" x1="390" y1="130" x2="390" y2="320"/>
-<line class="grid" x1="512" y1="130" x2="512" y2="320"/>
-<line class="grid" x1="634" y1="130" x2="634" y2="320"/>
-<line class="grid" x1="756" y1="130" x2="756" y2="320"/>
-<line class="grid" x1="878" y1="130" x2="878" y2="320"/>
+<line class="grid" x1="492" y1="130" x2="492" y2="320"/>
+<line class="grid" x1="593" y1="130" x2="593" y2="320"/>
+<line class="grid" x1="695" y1="130" x2="695" y2="320"/>
+<line class="grid" x1="797" y1="130" x2="797" y2="320"/>
+<line class="grid" x1="898" y1="130" x2="898" y2="320"/>
 <line class="grid" x1="1000" y1="130" x2="1000" y2="320"/>
 <text class="lab" x="60" y="174" font-size="15">Chats alone, short contexts</text>
-<rect x="390.0" y="150" width="244.0" height="38" rx="4" fill="#3987e5"/>
-<text class="onmark" x="512" y="174" text-anchor="middle" style="fill:#ffffff">weights ~2.0 GB</text>
-<text class="lab" x="646" y="174" style="fill:#3987e5">≈ 65 tok/s</text>
+<rect x="390.0" y="150" width="305.0" height="38" rx="4" fill="#3987e5"/>
+<text class="onmark" x="542" y="174" text-anchor="middle" style="fill:#ffffff">weights ~3.0 GB</text>
+<text class="lab" x="707" y="174" style="fill:#3987e5">≈ 65 tok/s</text>
 <text class="lab" x="60" y="264" font-size="15">+ one 130k-token benchmark sequence</text>
-<rect x="390.0" y="240" width="244.0" height="38" rx="4" fill="#3987e5"/>
-<text class="onmark" x="512" y="264" text-anchor="middle" style="fill:#ffffff">weights ~2.0 GB</text>
-<rect x="636.0" y="240" width="315.2" height="38" rx="4" fill="#d95926"/>
-<text class="onmark" x="794" y="264" text-anchor="middle" style="fill:#0b0b0b">KV ~2.6 GB</text>
-<text class="lab" x="963" y="264" style="fill:#d95926">≈ ½ the rate</text>
+<rect x="390.0" y="240" width="305.0" height="38" rx="4" fill="#3987e5"/>
+<text class="onmark" x="542" y="264" text-anchor="middle" style="fill:#ffffff">weights ~3.0 GB</text>
+<rect x="697.0" y="240" width="262.3" height="38" rx="4" fill="#d95926"/>
+<text class="onmark" x="828" y="264" text-anchor="middle" style="fill:#0b0b0b">KV ~2.6 GB</text>
+<text class="lab" x="971" y="264" style="fill:#d95926">≈ ½ the rate</text>
 <line class="axis" x1="390" y1="320" x2="1000" y2="320"/>
 <line class="axis" x1="390" y1="320" x2="390" y2="325"/>
 <text class="tick" x="390" y="342" text-anchor="middle">0</text>
-<line class="axis" x1="512" y1="320" x2="512" y2="325"/>
-<text class="tick" x="512" y="342" text-anchor="middle">1</text>
-<line class="axis" x1="634" y1="320" x2="634" y2="325"/>
-<text class="tick" x="634" y="342" text-anchor="middle">2</text>
-<line class="axis" x1="756" y1="320" x2="756" y2="325"/>
-<text class="tick" x="756" y="342" text-anchor="middle">3</text>
-<line class="axis" x1="878" y1="320" x2="878" y2="325"/>
-<text class="tick" x="878" y="342" text-anchor="middle">4</text>
+<line class="axis" x1="492" y1="320" x2="492" y2="325"/>
+<text class="tick" x="492" y="342" text-anchor="middle">1</text>
+<line class="axis" x1="593" y1="320" x2="593" y2="325"/>
+<text class="tick" x="593" y="342" text-anchor="middle">2</text>
+<line class="axis" x1="695" y1="320" x2="695" y2="325"/>
+<text class="tick" x="695" y="342" text-anchor="middle">3</text>
+<line class="axis" x1="797" y1="320" x2="797" y2="325"/>
+<text class="tick" x="797" y="342" text-anchor="middle">4</text>
+<line class="axis" x1="898" y1="320" x2="898" y2="325"/>
+<text class="tick" x="898" y="342" text-anchor="middle">5</text>
 <line class="axis" x1="1000" y1="320" x2="1000" y2="325"/>
-<text class="tick" x="1000" y="342" text-anchor="end">5 GB</text>
+<text class="tick" x="1000" y="342" text-anchor="end">6 GB</text>
 </svg>
