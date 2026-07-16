@@ -5,7 +5,7 @@ const pageTitle = 'About | pinglin.tw';
 ---
 
 <BaseLayout pageTitle={pageTitle}>
-  <div class="flex flex-col md:flex-row gap-6 items-start">
+  <div class="flex flex-col md:flex-row gap-6 items-stretch">
     <div class="flex flex-col gap-4">
       <p>Hello there!</p>
       <p>
@@ -20,76 +20,17 @@ const pageTitle = 'About | pinglin.tw';
         <li>Proud father of one</li>
         <li>Music enthusiast with relative pitch</li>
       </ul>
+      <p class="md:mt-auto pt-2">
+        Check out my <a
+          href="https://scholar.google.com/citations?user=mR95vtsAAAAJ&hl=en"
+          class="text-info hover:underline"
+        >
+          Google Scholar
+        </a> profile for more details.
+      </p>
     </div>
     <div class="md:w-2/5 flex-shrink-0">
       <img src="/me.jpg" class="w-full h-auto rounded-md" />
     </div>
-  </div>
-  <div class="flex flex-col gap-2">
-    <h2>Biography</h2>
-    <p>
-      I grew up in Pingtung, Taiwan. Due to the limited resources in this rural area, I had an
-      intense desire to access more opportunities and face bigger challenges from a young age. I was
-      introduced to computers and the internet early on. At 14, I built a website using Microsoft
-      FrontPage, offering MP3 downloads at a time when copyright issues weren't yet a concern, and
-      we were still using 56k dial-up modems to connect to the Internet.
-    </p>
-    <p>
-      As my teenage years unfolded, my life was fueled by rock'n'roll. Playing in bands as a main
-      vocalist and guitarist, I immersed myself in the music of Oasis, Guns N' Roses, Radiohead,
-      Nirvana, and Beatles. This passion guided me through my formative years and eventually (kind
-      of weirdly) led me to National Cheng Kung University in 2003, where I majored in Engineering
-      Science. While my studies covered a broad range of topics, it was computer science that truly
-      captivated me. My work on a neural network project using Self-Organizing Maps for image
-      segmentation solidified my love for software development.
-    </p>
-    <p>
-      Recognizing Taiwan's strength in hardware but its weakness in software, I decided to pursue
-      further education abroad in the UK. I earned a master's degree in Artificial Intelligence from
-      the University of Southampton, followed by a PhD in Robotic Vision at Imperial College London.
-      My research focused on Visual Simultaneous Localization and Mapping (VSLAM), Deep Learning,
-      and high-performance programming languages like C/C++ and CUDA. This period marked my deep
-      dive into solving real-world problems using advanced technologies.
-    </p>
-    <p>
-      After completing my PhD, I joined University College London as a Postdoctoral Research
-      Associate, contributing to the EU-funded <a
-        href="https://www.cascade-fp7.eu/index.html"
-        class="text-info hover:underline"
-      >
-        CASCADE
-      </a>
-      project aimed at advancing autonomous robotic surgery. It was here that I realized the profound
-      gap between academic research and real-world application. This realization ignited my journey into
-      entrepreneurship.
-    </p>
-    <p>
-      My first startup, Umbo Computer Vision, sought to revolutionize video security through
-      real-time computer vision. This experience illuminated a critical gap in handling unstructured
-      data—an area with insufficient tooling and often requiring expensive AI and data teams.
-    </p>
-    <p>
-      Determined to address this challenge, I founded <a
-        href="https://www.instill.tech"
-        class="text-info hover:underline"
-      >
-        Instill AI
-      </a> to provide more efficient solutions for unstructured data processing. As Generative AI, large
-      language models (LLMs), vision language models (VLMs), and large multimodal models (LMMs) emerged
-      in 2022, it became clear that while these technologies made significant strides, the software tooling
-      needed to keep pace.
-    </p>
-    <p>I am on it.</p>
-  </div>
-  <div class="flex flex-col gap-2">
-    <h2>Publications</h2>
-    <p>
-      Check out my <a
-        href="https://scholar.google.com/citations?user=mR95vtsAAAAJ&hl=en"
-        class="text-info hover:underline"
-      >
-        Google Scholar
-      </a> profile for more details.
-    </p>
   </div>
 </BaseLayout>

@@ -1,3 +1,6 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { defineConfig } from 'astro/config';
 import vercel from '@astrojs/vercel';
 import preact from '@astrojs/preact';
@@ -9,6 +12,30 @@ import { visit } from 'unist-util-visit';
 import { languages, defaultLang } from './src/i18n/ui';
 
 const supportedLanguages = Object.keys(languages);
+
+// Collect the basenames of blog posts marked `hidden: true` in frontmatter, so
+// the auto-generated sitemap can drop them (they stay reachable by direct URL
+// but are excluded from listings, RSS, and sitemap alike). Keeps the `hidden`
+// flag the single source of truth instead of hardcoding slugs here.
+function collectHiddenSlugs(dir) {
+  const hidden = new Set();
+  const walk = (d) => {
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const full = join(d, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.md')) {
+        const fm = readFileSync(full, 'utf-8').match(/^---\n([\s\S]*?)\n---/);
+        if (fm && /^\s*hidden:\s*true\s*$/m.test(fm[1])) {
+          hidden.add(entry.name.replace(/\.md$/, ''));
+        }
+      }
+    }
+  };
+  walk(dir);
+  return hidden;
+}
+
+const hiddenSlugs = collectHiddenSlugs('./src/content/blog');
 
 export default defineConfig({
   site: 'https://pinglin.tw',
@@ -56,7 +83,9 @@ export default defineConfig({
     }),
     preact(),
     tailwind(),
-    sitemap(),
+    sitemap({
+      filter: (page) => ![...hiddenSlugs].some((slug) => page.includes(`/${slug}/`)),
+    }),
   ],
   markdown: {
     remarkPlugins: [

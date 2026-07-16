@@ -35,8 +35,8 @@ export async function GET() {
       });
     });
 
-    // Get all blog posts
-    const blogPosts = await getCollection('blog');
+    // Get all blog posts (excluding hidden ones)
+    const blogPosts = await getCollection('blog', ({ data }) => !data.hidden);
 
     // Add blog posts for each language
     blogPosts.forEach((post) => {
