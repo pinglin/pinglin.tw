@@ -268,7 +268,7 @@ def fig_tradeoff(P, path):
         s.append(f'<text class="tick" x="{L - 10}" y="{y(v) + 4:.1f}" text-anchor="end">{lab}</text>')
 
     s.append(f'<line x1="{L}" y1="{y(44):.1f}" x2="{R}" y2="{y(44):.1f}" stroke="{P["MUTED"]}" stroke-width="1" stroke-dasharray="2 4"/>')
-    s.append(f'<text class="tick" x="{R}" y="{y(44) + 16:.1f}" text-anchor="end">prefill-compute floor: 60,000 tokens ÷ ~1,365 tok/s ≈ 44 s</text>')
+    s.append(f'<text class="tick" x="{R}" y="{y(44) + 16:.1f}" text-anchor="end">prefill floor: 60,000 tokens ÷ ~1,365 tok/s ≈ 44 s</text>')
     s.append(f'<rect x="{x(512):.1f}" y="{T}" width="{x(1024) - x(512):.1f}" height="{B - T}" fill="{P["CACHE"]}" fill-opacity="0.13"/>')
     s.append(f'<text class="onmark" x="{x(724):.0f}" y="{T + 18}" text-anchor="middle" style="fill:{P["CACHE"]}">sweet spot for this traffic</text>')
 

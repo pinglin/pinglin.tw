@@ -68,16 +68,16 @@ That naive division leaves out a lot:
 - **Everything between the matmuls.** Softmax, layernorm, residuals: small memory-bound passes the weights-only division doesn't count.
 - **This stack's own taxes.** mlx-vlm's per-step overhead, and a MoE gathering its experts from scattered memory instead of one contiguous read.
 
-So a third of the naive bound is an unremarkable place to land, and note what it means: this box is nowhere near saturating its bandwidth. Decode here
-is bandwidth-shaped (the rate scales with bandwidth) rather than bandwidth-bound (pinned at the roofline); proving the latter would need
-achieved-bandwidth counters I did not capture.
+So a third of the naive bound is an unremarkable place to land. That 65 tok/s is about 36% of an idealised useful-byte roofline; whether the rest goes
+to a bandwidth wall or to kernel, routing, and launch inefficiency I cannot say, because I did not capture achieved-bandwidth counters. The rate
+clearly scales with bandwidth; that it is pinned at the roofline is a hypothesis I have not demonstrated.
 
 The ceiling is set by bandwidth, not capacity: my whole memory footprint (weights + KV caches + prefix cache) peaks around 40–50 GB of the 128 GB.
 Buying more memory would change nothing for a single stream's speed. So how do you serve several at once? Not with more memory, but by sharing the
 step: at batch N the attention and shared-expert weights are read once for all N sequences. It's a mixture-of-experts, so the routed experts a batch
 touches are the union of its tokens' choices rather than one fixed set, which makes decode batching cheap but not free. Cheap enough, though, that
-decode sharing was never the multi-tenant problem. If decoding were all the GPU did, every tenant would see 60+ tok/s. But the real cost of that
-traffic is never decode-only, and that is exactly what the rest of this post is about.
+decode sharing was never the multi-tenant problem. But the real cost of that traffic is never decode-only, and that is exactly what the rest of this
+post is about.
 
 **Prefill is compute-bound.** Before a request can decode its first token, its entire prompt must be pushed through the model. That's large matrix
 multiplies across the full sequence (all 40 GPU cores saturated), processed in 2,048-token chunks that each take one to two seconds at document scale.
@@ -125,11 +125,11 @@ to **every step, for everyone**:
   ~5.6 GB of reads, so one long resident sequence still cuts the shared step rate by roughly half even with no prefill running.</figcaption>
 </figure>
 
-The obvious optimization is KV-cache quantization: fewer KV bytes per step, less overhead. But mlx-vlm does not currently support quantized KV
-alongside APC (automatic prefix cache), so using it means giving up APC. For the chat tenant that settles it: its multi-turn sessions re-hit the same
-~23k-token prefix every turn, so avoiding that prefill beats cheaper KV reads during decode, and I kept the prefix cache. mlx-vlm will soon support
-running both together, see [#1559](https://github.com/Blaizzy/mlx-vlm/issues/1559). If your input:output ratio runs the other way, decode-heavy, then
-quantizing the KV cache is exactly the optimization to reach for.
+The obvious optimization is KV-cache quantization: fewer KV bytes per step, less overhead. But on my pinned mlx-vlm and its concurrent multi-row
+hybrid path, quantized KV and APC (automatic prefix cache) do not yet fully compose, so enabling one meant giving up the other. For the chat tenant
+that settles it: its multi-turn sessions re-hit the same ~23k-token prefix every turn, so avoiding that prefill beats cheaper KV reads during decode,
+and I kept the prefix cache. mlx-vlm will soon support running both together, see [#1559](https://github.com/Blaizzy/mlx-vlm/issues/1559). If your
+input:output ratio runs the other way, decode-heavy, then quantizing the KV cache is exactly the optimization to reach for.
 
 ## The two key optimizations
 
@@ -137,9 +137,10 @@ So every optimization that worked happened on the prefill side. That's the concl
 and where prefill happens**, because decode sharing was never the problem.
 
 **1. A bigger prefix cache.** Chats amortize their prefill only if the cache holds their prefix. I raised the prefix-cache capacity so ~6 concurrent
-sessions stay warm; turn N+1 now restores its ~23k-token prefix in under a second instead of re-prefilling it for tens of seconds. This also bounds
-the resident-KV overhead, since restored prefixes replace re-computed ones. This is the real advantage of a large unified-memory pool on Apple
-Silicon: not faster decode (see the bandwidth division above), but a bigger cache that avoids prefill.
+sessions stay warm; turn N+1 now restores its ~23k-token prefix in under a second instead of re-prefilling it for tens of seconds. A restored prefix
+still occupies runtime KV while the request decodes, so a bigger cache costs resident memory, not less; what it buys is avoided prefill and lower
+TTFT. This is the real advantage of a large unified-memory pool on Apple Silicon: not faster decode (see the bandwidth division above), but a bigger
+cache that avoids prefill.
 
 **2. An admission gate for document-scale prefills.** At most one big prefill is admitted at a time, and the scheduler holds the decode gaps between
 its chunks instead of letting queued prefills claim them back-to-back. Interactive streams keep receiving steps no matter how deep the prefill queue
@@ -159,26 +160,26 @@ with prompt length. **ITL** (inter-token latency; also written TPOT, time per ou
 gap between tokens once a stream is decoding: the decode-step cadence.
 
 Re-read the incident through these two concepts: the benchmark tenant's TTFT work stretched the interactive-chat tenant's ITL from ~15 ms to ~1.5 s
-(nearly a 100× regression), and that system-level degradation showed up in no throughput metric. The two earlier optimizations map onto these two
-concepts too: the bigger prefix cache is a TTFT fix (a warm turn now starts in under a second), and the admission gate is an ITL fix (it bounds a
+(nearly a 100× regression), and it was hidden by the aggregate throughput and GPU-utilization metrics. The two earlier optimizations map onto these
+two concepts too: the bigger prefix cache is a TTFT fix (a warm turn now starts in under a second), and the admission gate is an ITL fix (it bounds a
 chat's worst token gap at roughly one chunk time, no matter how deep the prefill queue gets).
 
-The reason these two metrics matter is that they trade against each other on a shared GPU, and the balance between them is set by one parameter: **how
-much prefill you admit between decode steps**, i.e. the chunk size. Bigger chunks finish the prompt sooner (better TTFT) but stretch every concurrent
-stream's token gap (worse ITL). Chop the chunks finer and concurrent interactive streams breathe again (better ITL), at the cost of a fixed overhead
-per extra chunk boundary (kernel launches, re-touching the prefix KV) that makes the big prompt itself take longer (worse TTFT); at the extreme,
-decode-first scheduling starves prefill entirely.
+The reason these two metrics matter is that they trade against each other on a shared GPU, and the main lever between them is **how much prefill you
+admit between decode steps**, i.e. the chunk size (the decode quota, arrival rate, and cache state matter too). Bigger chunks finish the prompt sooner
+(better TTFT) but stretch every concurrent stream's token gap (worse ITL). Chop the chunks finer and concurrent interactive streams breathe again
+(better ITL), at the cost of a fixed overhead per extra chunk boundary (kernel launches, re-touching the prefix KV) that makes the big prompt itself
+take longer (worse TTFT); at the extreme, decode-first scheduling starves prefill entirely.
 
 A concrete example: the TTFT curve below is one long-document prompt's own TTFT. Its first token cannot appear until all 60,000 of its prompt tokens
-are prefilled, so no chunk size takes it below the ~44 s compute floor; chunk size only decides how much overhead it pays on top of that floor, and
+are prefilled, so no chunk size takes it below the ~44 s prefill floor; chunk size only decides how much overhead it pays on top of that floor, and
 how long the other streams wait meanwhile. Neither extreme of chunk size is usually what we want; the point is to find the sweet spot for your use
 case:
 
 <figure id="figure-4">
-  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/ttft_itl_tradeoff_light.svg" class="dark:hidden" alt="A log-log line chart of prefill chunk size versus latency in seconds. An orange curve, the 60k-token prompt's own TTFT, falls from about 55 seconds at 128-token chunks toward its 25-second prefill-compute floor, drawn as a dotted line. A blue curve, the inter-token latency a concurrent interactive stream experiences during that prefill, rises almost linearly from about 0.1 seconds to 6 seconds. A shaded band between 512- and 1,024-token chunks marks the sweet spot, and a dashed line marks this box's current 2,048-token setting." />
-  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/ttft_itl_tradeoff_dark.svg" class="hidden dark:block" alt="A log-log line chart of prefill chunk size versus latency in seconds. An orange curve, the 60k-token prompt's own TTFT, falls from about 55 seconds at 128-token chunks toward its 25-second prefill-compute floor, drawn as a dotted line. A blue curve, the inter-token latency a concurrent interactive stream experiences during that prefill, rises almost linearly from about 0.1 seconds to 6 seconds. A shaded band between 512- and 1,024-token chunks marks the sweet spot, and a dashed line marks this box's current 2,048-token setting." />
+  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/ttft_itl_tradeoff_light.svg" class="dark:hidden" alt="A log-log line chart of prefill chunk size versus latency in seconds. An orange curve, the 60k-token prompt's own TTFT, falls from about 74 seconds at 128-token chunks toward its 44-second prefill floor, drawn as a dotted line. A blue curve, the inter-token latency a concurrent interactive stream experiences during that prefill, rises almost linearly from about 0.1 seconds to 6 seconds. A shaded band between 512- and 1,024-token chunks marks the sweet spot, and a dashed line marks this box's current 2,048-token setting." />
+  <img src="/blog/optimizing-apple-silicon-gpu-for-transformer-inference/ttft_itl_tradeoff_dark.svg" class="hidden dark:block" alt="A log-log line chart of prefill chunk size versus latency in seconds. An orange curve, the 60k-token prompt's own TTFT, falls from about 74 seconds at 128-token chunks toward its 44-second prefill floor, drawn as a dotted line. A blue curve, the inter-token latency a concurrent interactive stream experiences during that prefill, rises almost linearly from about 0.1 seconds to 6 seconds. A shaded band between 512- and 1,024-token chunks marks the sweet spot, and a dashed line marks this box's current 2,048-token setting." />
   <figcaption>Figure 4. Chunk size trades the benchmark prompt's own TTFT against the interactive stream's ITL, modeled from this box's measured rates
-  (assumptions in the chart). The orange curve can never drop below the ~44 s prefill-compute floor; left of the band you pay real TTFT for little
+  (assumptions in the chart). The orange curve can never drop below the ~44 s prefill floor; left of the band you pay real TTFT for little
   extra smoothness, and right of it the interactive stream's ITL grows linearly while TTFT barely improves.</figcaption>
 </figure>
 
@@ -215,7 +216,8 @@ laptop falls on the full spectrum.
 | SSD offload tier (e.g. Phison aiDAPTIV+)       | TB-scale NAND             | ~7–14 GB/s     | ~0.01–0.03× | ~1–2 tok/s (see below)            |
 
 \* Naive scaling of my measured 65 tok/s by the bandwidth ratio: same ~3 GB-per-step MoE, batch one, software efficiency held constant. Real numbers
-move with the serving stack and batch depth; read the column as physics headroom, not a benchmark.
+move with the serving stack and batch depth, and the smaller-memory rows (24–32 GB) could not actually hold this ~40–50 GB deployment; read the column
+as counterfactual bandwidth-only headroom, not a benchmark.
 
 † Unannounced. Apple skipped an M4 Ultra, so the current Mac Studio tops out at the M3 Ultra; the M5 Ultra figure assumes UltraFusion doubles the M5
 Max's 614 GB/s, the pattern every previous Ultra has followed. If it ships that way, the top Mac would sit at roughly 60% of an A100's bandwidth.
@@ -263,11 +265,12 @@ above showed, capacity buys cache, and cache avoids prefill.
 
 - **Decode speed is a bandwidth division, not a capacity function.** 546 GB/s ÷ bytes-per-step sets the ceiling. On Apple Silicon the upgrade that
   moves it is an Ultra-class chip (~819 GB/s of bandwidth, roughly +50%), not more RAM.
-- **SOTA tokens-per-second is mostly purchased bandwidth.** From an SSD tier's ~10 GB/s through a MacBook's 546 GB/s of LPDDR and Blackwell's 8 TB/s
-  of HBM3e to Groq's 80 TB/s of SRAM, single-stream decode scales with the memory system (though not linearly across such different hardware).
-  Scheduling cleverness moves you toward the ceiling; hardware moves the ceiling.
-- **Prefill is where multi-tenant damage comes from.** Decode batching shares a step almost for free; a single document-scale prefill squeezes every
-  decoder to ~1 tok/s.
+- **Memory bandwidth sets the roofline for low-batch decode, but it is not the whole story.** From an SSD tier's ~10 GB/s through a MacBook's 546 GB/s
+  of LPDDR and Blackwell's 8 TB/s of HBM3e to Groq's 80 TB/s of SRAM, single-stream decode scales with the memory system (though not linearly across
+  such different hardware); realized tok/s also depends on bytes per accepted token, kernels, speculation, and interconnect. Scheduling cleverness
+  moves you toward the ceiling; hardware moves the ceiling.
+- **Prefill is where multi-tenant damage comes from.** Decode sharing was never the villain; a single document-scale prefill squeezes every decoder to
+  ~1 tok/s.
 - **TTFT and ITL trade against each other, and chunk size is the main lever.** If chunks are bigger, they favor prompt completion; if smaller, they
   favor streaming smoothness. Draw the two curves for your own box and pick the sweet spot on purpose instead of inheriting a default.
 - **Memory capacity buys cache, and cache lets you skip prefill.** That's the whole value chain. Size the prefix cache to your concurrent sessions

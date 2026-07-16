@@ -25,7 +25,7 @@ text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; f
 <line class="grid" x1="74" y1="150.0" x2="1056" y2="150.0"/>
 <text class="tick" x="64" y="154.0" text-anchor="end">100 s</text>
 <line x1="74" y1="190.4" x2="1056" y2="190.4" stroke="#8f8f9c" stroke-width="1" stroke-dasharray="2 4"/>
-<text class="tick" x="1056" y="206.4" text-anchor="end">prefill-compute floor: 60,000 tokens ÷ ~1,365 tok/s ≈ 44 s</text>
+<text class="tick" x="1056" y="206.4" text-anchor="end">prefill floor: 60,000 tokens ÷ ~1,365 tok/s ≈ 44 s</text>
 <rect x="401.3" y="150" width="163.7" height="340" fill="#199e70" fill-opacity="0.13"/>
 <text class="onmark" x="483" y="168" text-anchor="middle" style="fill:#199e70">sweet spot for this traffic</text>
 <line x1="728.7" y1="150" x2="728.7" y2="490" stroke="#8f8f9c" stroke-width="1" stroke-dasharray="5 4"/>
