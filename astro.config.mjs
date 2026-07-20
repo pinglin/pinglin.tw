@@ -42,9 +42,6 @@ export default defineConfig({
   adapter: vercel({
     imageService: true,
     edgeMiddleware: true,
-    webAnalytics: {
-      enabled: true,
-    },
   }),
   integrations: [
     mermaid({

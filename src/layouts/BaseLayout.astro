@@ -1,5 +1,6 @@
 ---
 import SpeedInsights from '@vercel/speed-insights/astro';
+import Analytics from '@vercel/analytics/astro';
 import SEO from '../components/SEO.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import ScrollToTop from '../components/ScrollToTop.astro';
@@ -68,6 +69,7 @@ const lang = Astro.currentLocale ?? 'en';
       </div>
     </main>
     <Footer />
+    <Analytics />
     <SpeedInsights />
   </body>
 </html>
