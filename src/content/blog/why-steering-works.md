@@ -106,7 +106,7 @@ That said, the analogy has a studied mechanistic spine. There are really **three
 - **Artifact — the agent loop.** The loop this post is about: the state is the work-in-progress, the gradient is feedback, and steering is the
   correction term.
 
-Here is the part I find genuinely beautiful: **nobody trains the middle loop.** No frontier lab runs a meta-learning algorithm — no model-agnostic
+Here is the part I find genuinely interesting: **nobody trains the middle loop.** No frontier lab runs a meta-learning algorithm — no model-agnostic
 meta-learning (MAML), no bi-level optimization; the recipes, where published, are ordinary SGD pretraining plus ordinary multi-turn
 reinforcement-learning (RL) post-training. An inner learner _emerges_ — behaviorally certain, mechanistically still argued over — because across a
 broad enough task distribution the cheapest way to predict the next token is to become a learner, and the cheapest way to win multi-step tool-use
