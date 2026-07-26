@@ -60,7 +60,7 @@ software platforms and applications can heavily benefit from._
 From 2010 to early 2024, MDS barely evolved, while AI advancements skyrocketed. Now, the impact of AI on the data industry is getting inevitable and
 disruptive. The signs are already here:
 
-- Databricks' Series J founding round, raising $10 billion and valuing the company at $62 billion, investing in new AI products.
+- Databricks' Series J founding round, raising \$10 billion and valuing the company at \$62 billion, investing in new AI products.
 - Snowflake acquired DataVolo for its unstructured data streaming capabilities.
 - DataStax acquired Langflow for its no-code AI workflow builder.
 

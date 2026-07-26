@@ -7,6 +7,8 @@ import preact from '@astrojs/preact';
 import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 import mermaid from 'astro-mermaid';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { visit } from 'unist-util-visit';
 
 import { languages, defaultLang } from './src/i18n/ui';
@@ -86,12 +88,18 @@ export default defineConfig({
   ],
   markdown: {
     remarkPlugins: [
+      remarkMath,
       () => (tree) => {
         visit(tree, 'text', (node) => {
           // Remove line breaks between Chinese characters
           node.value = node.value.replace(/(\p{Script=Han})\s+(\p{Script=Han})/gu, '$1$2');
         });
       },
+    ],
+    rehypePlugins: [
+      // `trust` is scoped to \htmlId so equation tags can carry anchor ids
+      // for cross-reference links, without enabling the wider trust surface.
+      [rehypeKatex, { trust: (context) => context.command === '\\htmlId' }],
     ],
   },
   i18n: {

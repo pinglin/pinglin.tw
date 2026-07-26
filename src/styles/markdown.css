@@ -15,3 +15,25 @@
 .markdown-content :not(pre) > code::after {
   content: none;
 }
+
+/* KaTeX renders at 1.21em by default; keep formulas at body-text scale. */
+.markdown-content .katex {
+  font-size: 1em;
+}
+
+/* KaTeX equation tags reuse the class name `.tag`, which collides with the
+   site's post-tag pill in global.css — reset the pill styles inside math. */
+.markdown-content .katex .tag {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  color: inherit;
+}
+
+/* Anchor targets (equation tags, figures, headings) need headroom below the
+   floating navbar when jumped to via cross-reference links. */
+.markdown-content .katex .tag [id],
+.markdown-content figure[id],
+.markdown-content :is(h2, h3)[id] {
+  scroll-margin-top: 6rem;
+}

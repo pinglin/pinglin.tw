@@ -1,6 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import '../styles/markdown.css';
+import 'katex/dist/katex.min.css';
 const { frontmatter } = Astro.props;
 
 const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', {
@@ -16,7 +17,7 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
   image={frontmatter.image}
 >
   <div class="flex flex-col mb-10">
-    <h1 class="text-center my-4">{frontmatter.title}</h1>
+    <h1 class="text-center my-4 leading-snug">{frontmatter.title}</h1>
     <p class="text-sm text-center text-gray-500 dark:text-gray-400">{formattedDate}</p>
     <p class="text-md text-left my-6 text-gray-500 dark:text-gray-400">{frontmatter.description}</p>
     <div class="img-container">
