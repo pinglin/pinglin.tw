@@ -41,6 +41,10 @@ const hiddenSlugs = collectHiddenSlugs('./src/content/blog');
 
 export default defineConfig({
   site: 'https://pinglin.tw',
+  redirects: {
+    // No zh-tw translation for this post; send readers to the English one.
+    '/zh-tw/blog/why-steering-works': '/blog/why-steering-works',
+  },
   adapter: vercel({
     imageService: true,
     edgeMiddleware: true,
