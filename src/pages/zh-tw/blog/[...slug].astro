@@ -5,19 +5,43 @@ import MarkdownPostLayout from '../../../layouts/MarkdownPostLayout.astro';
 
 export const prerender = true;
 
+// Generate a zh-tw path for every post: translated posts render their zh-tw
+// entry; English-only posts redirect to the English page instead of 404ing.
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('blog', ({ id }) => id.startsWith('zh-tw/'));
-  return blogEntries.map((entry: CollectionEntry<'blog'>) => ({
-    params: { slug: entry.slug.split('/').slice(1).join('/') },
-    props: { entry },
-  }));
+  const allEntries = await getCollection('blog');
+  const zhEntries = allEntries.filter(({ id }) => id.startsWith('zh-tw/'));
+  const zhSlugs = new Set(zhEntries.map((entry) => entry.slug.split('/').slice(1).join('/')));
+  const englishOnly = allEntries.filter(
+    ({ id, slug }) => !id.startsWith('zh-tw/') && !zhSlugs.has(slug),
+  );
+
+  return [
+    ...zhEntries.map((entry: CollectionEntry<'blog'>) => ({
+      params: { slug: entry.slug.split('/').slice(1).join('/') },
+      props: { entry },
+    })),
+    ...englishOnly.map((entry: CollectionEntry<'blog'>) => ({
+      params: { slug: entry.slug },
+      props: { redirectTo: `/blog/${entry.slug}` },
+    })),
+  ];
 }
 
-const { entry } = Astro.props;
-type Props = { entry: CollectionEntry<'blog'> };
-const { Content } = await entry.render();
+type Props =
+  | { entry: CollectionEntry<'blog'>; redirectTo?: never }
+  | { entry?: never; redirectTo: string };
+const { entry, redirectTo } = Astro.props as {
+  entry?: CollectionEntry<'blog'>;
+  redirectTo?: string;
+};
+
+if (redirectTo) {
+  return Astro.redirect(redirectTo, 302);
+}
+
+const { Content } = await entry!.render();
 ---
 
-<MarkdownPostLayout frontmatter={entry.data}>
+<MarkdownPostLayout frontmatter={entry!.data}>
   <Content />
 </MarkdownPostLayout>
