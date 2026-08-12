@@ -37,3 +37,27 @@
 .markdown-content :is(h2, h3)[id] {
   scroll-margin-top: 6rem;
 }
+
+/* Wide content must scroll inside its own box, never widen the page. Mobile
+   browsers shrink-to-fit when any child overflows the viewport, which drifts
+   the whole layout sideways; multi-column tables and long code blocks are the
+   usual culprits. */
+.markdown-content table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+}
+
+.markdown-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.markdown-content :is(img, svg, figure) {
+  max-width: 100%;
+  height: auto;
+}
+
