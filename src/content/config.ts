@@ -18,6 +18,10 @@ const blogCollection = defineCollection({
     // Hidden posts stay reachable at their URL but are excluded from the
     // blog and tag listing pages.
     hidden: z.boolean().optional().default(false),
+    // Draft posts render in `astro dev` for preview but are never built for
+    // production, so an unfinished post cannot reach the site by being
+    // committed. Publish by removing the flag.
+    draft: z.boolean().optional().default(false),
     pubDate: z.date(),
   }),
 });

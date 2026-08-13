@@ -8,6 +8,7 @@ description:
 author: 'Ping-Lin Chang'
 lang: 'en'
 hidden: true
+draft: true
 image:
   url: '/blog/the-shapes-of-agent-memory/header.svg'
   urlLight: '/blog/the-shapes-of-agent-memory/header_light.svg'
@@ -36,22 +37,24 @@ to trust it, how to turn it into action, is trained into the acting policy by re
 ([MemHarness](https://github.com/KnowledgeXLab/MemHarness)), the shape the field reaches for when retrieval stops paying, and it is where this post
 ends.
 
-Which shape is better gets argued with opinions; I wanted a measurement. The main experiment holds everything fixed: the two store shapes run behind
-the _same_ agent loop, on the _same_ local open-weight model, scored by the _same_ judge on the same public benchmark, so only the memory layer can
-move the number. Every per-question row behind every table below, and a script that recomputes each published figure from it, is in
-[a40-labs/memory](https://github.com/a40-labs/memory): `python3 scripts/verify_all.py` rebuilds the tables and fails loudly if any number in this post
-does not reproduce. Where fairness demanded it, hosted models were brought in deliberately: the store head-to-head reads every store through one
-shared reader and judge, `gpt-4o-mini`, the same model the graph vendor's own published numbers were scored with, so nobody is judged by a weaker
-ruler than they used themselves; and the agentic experiment fields a genuinely frontier actor, `claude-sonnet-5`, so the trained bar is not chased
-with a handicapped one. The trained shape itself cannot join the controlled comparison, because the training _is_ the method: unplug its bank and you
-are left with a different policy, not a baseline. The last section meets it on its home ground instead, the agentic benchmarks where memory means what
-_worked_ rather than what was said.
+In this post, I measure which shape is better rather than argue it, which meant building the first two. The structured arm is a [hybrid](#hybrid) of
+the [two structured lineages](#two-lineages-place-and-entity-and-time), plus a layer neither has: an associative graph learned from which places
+actually get retrieved together, so recall can reach an item the query never ranked. The [file-based arm](#file-based) is a reconstruction of a
+shipping coding agent's auto-memory, traced claim by claim to public documentation and
+[published with its spec](https://github.com/a40-labs/memory/tree/main/systems/file-based), not a strawman written to lose. Both run behind the _same_
+agent loop, on the _same_ local open-weight model, scored by the _same_ judge on the same public benchmark, so only the memory layer can move the
+number, and every per-question row with the scripts that recompute each figure is in [a40-labs/memory](https://github.com/a40-labs/memory). Hosted
+models come in where fairness demands: the [head-to-head](#the-lineages-head-to-head) reads every store through one shared reader and judge,
+`gpt-4o-mini`, the same model the graph vendor's own numbers were scored with; the agentic experiment fields a frontier actor, `claude-sonnet-5`. The
+[trained shape](#experience-architecture) cannot join the controlled comparison at all, because the training _is_ the method: unplug its bank and you
+have a different policy, not a baseline. The [last section](#remembering-what-worked-the-agentic-benchmarks) meets it on its home ground instead.
 
-**TL;DR** The structured store beats files on accuracy and on token cost at once, and the gap widens as histories grow; files win where memory stays
-small or where the right answer is "I don't know". On the agentic benchmarks, retrieved experience pays only where the actor is weak and has headroom
-left; where the task yields to reasoning, a frontier actor reaches the trained system's bar with no memory at all, and where the reward has a shape
-only practice teaches, the trained policy stands alone. That is the sharpest boundary in the post: where retrieved memory earns, where it does
-nothing, and where only training moves the number.
+**TL;DR** The structured store beats files on accuracy and on token cost at once; files win where memory stays small, or where the right answer is "I
+don't know". Against my own interest, the hybrid's place-plus-time structure buys nothing over a plain vector index on LoCoMo, and the two benchmarks
+rank the same pair of systems in opposite directions, so no single benchmark ranks memory systems. Swapping the model that reads the memory moves the
+score further than swapping between any two of the stores that work, which is why numbers do not travel between protocols. On the agentic benchmarks,
+retrieved experience pays only where the actor is weak and has headroom left; where the task yields to reasoning, a frontier actor reaches the trained
+system's bar with no memory at all, and where the reward has a shape only practice teaches, the trained policy stands alone.
 
 <figure id="figure-1">
   <img src="/blog/the-shapes-of-agent-memory/overview_light.svg" class="dark:hidden" alt="Two panels. Left, store-based memory: a frozen model writes to and reads from a store beside it, the store holding both kinds, file lines and structured dots; writes come from the model's curation or an embedder, reads from grep or ranked recall; it bolts onto any model and is paid at write and read time. Right, experience-based memory: an actor enclosed in a dashed trained-by-reinforcement-learning boundary exchanges episodes with an episode bank, writing finished episodes back and retrieving them; one model, inseparable, paid in training compute." />
@@ -268,7 +271,7 @@ written out in the tables and abbreviated as **n** in the figures, meaning the n
 
 - **No-memory**: the same agent loop with the memory layer removed. The floor that sizes what memory contributes at all, and proof that the judge
   cannot be gamed by refusing everything.
-- **File-based**: the markdown transplant described above. An LLM-curated index plus topic files, recalled by grep and read.
+- **File-based**: the markdown reconstruction described above. An LLM-curated index plus topic files, recalled by grep and read.
 - **Structured**: the hybrid described above. Dated atomic facts, embedded on write with no LLM, recalled by ranked hybrid search.
 
 The two pure structured lineages, place-organized and entity-and-time, do not run in the main experiment; they get their own store-only head-to-head
@@ -451,9 +454,9 @@ So why keep the benchmark? Because the dispute indicts the reporting, not the qu
 results on it travel; and because the fight teaches exactly this study's premise, that a number means something only inside a fixed, published
 protocol. The dispute constrains the protocol here in three ways. Every score is published under both scopes, with and without adversarial, because
 whether to count that category is precisely the axis Zep and mem0 fought over. The analysis resamples whole conversations rather than questions,
-because all 1,986 questions cluster inside 10 conversations and pretending otherwise makes intervals too tight. And I evaluate a disclosed, seeded,
-category-stratified sample of roughly 30 questions per conversation. The rest of the benchmark's fine print (retrieval recall confused with answer
-accuracy in the wild, saturation critiques) lives in the [appendix](#appendix-methods-and-caveats).
+because LoCoMo's questions cluster inside just 10 conversations and pretending otherwise makes intervals too tight. And I evaluate a disclosed,
+seeded, category-stratified sample of roughly 30 questions per conversation. The rest of the benchmark's fine print (retrieval recall confused with
+answer accuracy in the wild, saturation critiques) lives in the [appendix](#appendix-methods-and-caveats).
 
 #### Accuracy
 
@@ -552,7 +555,8 @@ temporal layer, so the hybrid bounds it closely):
 | Entity-and-time (Zep Cloud, published contexts)      |                   0.7461 |                          None |
 | Entity-and-time (Graphiti OSS, two embedder configs) |          0.5338 / 0.5286 |                          0.35 |
 
-<figcaption>Table 7. Store-only accuracy on both benchmarks, every store read and judged by the same frontier model.</figcaption>
+<figcaption>Table 7. Store-only accuracy on both benchmarks. Within each column every store is read and judged by one fixed model: `gpt-4o-mini` on
+LoCoMo, and the local 35B under LongMemEval's official per-category rubric. The columns are therefore comparable down, not across.</figcaption>
 </figure>
 
 <figure id="figure-12">
@@ -575,10 +579,9 @@ Four findings ([Tab. 7](#table-7), [Fig. 12](#figure-12)).
   lineage attractive for enumeration questions do not surface as a net win anywhere in this table; whatever they recover, the distillation loses more
   elsewhere. This is the single-session regression Zep itself discloses, visible benchmark-wide once the reader is held constant.
 - **An LLM-at-ingest design is bounded by its extractor, and the extractor bill is real.** Graphiti OSS with the vendor's own models lands around
-  0.53, so most of its 21-point gap to the vendor's cloud contexts is the hosted pipeline rather than the extraction model's capability. Driven
-  instead by this study's local 35-billion-parameter model, the same engine collapses to 0.29, and the mechanism is visible at ingest: 0.20 extracted
-  fact-edges per message, against the 1.2 to 1.5 per message the cloud output implies. A store that only knows what its extractor wrote down starves
-  quietly.
+  0.53, so much of its 21-point gap to the vendor's cloud contexts sits outside the extraction model's capability. Driven instead by this study's
+  local 35-billion-parameter model, the same engine collapses to 0.29, and the mechanism is visible at ingest: it extracts several times fewer facts
+  per message than the cloud output implies. A store that only knows what its extractor wrote down starves quietly.
 
 The LongMemEval-S column of [Tab. 7](#table-7) is the same three stores under the benchmark's official per-category rubric on a pre-registered
 100-question sample (the hybrid's 0.80 there is a single retrieval and a single read under a shared reader prompt, which is also why it sits above the
@@ -604,26 +607,36 @@ That last gap needs care, because three different things sit behind that number 
 
 So which of the three explains the 21 points between the last two rows of [Tab. 7](#table-7), the hosted Zep Cloud at 0.7461 and the self-hosted
 Graphiti OSS at 0.5338? Not the reader: it is the same model for both. Not the extraction model's capability either, because the open engine ran with
-the same class of extractor the vendor's published numbers were built with and still landed where it did. It is the pipeline around that extractor,
-which pulls several times more facts from each message on the hosted side. A store can only answer from what its extractor wrote down, however good
-the reader in front of it. That is why importing a number from someone else's protocol tells you nothing, and why every number here arrives with its
-frame attached.
+the same class of extractor the vendor's published numbers were built with and still landed where it did. What is left is everything the hosted
+service does around that extractor, and this is the point where the comparison reaches the edge of what it can honestly claim.
+
+Zep Cloud is a hosted product, and its row here is Zep's own published context. I can measure what reaches the reader on each side, not the ingestion
+or ranking that produced it. The open engine's contexts are visibly thinner, carrying fewer stored facts and much shorter entity summaries, but that
+is a property of the released artifacts rather than a description of anyone's internals. One known difference does not favour them: their published
+ingestion reads a `blip_captions` key where the LoCoMo field is `blip_caption` ([zep-papers#9](https://github.com/getzep/zep-papers/issues/9)),
+dropping image captions that my runs kept.
+
+None of this suggests their published number is wrong. It reproduces from their own released grades, and their contexts re-scored under this study's
+reader and judge give the 0.7461 in [Tab. 7](#table-7), within a point of their published 75.14. The 21-point gap is real and reproducible; its cause
+is not observable from outside. Read "the hosted pipeline" as a label for the part I could not see, not a mechanism I verified. A store can only
+answer from what its extractor wrote down, however good the reader in front of it, and that is why importing a number from someone else's protocol
+tells you nothing.
 
 <figure id="table-8" class="table-figure">
 
-| One thing changed, everything else held                                   | Score before | Score after | Points lost |
-| ------------------------------------------------------------------------- | -----------: | ----------: | ----------: |
-| **The reader**: `gpt-4o-mini` to the local 35B, retrieval byte-identical  |   **0.7825** |  **0.7130** |     **6.9** |
-| The store: hybrid to place-organized, reader unchanged                    |       0.7825 |      0.7792 |         0.3 |
-| The store: hybrid to Zep Cloud                                            |       0.7825 |      0.7461 |         3.6 |
-| The store: place-organized to Zep Cloud                                   |       0.7792 |      0.7461 |         3.3 |
-| The store: Graphiti OSS to its bge-m3 variant                             |       0.5338 |      0.5286 |         0.5 |
-| The store: Zep Cloud to Graphiti OSS, the _smallest_ drop between the two |       0.7461 |      0.5338 |        21.2 |
+| What changed                                         | From                     | To                                 | Points lost |
+| ---------------------------------------------------- | ------------------------ | ---------------------------------- | ----------: |
+| **The reader**, retrieval byte-identical             | **`gpt-4o-mini` 0.7825** | **`Qwen3.6-35B-A3B-mxfp4` 0.7130** |     **6.9** |
+| The store, reader unchanged                          | Hybrid 0.7825            | Place-organized 0.7792             |         0.3 |
+| The store, reader unchanged                          | Hybrid 0.7825            | Zep Cloud 0.7461                   |         3.6 |
+| The store, reader unchanged                          | Place-organized 0.7792   | Zep Cloud 0.7461                   |         3.3 |
+| The embedder inside one store                        | Graphiti OSS 0.5338      | Graphiti bge-m3 0.5286             |         0.5 |
+| The store, the _cheapest_ route into the open engine | Zep Cloud 0.7461         | Graphiti OSS 0.5338                |        21.2 |
 
 <figcaption>Table 8. What each single change costs, everything else held fixed. Swapping the reader moves the score further than swapping between any
-two of the three stores that work. The last row is the cheapest way to reach Graphiti OSS, and even that costs three times what the reader does; the
-other five routes cost up to 25.4. Zep Cloud and Graphiti OSS come from one vendor and are read by the same model here: what separates them is the
-extraction pipeline inside each store, not the reader in front of it.</figcaption>
+two of the three stores that work. The last row is the cheapest of the six routes into the starved open engine, and even that costs three times what
+the reader does; the dearest of the six, hybrid to the bge-m3 variant, costs 25.4. Zep Cloud and Graphiti OSS come from one vendor and are read by the
+same model here, so what separates them sits inside the stores rather than in the reader in front of them.</figcaption>
 </figure>
 
 #### Cost
@@ -870,9 +883,11 @@ frozen.
   been tested: a frontier judge from a different vendor re-scored every arm's published responses on a frozen 100-row sample. It grades uniformly
   stricter (4 to 7 points on every arm, agreement 0.91 to 0.96, Cohen's kappa 0.82 to 0.89, no arm-differential bias), and every ranking survives,
   with the hybrid's win over the graph vendor significant on a tenth of the data (p = 0.024). The main experiment's own judge remains unaudited.
-- **The holdout was widened once, then demoted.** Mid-study I extended the held-out set from 256 to all 356 non-tuning questions; the added questions
-  had never been run or tuned on, but one arm's solo holdout score had been seen, which is partial peeking. An independent review called it, so the
-  blind 256 stays the primary verdict surface and the 356 is a sensitivity check, with the commit history proving the ordering.
+- **The holdout was widened once, and the verdict stayed on the blind set.** Mid-study I extended the held-out set from 256 to all 356 non-tuning
+  questions; the added questions had never been run or tuned on, but one arm's solo holdout score had been seen, which is partial peeking. An
+  independent review called it, so the verdict was locked on the blind 256. The tables in this post report all 356, because that is the set whose
+  per-question rows are published, and widening changed the gap by 0.0002, so the two agree to the fourth decimal. The commit history proves the
+  ordering.
 - **Truncation hit the arms unequally** (20 of 144 file-based answers against 3, under a busy serving layer). The frozen rule counts both as wrong
   symmetrically, and the gap survives excluding every truncated row.
 - **Absolute numbers are floors.** Both arms run a deliberately minimal shared loop because mechanism isolation is the point; the same structured

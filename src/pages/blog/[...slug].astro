@@ -6,7 +6,11 @@ import MarkdownPostLayout from '../../layouts/MarkdownPostLayout.astro';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('blog');
+  // Drafts are previewable with `astro dev` but never generate a production
+  // route, so committing an unfinished post cannot publish it.
+  const blogEntries = await getCollection('blog', ({ data }) =>
+    import.meta.env.PROD ? !data.draft : true,
+  );
   return blogEntries.map((entry: CollectionEntry<'blog'>) => ({
     params: { slug: entry.slug },
     props: { entry },

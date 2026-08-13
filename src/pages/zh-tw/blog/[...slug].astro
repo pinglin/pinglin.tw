@@ -8,7 +8,11 @@ export const prerender = true;
 // Generate a zh-tw path for every post: translated posts render their zh-tw
 // entry; English-only posts redirect to the English page instead of 404ing.
 export async function getStaticPaths() {
-  const allEntries = await getCollection('blog');
+  // Same production draft gate as the English route, so a draft does not leak
+  // a zh-tw redirect stub.
+  const allEntries = await getCollection('blog', ({ data }) =>
+    import.meta.env.PROD ? !data.draft : true,
+  );
   const zhEntries = allEntries.filter(({ id }) => id.startsWith('zh-tw/'));
   const zhSlugs = new Set(zhEntries.map((entry) => entry.slug.split('/').slice(1).join('/')));
   const englishOnly = allEntries.filter(
