@@ -220,7 +220,9 @@ Core 的核心功能，請馬上[註冊 Instill AI 等候名單](https://forms.i
 
 - 資料 ETL（Extract, Transform,
   Load，提取、轉換、加載）是一種資料整合過程，從各種來源提取資料，將其轉換以適應操作需求，並加載到目標系統（如資料倉庫）中。它也被稱為資料清洗或資料整理。
-- 非結構化資料 ETL 涉及從各種非結構化來源（如文檔、圖片或影片）提取資料，將其轉換為適合分析的結構化格式，並加載到資料倉庫或資料庫等目標系統中。
+- 非結構化資料 ETL 涉及從各種非結構化來源（如文檔、圖片或影片）提取資料，將其轉換為適合分析的結構化格式，並加載到資料倉庫或資料庫等目標系統中。兩者的逐項對照見[表 1](#table-1)。
+
+<figure id="table-1" class="table-figure">
 
 | <div style="width:80px"> | **傳統資料 ETL**                            | **非結構化資料 ETL**                                                                             |
 | ------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -231,10 +233,16 @@ Core 的核心功能，請馬上[註冊 Instill AI 等候名單](https://forms.i
 | **加載目的地**           | 資料倉庫（Snowflake、BigQuery、Redshift）。 | 向量資料庫（Pinecone、ChromaDB）、文檔存儲（Elasticsearch、MongoDB）、blob存儲（GCS、S3、MinIO） |
 | **最終用例**             | BI 儀表板、財務報告、分析。                 | AI 驅動的搜索、RAG（檢索增強生成）、聊天機器人、內容分析。                                       |
 
+<figcaption>表 1. 傳統資料 ETL 與非結構化資料 ETL 的逐項對照。</figcaption>
+</figure>
+
 ### AI 建構者 vs. AI 使用者
 
 - AI 建構者是設計、開發和優化 AI 產品的開發者，利用機器學習、軟體開發和資料科學的技能來打造 AI 驅動的技術。相比之下，AI 使用者是利用這些 AI 產品來提高生產力的專業人士，將 AI 應用於自動化、內容打造、資料分析和決策等領域。建構者使用 PyTorch、TensorFlow 和 Hugging
-  Face 等工具來構建 AI 解決方案，使用者則與 ChatGPT、GitHub Copilot 和 AI 驅動的分析工具等 AI 應用程序交互，以簡化他們的工作流程。請參閱下表。
+  Face 等工具來構建 AI 解決方案，使用者則與 ChatGPT、GitHub
+  Copilot 和 AI 驅動的分析工具等 AI 應用程序交互，以簡化他們的工作流程。兩種角色的對照見[表 2](#table-2)。
+
+<figure id="table-2" class="table-figure">
 
 | <div style="width:80px"> | **AI 建構者** 👩‍🔧👨🏻‍🔧                                                       | **AI 使用者** 👩‍💼👨🏻‍💼                                                          |
 | ------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
@@ -244,3 +252,6 @@ Core 的核心功能，請馬上[註冊 Instill AI 等候名單](https://forms.i
 | **所需技能**             | AI/ML 工程、軟體開發、資料科學、產品管理。                               | 各自領域的專業知識、有效與 AI 工具交互的能力。                              |
 | **示例**                 | OpenAI、Hugging Face、Google 或打造 AI 驅動應用程序的新創公司的工程師。  | 使用 ChatGPT 的作家，利用 AI 分析的營銷人員，使用 AI 輔助編程工具的編碼員。 |
 | **使用工具**             | Instill Core、PyTorch、TensorFlow、Hugging Face、LangChain、OpenAI API。 | Instill AI、ChatGPT、Midjourney、GitHub Copilot、AI 驅動的自動化工具。      |
+
+<figcaption>表 2. AI 建構者與 AI 使用者：誰打造技術，誰把技術用起來。</figcaption>
+</figure>

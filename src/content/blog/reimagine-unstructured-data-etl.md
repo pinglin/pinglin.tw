@@ -276,7 +276,10 @@ part of this once-in-a-lifetime opportunity.
 - Data ETL (Extract, Transform, Load) is a data integration process that extracts data from various sources, transforms it to fit operational needs,
   and loads it into a target system, such as a data warehouse. It is also known as data washing, data wrangling, or data massaging.
 - Unstructured data ETL involves extracting data from various unstructured sources (like text documents, images, or videos), transforming it into a
-  structured format suitable for analysis, and loading it into a target system such as a data warehouse or database.
+  structured format suitable for analysis, and loading it into a target system such as a data warehouse or database. [Tab. 1](#table-1) sets the two
+  side by side.
+
+<figure id="table-1" class="table-figure">
 
 |                            | **Traditional Data ETL**                               | **Unstructured Data ETL**                                                                                       |
 | -------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
@@ -287,13 +290,18 @@ part of this once-in-a-lifetime opportunity.
 | **Loading Destination**    | Data warehouses (Snowflake, BigQuery, Redshift).       | Vector databases (Pinecone, ChromaDB), document stores (Elasticsearch, MongoDB), blob storages (GCS, S3, MinIO) |
 | **End Use Case**           | BI dashboards, financial reports, analytics.           | AI-powered search, RAG (Retrieval-Augmented Generation), chatbots, content analysis.                            |
 
+<figcaption>Table 1. Traditional data ETL against unstructured data ETL, stage by stage.</figcaption>
+</figure>
+
 ### AI Builders vs. AI Users
 
 - AI Builders are the innovators who design, develop, and optimize AI-first products, leveraging skills in machine learning, software development, and
   data science to create AI-driven technologies. In contrast, AI Users are professionals who utilize these AI-first products to enhance productivity,
   applying AI in areas like automation, content creation, data analysis, and decision-making. While builders work with tools like PyTorch, TensorFlow,
   and Hugging Face to build AI solutions, users interact with AI-powered applications such as ChatGPT, GitHub Copilot, and AI-driven analytics tools
-  to streamline their workflows. Please refer to the table below.
+  to streamline their workflows. [Tab. 2](#table-2) sets the two roles side by side.
+
+<figure id="table-2" class="table-figure">
 
 |                     | **AI Builders 👩‍🔧👨🏻‍🔧**                                                                                         | **AI Users 👩‍💼👨🏻‍💼**                                                                                     |
 | ------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
@@ -303,3 +311,6 @@ part of this once-in-a-lifetime opportunity.
 | **Required Skills** | AI/ML engineering, software development, data science, product management.                                   | Domain expertise in their respective fields, ability to effectively interact with AI tools.           |
 | **Examples**        | Engineers at OpenAI, Hugging Face, Google, or startups creating AI-driven apps.                              | Writers using ChatGPT, marketers leveraging AI analytics, coders using AI-assisted programming tools. |
 | **Tools Used**      | Instill Core, PyTorch, TensorFlow, Hugging Face, LangChain, OpenAI API.                                      | Instill AI, ChatGPT, Midjourney, GitHub Copilot, AI-powered automation tools.                         |
+
+<figcaption>Table 2. AI builders against AI users: who assembles the technology, and who puts it to work.</figcaption>
+</figure>

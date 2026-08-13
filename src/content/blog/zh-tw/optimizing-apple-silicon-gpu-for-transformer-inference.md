@@ -177,7 +177,9 @@ tok/s 串流。所以聊天的體感是：正常速度串流，中間夾著週�
 ## 延伸討論：市場算力天花板
 
 前面的分析全都受制於同一個數字：546
-GB/s。既然整篇文章都在主張「單串流 decode 就是一道頻寬除法」，那把同一道除法套用到真正為推論而生的硬體上，就能看清兩件事：資料中心的錢究竟買到多少頻寬，以及這台筆電在整條光譜上落在哪裡。
+GB/s。既然整篇文章都在主張「單串流 decode 就是一道頻寬除法」，那把同一道除法套用到真正為推論而生的硬體上（[表 1](#table-1)），就能看清兩件事：資料中心的錢究竟買到多少頻寬，以及這台筆電在整條光譜上落在哪裡。
+
+<figure id="table-1" class="table-figure">
 
 | Hardware                                       | Memory                    | Bandwidth      | vs. M4 Max  | Indicative decode, this model\*   |
 | ---------------------------------------------- | ------------------------- | -------------- | ----------- | --------------------------------- |
@@ -198,6 +200,9 @@ GB/s。既然整篇文章都在主張「單串流 decode 就是一道頻寬除�
 | NVIDIA Rubin (late 2026, HBM4)                 | 288 GB HBM4               | 13 TB/s        | ~24×        | ~1,500 tok/s                      |
 | Groq LPU                                       | 230 MB SRAM per chip      | 80 TB/s on-die | ~146×       | ~9,500 tok/s on paper (see below) |
 | SSD offload tier (e.g. Phison aiDAPTIV+)       | TB-scale NAND             | ~7–14 GB/s     | ~0.01–0.03× | ~1–2 tok/s (see below)            |
+
+<figcaption>表 1. Apple silicon 與資料中心加速器的記憶體頻寬對照，單串流 decode 吞吐量由實測的 M4 Max 依頻寬比例推算。</figcaption>
+</figure>
 
 \* 用我實測的 65 tok/s 按頻寬比例直接外推：同一個每步約 3 GB 的 MoE、batch
 1、軟體效率假設不變。真實數字會隨服務框架與 batch 深度移動，而且記憶體較小的那幾列（24–32 GB）根本裝不下這個約 40–50

@@ -280,6 +280,8 @@ events 持續膨脹的問題。對只用 Temporal 的設計來說，這個問題
   <figcaption>圖 3. 依 architecture 區分的 modeled production footprint，包含 app heap 和 durable orchestration 或 queue storage。</figcaption>
 </figure>
 
+<figure id="table-1" class="table-figure">
+
 |                                       | 最初的 Temporal-only 設計 | Collection Autofill                  |
 | ------------------------------------- | ------------------------- | ------------------------------------ |
 | 1M-cell simulator elapsed time        | ~ 3.41 s                  | ~ 1.41 s                             |
@@ -294,7 +296,11 @@ events 持續膨脹的問題。對只用 Temporal 的設計來說，這個問題
 | Backpressure observability            | 間接                      | 對 queue table 查一次 SQL            |
 | Setup vs cell-compute deploy coupling | 一個 binary               | 兩個 binaries，可獨立擴展            |
 
-使用者看到的產品行為沒有改變。Reset、Reprocess、Schedule modes、undo/redo、spinner、progress hover，全都一樣。Frontend 不需要知道底下的這些東西存在。
+<figcaption>表 1. 兩種設計在一百萬 cells 規模下的模擬耗時、吞吐量與留下的 footprint。</figcaption>
+</figure>
+
+數字整理在[表 1](#table-1)。使用者看到的產品行為沒有改變。Reset、Reprocess、Schedule modes、undo/redo、spinner、progress
+hover，全都一樣。Frontend 不需要知道底下的這些東西存在。
 
 ## 下一個規模瓶頸在哪裡
 

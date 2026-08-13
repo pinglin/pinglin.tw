@@ -26,7 +26,12 @@
     function updatePositions() {
       if (scrollButton && tocWrapper && topHeader) {
         const headerRect = topHeader.getBoundingClientRect();
-        const rightOffset = window.innerWidth - headerRect.right;
+        // clientWidth, NOT innerWidth: innerWidth spans the scrollbar gutter that
+        // the header does not, so on any page long enough to scroll (with classic
+        // rather than overlay scrollbars) innerWidth overstates the offset by the
+        // scrollbar width and both buttons drift left of the nav's right edge.
+        const viewportRight = document.documentElement.clientWidth;
+        const rightOffset = Math.max(0, viewportRight - headerRect.right);
 
         // Update TOC and scroll button positions with the same offset
         scrollButton.style.transition = 'all 0.8s ease';
@@ -59,8 +64,22 @@
       observer.observe(tocWrapper, { attributes: true });
     }
 
-    // Update on resize
+    // Anything that changes the header's box has to re-run this: a resize, the
+    // scrollbar appearing once late content makes the page scrollable, a webfont
+    // swapping in, or a client-side navigation to a page of a different length.
     window.addEventListener('resize', updatePositions);
+    window.addEventListener('load', updatePositions);
+    document.addEventListener('astro:after-swap', updatePositions);
+    document.addEventListener('astro:page-load', updatePositions);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(updatePositions);
+    if (topHeader && 'ResizeObserver' in window) {
+      new ResizeObserver(updatePositions).observe(topHeader);
+    }
+    // The scrollbar can appear after images and figures finish loading, which
+    // moves the header's right edge without resizing the window.
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(updatePositions).observe(document.documentElement);
+    }
     // Initial position
     updatePositions();
   });

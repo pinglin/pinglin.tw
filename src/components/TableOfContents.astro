@@ -38,13 +38,25 @@
       const link = document.createElement('a');
       link.textContent = header.textContent;
 
-      // Encode the header text directly, replacing spaces and special chars
-      const urlSafeId = encodeURIComponent(
-        header.textContent
-          .toLowerCase() // Convert English text to lowercase
-          .replace(/\s+/g, '-')
-          .replace(/[^\w\u4E00-\u9FFF-]/g, ''),
-      );
+      // The renderer already gives every heading a UNIQUE id (accuracy, accuracy-1,
+      // accuracy-2 ...). Recomputing one from the text collapses repeated headings
+      // onto a single anchor, so five "Accuracy" sections would all jump to the
+      // first. Prefer the existing id; only synthesise one when it is missing, and
+      // de-duplicate that against ids already in the document.
+      let urlSafeId = header.id;
+      if (!urlSafeId) {
+        const base = encodeURIComponent(
+          header.textContent
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\u4E00-\u9FFF-]/g, ''),
+        );
+        let candidate = base;
+        let n = 1;
+        while (document.getElementById(candidate)) candidate = `${base}-${n++}`;
+        urlSafeId = candidate;
+        header.id = urlSafeId;
+      }
 
       link.href = `#${urlSafeId}`;
 
@@ -81,8 +93,6 @@
 
         header.appendChild(clipLink);
       }
-
-      header.id = urlSafeId;
     });
 
     document

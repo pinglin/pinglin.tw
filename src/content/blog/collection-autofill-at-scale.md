@@ -60,9 +60,9 @@ and idempotent cell compute, fairness and isolation, latest-write safety, and se
 ## What we're actually building
 
 A Collection in Instill AI is a tabular structure (i.e., spreadsheet) with one twist: columns can define computation, not just storage. Any column can
-be configured as **AI-computed**, and AI-computed columns can depend on other columns. That column dependency graph is the workflow DAG Autofill has to
-execute. Edit a URL in column A and column B's AI summary recomputes. Mark column C's sentiment as depending on B's summary, and editing the URL fans
-out: A → B → C. Multiply by ten thousand rows and the schema-level DAG becomes a large cell-level recomputation graph.
+be configured as **AI-computed**, and AI-computed columns can depend on other columns. That column dependency graph is the workflow DAG Autofill has
+to execute. Edit a URL in column A and column B's AI summary recomputes. Mark column C's sentiment as depending on B's summary, and editing the URL
+fans out: A → B → C. Multiply by ten thousand rows and the schema-level DAG becomes a large cell-level recomputation graph.
 
 The contract is deceptively simple to describe and quite hard to implement well. Each AI cell carries two values — what _you_ typed and what the _AI_
 produced; user input always wins for display. The system has to handle: per-collection fairness so one big reprocess can't starve everyone else,
@@ -294,6 +294,8 @@ growth that makes the naïve design operationally invalid long before ten millio
   <figcaption>Figure 3. Modeled production footprint by architecture, including app heap and durable orchestration or queue storage.</figcaption>
 </figure>
 
+<figure id="table-1" class="table-figure">
+
 |                                       | Naïve Temporal-only       | Collection Autofill                   |
 | ------------------------------------- | ------------------------- | ------------------------------------- |
 | 1M-cell simulator elapsed time        | ~ 3.41 s                  | ~ 1.41 s                              |
@@ -308,8 +310,11 @@ growth that makes the naïve design operationally invalid long before ten millio
 | Backpressure observability            | Indirect                  | One SQL query against the queue table |
 | Setup vs cell-compute deploy coupling | One binary                | Two binaries, independently scalable  |
 
-The user-facing contract is preserved end-to-end. Reset, Reprocess, Schedule modes, undo/redo, the spinner, the progress hover — all unchanged. The
-frontend doesn't need to know any of the above exists.
+<figcaption>Table 1. The two designs at one million cells: simulator time, throughput, and the footprint each one leaves behind.</figcaption>
+</figure>
+
+The numbers are in [Tab. 1](#table-1). The user-facing contract is preserved end-to-end. Reset, Reprocess, Schedule modes, undo/redo, the spinner, the
+progress hover — all unchanged. The frontend doesn't need to know any of the above exists.
 
 ## Where this design starts to bend (the 10B horizon)
 
@@ -331,9 +336,9 @@ for it forever.
 per-collection and per-namespace budgeting in SQL — observable, queryable, indexed. It's been in Postgres since 9.5 and it's still the right answer
 when your work items are idempotent.
 
-**Separate state columns beat overloaded ones.** If two state machines live in the same row, give them two distinct sets of columns and gate the bridge
-through a small number of atomic methods. The cost is a few extra columns; the payback is that nobody ever again has to reason about what a single
-"started" timestamp means _here_ vs _there_.
+**Separate state columns beat overloaded ones.** If two state machines live in the same row, give them two distinct sets of columns and gate the
+bridge through a small number of atomic methods. The cost is a few extra columns; the payback is that nobody ever again has to reason about what a
+single "started" timestamp means _here_ vs _there_.
 
 **Dirty flags beat cancellation.** Cancelling expensive in-flight calls (LLM, external APIs, big queries) to honour a fresher signal wastes money and
 adds bug-prone cleanup paths. A dirty flag plus a cheap re-queue gives latest-signal convergence with simpler code.

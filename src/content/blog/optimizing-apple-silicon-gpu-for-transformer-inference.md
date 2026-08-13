@@ -192,8 +192,10 @@ then, is normal-speed streaming punctuated by periodic brief stalls, not the 0.6
 ## A broader look: the market's compute ceiling
 
 Everything above was bounded by one number: 546 GB/s. Since the whole post argues that single-stream decode is just a bandwidth division, running that
-same division across hardware actually built for inference shows two things at once: how much bandwidth datacenter money really buys, and where this
-laptop falls on the full spectrum.
+same division across hardware actually built for inference ([Tab. 1](#table-1)) shows two things at once: how much bandwidth datacenter money really
+buys, and where this laptop falls on the full spectrum.
+
+<figure id="table-1" class="table-figure">
 
 | Hardware                                       | Memory                    | Bandwidth      | vs. M4 Max  | Indicative decode, this model\*   |
 | ---------------------------------------------- | ------------------------- | -------------- | ----------- | --------------------------------- |
@@ -214,6 +216,9 @@ laptop falls on the full spectrum.
 | NVIDIA Rubin (late 2026, HBM4)                 | 288 GB HBM4               | 13 TB/s        | ~24×        | ~1,500 tok/s                      |
 | Groq LPU                                       | 230 MB SRAM per chip      | 80 TB/s on-die | ~146×       | ~9,500 tok/s on paper (see below) |
 | SSD offload tier (e.g. Phison aiDAPTIV+)       | TB-scale NAND             | ~7–14 GB/s     | ~0.01–0.03× | ~1–2 tok/s (see below)            |
+
+<figcaption>Table 1. Memory bandwidth across Apple silicon and datacenter accelerators, with single-stream decode throughput scaled from the measured M4 Max baseline.</figcaption>
+</figure>
 
 \* Naive scaling of my measured 65 tok/s by the bandwidth ratio: same ~3 GB-per-step MoE, batch one, software efficiency held constant. Real numbers
 move with the serving stack and batch depth, and the smaller-memory rows (24–32 GB) could not actually hold this ~40–50 GB deployment; read the column

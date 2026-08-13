@@ -41,14 +41,37 @@
 /* Wide content must scroll inside its own box, never widen the page. Mobile
    browsers shrink-to-fit when any child overflows the viewport, which drifts
    the whole layout sideways; multi-column tables and long code blocks are the
-   usual culprits. */
+   usual culprits.
+
+   The scroll box is scoped to narrow viewports on purpose: `overflow: auto`
+   paints a permanent scrollbar track for anyone who runs macOS with "show
+   scroll bars: always", even when there is nothing to scroll. On the wide
+   layout every table fits the prose column, so it renders as a plain table. */
 .markdown-content table {
-  display: block;
-  width: 100%;
   max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
+}
+
+/* break-word, not anywhere: `anywhere` lets the browser split short tokens
+   (0.632 -> 0.6/32) to minimise column width, which collapses numeric columns.
+   break-word only breaks a word that cannot fit on a line of its own. */
+.markdown-content :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+/* Numeric columns should not wrap at all; markdown gives no class hook, so
+   right-aligned cells (the numeric convention in these tables) get it. */
+.markdown-content :is(th, td)[align='right'] {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .markdown-content table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .markdown-content pre {
@@ -61,3 +84,34 @@
   height: auto;
 }
 
+
+/* Numbered, captioned tables. The <figure> centres the table block; the table
+   itself stays a scrollable box so wide columns never widen the page. */
+.markdown-content .table-figure {
+  margin: 1.75rem 0;
+  text-align: center;
+}
+
+.markdown-content .table-figure > table {
+  display: inline-table;
+  width: auto;
+  max-width: 100%;
+  text-align: left;
+  vertical-align: top;
+}
+
+@media (max-width: 760px) {
+  .markdown-content .table-figure > table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+.markdown-content .table-figure > figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: left;
+  opacity: 0.75;
+}

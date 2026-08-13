@@ -42,9 +42,11 @@ that bet pays — and when it, rather than the classic alternative of teacher-st
 
 ## An agent run is stochastic gradient descent
 
-Map the pieces — with the contract stated up front: the descent here is over **solution space, not weight space**. The model's weights never move
-during an agent run; what moves is the work-in-progress. Each agent step (read a file, run a test, write a patch) revises that artifact using whatever
-local signal the step produced, and the revision has the same form as the classic SGD update:
+Map the pieces ([Tab. 1](#table-1)) — with the contract stated up front: the descent here is over **solution space, not weight space**. The model's
+weights never move during an agent run; what moves is the work-in-progress. Each agent step (read a file, run a test, write a patch) revises that
+artifact using whatever local signal the step produced, and the revision has the same form as the classic SGD update:
+
+<figure id="table-1" class="table-figure">
 
 | SGD term                      | Agent-run counterpart                                      |
 | ----------------------------- | ---------------------------------------------------------- |
@@ -52,6 +54,9 @@ local signal the step produced, and the revision has the same form as the classi
 | Loss $L$                      | Distance from what the user actually wants                 |
 | Gradient estimate $\hat{g}_t$ | The feedback one step produces — test results, tool output |
 | Learning rate $\eta$          | How much of the artifact one action may change             |
+
+<figcaption>Table 1. The dictionary between stochastic gradient descent and an agent run, term by term. The descent is over solution space, not weight space.</figcaption>
+</figure>
 
 In symbols:
 
@@ -310,6 +315,8 @@ changes faster than a training loop can track, and the transfer must stay audita
 the factory owners have started locking up their traces is that the factory's raw material turns out to be the same thing steering runs on: the
 teacher's reasoning.
 
+<figure id="table-2" class="table-figure">
+
 |                        | Weight-space (distillation)               | Context-space (in-context guidance) |
 | ---------------------- | ----------------------------------------- | ----------------------------------- |
 | Update rule            | A literal gradient step, [Eq. (1)](#eq-1) | A Bayesian update, [Eq. (3)](#eq-3) |
@@ -319,6 +326,9 @@ teacher's reasoning.
 | Infrastructure         | Data + training + eval pipeline           | None                                |
 | Artifact               | Opaque checkpoint                         | Readable, editable text             |
 | Marginal cost per task | A training run                            | A few hundred tokens                |
+
+<figcaption>Table 2. The two places a correction can land: in the weights, bought offline by distillation, or in the context, applied live as guidance.</figcaption>
+</figure>
 
 The two mechanisms compose rather than compete. Distillation is why the small model _can_ follow instructions at all — general competence, bought
 offline, amortized over everything. In-context guidance is the per-task specialization on top — the steering. Distillation builds the student;
@@ -514,13 +524,18 @@ $$
 where $Z = e^{-C} = \int e^{-U(x)/T}\,dx$ is the normalization constant that makes the density integrate to one. The famous exponential is not an
 assumption — it is the unique stationary, zero-current solution of [Eq. (4)](#eq-4).
 
-**The three levels, side by side:**
+**The three levels, side by side ([Tab. 3](#table-3)):**
+
+<figure id="table-3" class="table-figure">
 
 | Level       | Object                                    | Governing equation              |
 | ----------- | ----------------------------------------- | ------------------------------- |
 | Microscopic | One particle's position $x_t$             | Langevin, [Eq. (2)](#eq-2)      |
 | Mesoscopic  | The density $p(x,t)$                      | Fokker–Planck, [Eq. (4)](#eq-4) |
 | Macroscopic | The stationary density $p_{\text{eq}}(x)$ | Boltzmann, [Eq. (6)](#eq-6)     |
+
+<figcaption>Table 3. The three levels of description and the equation that governs each. The middle row is where the optimizer's flow and the sampler's belief become one object.</figcaption>
+</figure>
 
 The middle row is where the two frames of this post become one object: [Eq. (4)](#eq-4) is simultaneously the flow of an optimizer's iterates and the
 update of a sampler's belief. Drift is the gradient step, diffusion is the exploration, and which machine you are looking at depends only on the
