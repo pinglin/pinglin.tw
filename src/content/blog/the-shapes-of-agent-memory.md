@@ -7,7 +7,7 @@ description:
   experience bank on the agentic benchmarks where the state of the art trains memory into the weights.'
 author: 'Ping-Lin Chang'
 lang: 'en'
-hidden: false
+hidden: true
 image:
   url: '/blog/the-shapes-of-agent-memory/header.svg'
   urlLight: '/blog/the-shapes-of-agent-memory/header_light.svg'
