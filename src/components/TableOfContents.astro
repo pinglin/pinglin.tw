@@ -95,6 +95,33 @@
       }
     });
 
+    // A "Preface" entry for the prose above the first heading, so the reader can
+    // jump back to the opening from anywhere in a long post. Only added when such
+    // prose exists: a page whose content starts at a heading gets no entry, and
+    // the id is de-duplicated in case a post already has one called "preface".
+    const contentRoot = document.querySelector('.markdown-content');
+    const firstContentHeading = contentRoot?.querySelector('h2, h3, h4, h5, h6');
+    const hasPreface =
+      contentRoot && firstContentHeading && contentRoot.firstElementChild !== firstContentHeading;
+
+    if (hasPreface && tocList.children.length) {
+      let prefaceId = 'preface';
+      let n = 1;
+      while (document.getElementById(prefaceId)) prefaceId = `preface-${n++}`;
+
+      const prefaceAnchor = document.createElement('span');
+      prefaceAnchor.id = prefaceId;
+      contentRoot.insertBefore(prefaceAnchor, contentRoot.firstChild);
+
+      const prefaceItem = document.createElement('li');
+      prefaceItem.classList.add('toc-level-1');
+      const prefaceLink = document.createElement('a');
+      prefaceLink.textContent = 'Preface';
+      prefaceLink.href = `#${prefaceId}`;
+      prefaceItem.appendChild(prefaceLink);
+      tocList.insertBefore(prefaceItem, tocList.firstChild);
+    }
+
     document
       .querySelector('body')
       ?.insertBefore(tocWrapper, document.querySelector('body')?.firstChild);
@@ -132,6 +159,13 @@
         tocWrapperElement.style.left = 'auto';
         tocWrapperElement.style.top = `${topOffset}px`;
         tocWrapperElement.style.right = `${rightOffset}px`;
+
+        // The panel is fixed, so a long post's list would otherwise extend past
+        // the bottom of the window with its last entries unreachable. Cap it to
+        // whatever is left below the toggle button and let it scroll inside.
+        const buttonHeight = tocHeader.getBoundingClientRect().height;
+        const available = window.innerHeight - topOffset - buttonHeight - 32;
+        tocList.style.maxHeight = `${Math.max(160, available)}px`;
       }
 
       function updateTocVisibility() {

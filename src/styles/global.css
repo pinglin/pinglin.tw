@@ -82,6 +82,26 @@
 
   .toc-list {
     @apply px-4 py-2 mt-2 rounded-lg bg-gray-50/90 dark:bg-gray-800/90;
+    /* A long post's contents must not run off the bottom of a fixed panel:
+       cap the list to the viewport and scroll inside it. The component sets a
+       precise max-height from the measured header offset; this is the value
+       used before that runs, and if it never does. */
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* A restrained scrollbar, so the cap is discoverable without shouting. */
+  .toc-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .toc-list::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-300 dark:bg-gray-600;
+  }
+
+  .toc-list::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .toc-list.toc-hidden {
