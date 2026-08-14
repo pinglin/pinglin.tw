@@ -436,16 +436,17 @@ whose per-question rows were later lost, so both arms were re-drawn on a fresh p
 hybrid's store-only 0.750 sitting above its own agent-loop 0.632 is not the paradox it looks like. Store-only hands the reader one ranked context and
 asks for one answer; the agent loop has to decide when to search, what to search for, and how to read the results over multiple rounds, and every one
 of those decisions is a place to fail. A bare store measures the retrieval; the loop measures the whole system operating it, and the same ordering
-appears on LongMemEval-S (store-only 0.80 against agent-loop 0.736). The two -M rows also differ in sample and prompt set, so read their gap as
-directional only. But hold onto the shape of it, because it is this post's ending seen early: deciding when to search, what to ask, and whether to
-trust the answer is a competence in its own right, and the experience architecture at the end of this post is what it looks like when that competence
-is trained into the model instead of billed to a scaffold. The empty row is its own finding, and the reason it is empty is the finding: a graph store
-spends a reasoning call on every one of the haystack's 3.7 million messages where an embedder spends milliseconds. Ingesting it on my own hardware
-measured out at roughly twelve days of continuous GPU time, and renting a small hosted model to do the same work would have cost roughly \$7,000 at
-list prices. I was not willing to spend either on one row of one table, so the row stays empty and the reason is published. That is not a knock on the
-lineage so much as a statement of what it costs to reach the regime that matters: -M is where real assistants drift, and the paired rows above show it
-is where the benchmarks disagree, since the flat store that ties the hybrid at short haystacks falls 15 points behind exactly here, where
-multi-session organization starts to pay.
+appears on LongMemEval-S, where store-only scores 0.80 against the loop's 0.72 on one sample under one rubric. A disclosed confound rides with both
+gaps: the store-only rows answer under the shared competitor prompt while the loop uses its own, so part of each gap is prompt rather than loop
+overhead, and the split between the two was not isolated. Read the sizes as directional. But hold onto the shape of it, because it is this post's
+ending seen early: deciding when to search, what to ask, and whether to trust the answer is a competence in its own right, and the experience
+architecture at the end of this post is what it looks like when that competence is trained into the model instead of billed to a scaffold. The empty
+row is its own finding, and the reason it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7 million
+messages where an embedder spends milliseconds. Ingesting it on my own hardware measured out at roughly twelve days of continuous GPU time, and
+renting a small hosted model to do the same work would have cost roughly \$7,000 at list prices. I was not willing to spend either on one row of one
+table, so the row stays empty and the reason is published. That is not a knock on the lineage so much as a statement of what it costs to reach the
+regime that matters: -M is where real assistants drift, and the paired rows above show it is where the benchmarks disagree, since the flat store that
+ties the hybrid at short haystacks falls 15 points behind exactly here, where multi-session organization starts to pay.
 
 ### LoCoMo
 
@@ -596,11 +597,11 @@ Four findings ([Tab. 7](#table-7), [Fig. 12](#figure-12)).
   per message than the cloud output implies. A store that only knows what its extractor wrote down starves quietly.
 
 The LongMemEval-S column of [Tab. 7](#table-7) is the same three stores under the benchmark's official per-category rubric on a pre-registered
-100-question sample (the hybrid's 0.80 there is a single retrieval and a single read under a shared reader prompt, which is also why it sits above the
-bare-agent-loop 0.736 that headlines this post). Read the two columns across and the point makes itself: the flat store that ties the hybrid on LoCoMo
-trails it by 20 points on LongMemEval, because LoCoMo mostly rewards verbatim lookup inside a few dozen sessions while LongMemEval forces
-multi-session organization. The two benchmarks disagree about the same pair of systems, in opposite directions. No single benchmark ranks memory
-systems.
+100-question sample (the hybrid's 0.80 there is a single retrieval and a single read under a shared reader prompt, which is why it sits above the same
+system's agent-loop 0.72 on this sample; [Tab. 3](#table-3)'s discussion unpacks that ordering). Read the two columns across and the point makes
+itself: the flat store that ties the hybrid on LoCoMo trails it by 20 points on LongMemEval, because LoCoMo mostly rewards verbatim lookup inside a
+few dozen sessions while LongMemEval forces multi-session organization. The two benchmarks disagree about the same pair of systems, in opposite
+directions. No single benchmark ranks memory systems.
 
 The same frame also measures the thing this post keeps insisting on, and it is worth putting a number on rather than gesturing at. Re-reading
 byte-identical retrieval with a different reader moved the hybrid's LoCoMo score by 6.9 points (0.7130 under the local 35B, 0.7825 under gpt-4o-mini),
