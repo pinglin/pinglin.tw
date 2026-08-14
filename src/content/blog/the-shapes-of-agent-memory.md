@@ -807,10 +807,14 @@ WebShop delivers the agentic benchmarks' only significant memory-ablation effect
 from its ceiling, in a domain where episode know-how (query phrasing, option discipline, the scoring rules) transfers between tasks. The frontier
 actor gains +0.1 (p = 0.8); the catalog ceiling binds it to nearly the same total as the 35B. Note what that ceiling does to actor class: the same
 actor swap that buys 31 points of success rate on ALFWorld buys +1.6 score here, because WebShop's reward is shaped by the catalog and its
-partial-credit mechanics, not by actor smarts. That is why only training reaches the bar: every training-free arm lands at a score of 63 to 66 against
-MemHarness's 87.4, and their number comes from reinforcement learning against the environment's own reward, which teaches the policy the reward's
-_mechanics_, when to settle for a partial match, when to stop browsing, what an option is worth. Neither prompting nor a stronger actor replicates
-that, and no store, of any design, closes the gap from the outside.
+partial-credit mechanics, not by actor smarts. The deeper difference between the two benchmarks is what each one hides. ALFWorld states its goal in
+the observation, so success yields to reasoning and a capable enough actor needs nothing else, which is exactly what its frontier row shows. WebShop
+grades with a rubric the agent never sees, weighing attributes, options, and price into partial credit over a catalog that often has no exact match,
+and no amount of reasoning over the observation reveals how that grader will score a near-miss. Only the reward signal teaches it, and retrieval never
+sees the reward: a bank stores what the agent did, not what the grader thought of it. That is why only training reaches the bar: every training-free
+arm lands at a score of 63 to 66 against MemHarness's 87.4, and their number comes from reinforcement learning against the environment's own reward,
+which teaches the policy the reward's _mechanics_, when to settle for a partial match, when to stop browsing, what an option is worth. Neither
+prompting nor a stronger actor replicates that, and no store, of any design, closes the gap from the outside.
 
 That claim can also be tested from the inside, and the inside test is the cleanest one in this post: hold MemHarness's own frozen 7B actor fixed on
 WebShop (full catalog, 500 sessions) and swap what its memory holds. Its own released 7,859-episode bank, injected through its own wire format and
