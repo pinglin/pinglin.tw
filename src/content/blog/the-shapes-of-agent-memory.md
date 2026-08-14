@@ -441,23 +441,30 @@ different harness and sample, directional only.</figcaption>
 Long histories are the regime structure exists for, and the paired rows put a number on the claim: fifteen points, rescuing 22 questions against
 losing 7, exact p = 0.008 under the same paired test as the head-to-head below. The gap clears the sample's own confidence interval, and the shape of
 the win matches the mechanism, with the hybrid sweeping the single-session categories (14/14 and 11/11) and pulling ahead on the multi-session and
-temporal content that long haystacks exist to test. Two disclosures ride along. The flat store's number moved: an earlier run scored 0.530 on a sample
-whose per-question rows were later lost, so both arms were re-drawn on a fresh pre-drawn sample, and 0.600 is what it scores there. And the hybrid's
-store-only 0.750 sitting above its own agent-loop 0.632 is not the paradox it looks like. Store-only hands the reader one ranked context and asks for
-one answer; the agent loop has to decide when to search, what to search for, and how to read the results over multiple rounds, and every one of those
-decisions is a place to fail. A bare store measures the retrieval; the loop measures the whole system operating it, and the same ordering appears on
-LongMemEval-S, where store-only scores 0.80 against the loop's 0.72 on one sample under one rubric. A disclosed confound rides with both gaps: the
-store-only rows answer under the shared competitor prompt while the loop uses its own, so part of each gap is prompt rather than loop overhead, and
-the split between the two was not isolated. Read the sizes as directional. But hold onto the shape of it, because it is this post's ending seen early:
-deciding when to search, what to ask, and whether to trust the answer is a competence in its own right, and the experience architecture at the end of
-this post is what it looks like when that competence is trained into the model instead of billed to a scaffold. The empty row is its own finding, and
-the reason it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7 million messages where an embedder
-spends milliseconds. At the roughly 14 seconds per message measured on this hardware, 3.7 million messages is about 600 days of single-stream GPU
-time; parallel serving divides the wall-clock but not the bill, and renting a small hosted model to do the same work would have cost roughly \$7,000
-at list prices. I was not willing to spend either on one row of one table, so the row stays empty and the reason is published. That is not a knock on
-the lineage so much as a statement of what it costs to reach the regime that matters: -M is where real assistants drift, and the paired rows above
-show it is where the benchmarks disagree, since the flat store that ties the hybrid at short haystacks falls 15 points behind exactly here, where
-multi-session organization starts to pay.
+temporal content that long haystacks exist to test.
+
+Two disclosures ride along. The first: the flat store's number moved. An earlier run scored 0.530 on a sample whose per-question rows were later lost,
+so both arms were re-drawn on a fresh pre-drawn sample, and 0.600 is what it scores there.
+
+The second is that the hybrid's store-only 0.750 sits above its own agent-loop 0.632, which is not the paradox it looks like. Store-only hands the
+reader one ranked context and asks for one answer; the agent loop has to decide when to search, what to search for, and how to read the results over
+multiple rounds, and every one of those decisions is a place to fail. A bare store measures the retrieval; the loop measures the whole system
+operating it, and the same ordering appears on LongMemEval-S, where store-only scores 0.80 against the loop's 0.72 on one sample under one rubric. A
+confound rides with both gaps, disclosed: the store-only rows answer under the shared competitor prompt while the loop uses its own, so part of each
+gap is prompt rather than loop overhead, and the split between the two was not isolated. Read the sizes as directional.
+
+Hold onto the shape of it, though, because it is this post's ending seen early. Deciding when to search, what to ask, and whether to trust the answer
+is a competence in its own right, and the experience architecture at the end of this post is what it looks like when that competence is trained into
+the model instead of billed to a scaffold.
+
+The empty row is its own finding, and the reason it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7
+million messages where an embedder spends milliseconds. At the roughly 14 seconds per message measured on this hardware, that is about 600 days of
+single-stream GPU time; parallel serving divides the wall-clock but not the bill, and renting a small hosted model to do the same work would have cost
+roughly \$7,000 at list prices. I was not willing to spend either on one row of one table, so the row stays empty and the reason is published.
+
+That is not a knock on the lineage so much as a statement of what it costs to reach the regime that matters. -M is where real assistants drift, and
+the paired rows above show it is where the benchmarks disagree: the flat store that is indistinguishable from the hybrid on LoCoMo falls 15 points
+behind here, where multi-session organization starts to pay.
 
 ### LoCoMo
 
