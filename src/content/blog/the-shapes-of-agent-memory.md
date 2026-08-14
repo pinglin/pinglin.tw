@@ -428,18 +428,18 @@ paired even though neither is paired with the main experiment:
 is a different harness and sample, directional only.</figcaption>
 </figure>
 
-The store-only pair settles what an earlier draft of this post had to leave open. Fifteen points, rescuing 22 questions against losing 7, exact p =
-0.008 under the same paired test as the head-to-head below: the gap clears the sample's own confidence interval, and the shape of the win matches the
-mechanism, with the hybrid sweeping the single-session categories (14/14 and 11/11) and pulling ahead on the multi-session and temporal content that
-long haystacks exist to test. Two disclosures ride along. The flat store's number moved: an earlier run scored 0.530 on a sample whose per-question
-rows were later lost, so both arms were re-drawn on a fresh pre-registered sample, and 0.600 is what it scores there. And the hybrid's store-only
-0.750 sitting above its own agent-loop 0.632 is a different sample and prompt set, directional only. The empty row is its own finding, and the reason
-it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7 million messages where an embedder spends
-milliseconds. Ingesting it on my own hardware measured out at roughly twelve days of continuous GPU time, and renting a small hosted model to do the
-same work would have cost roughly \$7,000 at list prices. I was not willing to spend either on one row of one table, so the row stays empty and the
-reason is published. That is not a knock on the lineage so much as a statement of what it costs to reach the regime that matters: -M is where real
-assistants drift, and the paired rows above show it is where the benchmarks disagree, since the flat store that ties the hybrid at short haystacks
-falls 15 points behind exactly here, where multi-session organization starts to pay.
+Long histories are the regime structure exists for, and the paired rows put a number on the claim: fifteen points, rescuing 22 questions against
+losing 7, exact p = 0.008 under the same paired test as the head-to-head below. The gap clears the sample's own confidence interval, and the shape of
+the win matches the mechanism, with the hybrid sweeping the single-session categories (14/14 and 11/11) and pulling ahead on the multi-session and
+temporal content that long haystacks exist to test. Two disclosures ride along. The flat store's number moved: an earlier run scored 0.530 on a sample
+whose per-question rows were later lost, so both arms were re-drawn on a fresh pre-registered sample, and 0.600 is what it scores there. And the
+hybrid's store-only 0.750 sitting above its own agent-loop 0.632 is a different sample and prompt set, directional only. The empty row is its own
+finding, and the reason it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7 million messages where an
+embedder spends milliseconds. Ingesting it on my own hardware measured out at roughly twelve days of continuous GPU time, and renting a small hosted
+model to do the same work would have cost roughly \$7,000 at list prices. I was not willing to spend either on one row of one table, so the row stays
+empty and the reason is published. That is not a knock on the lineage so much as a statement of what it costs to reach the regime that matters: -M is
+where real assistants drift, and the paired rows above show it is where the benchmarks disagree, since the flat store that ties the hybrid at short
+haystacks falls 15 points behind exactly here, where multi-session organization starts to pay.
 
 ### LoCoMo
 
@@ -527,15 +527,15 @@ history length, which is the primary benchmark's cost story wearing smaller numb
 ### The lineages, head-to-head
 
 Everything above compares files against one structured design, and it leaves the lineage question open: inside the structured shape, does the graph
-earn its ingest bill? A follow-up campaign closed that gap in the most controlled frame available: strip every system down to its retrieval and hold
-everything else constant. Each store contributes exactly its top-20 results for the same 1,540 non-adversarial LoCoMo questions; one fixed reader
-(gpt-4o-mini) answers from that context alone, one fixed judge scores it, and every store's row is produced by the same script. The entity-and-time
-lineage appears twice: as [Zep's published retrieval contexts](https://github.com/getzep/zep-papers), their production system's real output (and a
-fairness note they are owed: their published 75.14 reproduces from their own artifacts; 0.7461 is the same context re-scored under this unified
-frame), and as their open-source engine [Graphiti](https://github.com/getzep/graphiti) run end-to-end on their paper's recipe, both embedders it
-names. These rows sit far above the bare-loop table above because everything about the frame differs; they are comparable to each other and to nothing
-else. For orientation, [Tab. 6](#table-6) puts the four methods side by side (pure place-organized differs from the hybrid only by dropping the
-temporal layer, so the hybrid bounds it closely):
+earn its ingest bill? The head-to-head answers it in the most controlled frame available: strip every system down to its retrieval and hold everything
+else constant. Each store contributes exactly its top-20 results for the same 1,540 non-adversarial LoCoMo questions; one fixed reader (gpt-4o-mini)
+answers from that context alone, one fixed judge scores it, and every store's row is produced by the same script. The entity-and-time lineage appears
+twice: as [Zep's published retrieval contexts](https://github.com/getzep/zep-papers), their production system's real output (and a fairness note they
+are owed: their published 75.14 reproduces from their own artifacts; 0.7461 is the same context re-scored under this unified frame), and as their
+open-source engine [Graphiti](https://github.com/getzep/graphiti) run end-to-end on their paper's recipe, both embedders it names. These rows sit far
+above the bare-loop table above because everything about the frame differs; they are comparable to each other and to nothing else. For orientation,
+[Tab. 6](#table-6) puts the four methods side by side (pure place-organized differs from the hybrid only by dropping the temporal layer, so the hybrid
+bounds it closely):
 
 <figure id="table-6" class="table-figure">
 
@@ -596,7 +596,7 @@ trails it by 20 points on LongMemEval, because LoCoMo mostly rewards verbatim lo
 multi-session organization. The two benchmarks disagree about the same pair of systems, in opposite directions. No single benchmark ranks memory
 systems.
 
-The campaign also measured the thing this post keeps insisting on, and it is worth putting a number on rather than gesturing at. Re-reading
+The same frame also measures the thing this post keeps insisting on, and it is worth putting a number on rather than gesturing at. Re-reading
 byte-identical retrieval with a different reader moved the hybrid's LoCoMo score by 6.9 points (0.7130 under the local 35B, 0.7825 under gpt-4o-mini),
 and re-judging identical answers under different judge prompts moved category-level accuracy by 5 to 15 points. Set that against the architecture
 ([Tab. 8](#table-8)): the hybrid and the flat index differ by 0.3 points, and both sit 3.3 to 3.6 from the hosted graph. **On this benchmark, changing
@@ -710,11 +710,11 @@ joins across many sessions, which is the part of the problem I find most interes
 ## Remembering what worked: the agentic benchmarks
 
 Everything above measures one kind of remembering: what was said. An agent accumulates the other kind too, what _worked_: the know-how of past
-attempts. The natural question is whether this post's architectures carry over, so the same structured store ran a third campaign, on the agentic
-benchmarks the memory-training literature uses: [ALFWorld](https://alfworld.github.io/) (household tasks in a text world: find the mug, heat it, put
-it away) and [WebShop](https://webshop-pnlp.github.io/) (find and buy the right product in a catalog, scored with partial credit). Memory here is an
-**experience bank**: training-split episodes distilled into atomic entries (a task pattern, the moves that worked), embedded, and retrieved top-k into
-the acting model's prompt. Nothing is trained; it is the same architecture as the conversational study, wearing different content.
+attempts. The natural question is whether this post's architectures carry over, so the same structured store was put to work on the agentic benchmarks
+the memory-training literature uses: [ALFWorld](https://alfworld.github.io/) (household tasks in a text world: find the mug, heat it, put it away) and
+[WebShop](https://webshop-pnlp.github.io/) (find and buy the right product in a catalog, scored with partial credit). Memory here is an **experience
+bank**: training-split episodes distilled into atomic entries (a task pattern, the moves that worked), embedded, and retrieved top-k into the acting
+model's prompt. Nothing is trained; it is the same architecture as the conversational study, wearing different content.
 
 The bar in this realm is MemHarness, the experience architecture described earlier: the 7-billion-parameter policy whose retrieval, critique, and
 reconstruction were trained by reinforcement learning. Being trained rather than bolted on turns out to be the whole story. Two untrained actors ran
@@ -789,8 +789,8 @@ contains no exact match for the instruction, which caps attainable reward for ev
 </figure>
 
 <figure id="figure-15">
-  <img src="/blog/the-shapes-of-agent-memory/webshop_success_light.svg" class="dark:hidden" alt="A bar chart of WebShop strict success rate over 500 sessions. The 35B scores 37.6 without memory and 41.8 with the experience bank, the campaign's only significant memory effect. The frontier actor scores 44.4 and 45.0. MemHarness's trained policy stands alone at 75.6. Gray bars are no-memory with scaffolds kept, blue bars add the experience bank, green is the trained policy." />
-  <img src="/blog/the-shapes-of-agent-memory/webshop_success_dark.svg" class="hidden dark:block" alt="A bar chart of WebShop strict success rate over 500 sessions. The 35B scores 37.6 without memory and 41.8 with the experience bank, the campaign's only significant memory effect. The frontier actor scores 44.4 and 45.0. MemHarness's trained policy stands alone at 75.6. Gray bars are no-memory with scaffolds kept, blue bars add the experience bank, green is the trained policy." />
+  <img src="/blog/the-shapes-of-agent-memory/webshop_success_light.svg" class="dark:hidden" alt="A bar chart of WebShop strict success rate over 500 sessions. The 35B scores 37.6 without memory and 41.8 with the experience bank, the agentic benchmarks' only significant memory-ablation effect. The frontier actor scores 44.4 and 45.0. MemHarness's trained policy stands alone at 75.6. Gray bars are no-memory with scaffolds kept, blue bars add the experience bank, green is the trained policy." />
+  <img src="/blog/the-shapes-of-agent-memory/webshop_success_dark.svg" class="hidden dark:block" alt="A bar chart of WebShop strict success rate over 500 sessions. The 35B scores 37.6 without memory and 41.8 with the experience bank, the agentic benchmarks' only significant memory-ablation effect. The frontier actor scores 44.4 and 45.0. MemHarness's trained policy stands alone at 75.6. Gray bars are no-memory with scaffolds kept, blue bars add the experience bank, green is the trained policy." />
   <figcaption>Figure 15. WebShop success rate by actor. The weak actor gains 4.2 points from retrieved experience, the frontier actor gains noise,
   and only the trained policy reaches the bar.</figcaption>
 </figure>
@@ -805,13 +805,13 @@ MemHarness's 87.4, and their number comes from reinforcement learning against th
 _mechanics_, when to settle for a partial match, when to stop browsing, what an option is worth. Neither prompting nor a stronger actor replicates
 that, and no store, of any design, closes the gap from the outside.
 
-That last claim was then tested from the inside, and the test is the cleanest in the campaign: hold MemHarness's own frozen 7B actor fixed on WebShop
-(full catalog, 500 sessions) and swap what its memory holds. Its own released 7,859-episode bank, injected through its own wire format and retrieval
-semantics, scores 69.5 with a 0.306 success rate against the no-memory 71.0 and 0.300 (p = 0.69). The same bank under a different retrieval semantics,
-situation-match instead of memory-text match, scores 69.1 and 0.298. A three-way statistical tie, every delta under two points: at a frozen actor, not
-even the trained system's own bank helps it, under either way of reading it. Whatever their published 0.756 success rate is made of, it is not the
-bank's content and not the retrieval mechanics, because both are present here and buy nothing; it is the reconstruction _training_. Their own ablation
-says the same thing from above, since raw replay _hurts_ their trained policy, the same null as our frontier arms.
+That claim can also be tested from the inside, and the inside test is the cleanest one in this post: hold MemHarness's own frozen 7B actor fixed on
+WebShop (full catalog, 500 sessions) and swap what its memory holds. Its own released 7,859-episode bank, injected through its own wire format and
+retrieval semantics, scores 69.5 with a 0.306 success rate against the no-memory 71.0 and 0.300 (p = 0.69). The same bank under a different retrieval
+semantics, situation-match instead of memory-text match, scores 69.1 and 0.298. A three-way statistical tie, every delta under two points: at a frozen
+actor, not even the trained system's own bank helps it, under either way of reading it. Whatever their published 0.756 success rate is made of, it is
+not the bank's content and not the retrieval mechanics, because both are present here and buy nothing; it is the reconstruction _training_. Their own
+ablation says the same thing from above, since raw replay _hurts_ their trained policy, the same null as our frontier arms.
 
 Lay the results beside each other and one law explains the realm: **memory's value is inversely proportional to the actor's headroom.** A weak actor
 far from ceiling gains real points from retrieved experience; a frontier actor saturates the task and gains nothing; a policy trained for the task is
@@ -824,14 +824,14 @@ for at write and read time, its value floating on the gap between the actor and 
 behavior, paid for in training compute, inseparable from its actor. The conversational benchmarks reward the first kind everywhere; the agentic
 benchmarks reward it only while the actor is weak; past that line the question stops being "which store" and becomes "whose weights".
 
-One more disclosure belongs with the bar itself, because it arrived late and it cuts against the comparison. MemHarness's numbers above are quoted
-from its paper. Running their _released_ model on my own serving stack, under a faithful port of their harness and prompts, does not reach them: 0.581
-macro on ALFWorld against their 0.830 without memory, and 71.0 score with a 0.300 success rate on WebShop against their 87.4 and 0.756. Most of that
-was a prompt-format bug on my side, worth 41 points once fixed, but a residual of roughly 25 points survives on both benchmarks and has the same
-signature each time: the approach reproduces and the precision does not, exact option matches on WebShop and multi-step thermal sequences on ALFWorld,
-which points at serving numerics and 8-bit quantization of a sharply peaked policy rather than at anything about memory. I report it because it makes
-the comparison's frame explicit. Their published bar stands as published; my arms are measured on my stack; and the distance between those two
-statements is the same cross-stack caution this post applies to every other number it does not own.
+One more disclosure belongs with the bar itself, because it cuts against the comparison. MemHarness's numbers above are quoted from its paper. Running
+their _released_ model on my own serving stack, under a faithful port of their harness and prompts, does not reach them: 0.581 macro on ALFWorld
+against their 0.830 without memory, and 71.0 score with a 0.300 success rate on WebShop against their 87.4 and 0.756. Most of that was a prompt-format
+bug on my side, worth 41 points once fixed, but a residual of roughly 25 points survives on both benchmarks and has the same signature each time: the
+approach reproduces and the precision does not, exact option matches on WebShop and multi-step thermal sequences on ALFWorld, which points at serving
+numerics and 8-bit quantization of a sharply peaked policy rather than at anything about memory. I report it because it makes the comparison's frame
+explicit. Their published bar stands as published; my arms are measured on my stack; and the distance between those two statements is the same
+cross-stack caution this post applies to every other number it does not own.
 
 Provenance, disclosed: WebShop's official dataset is org-locked, so the runs used the community mirror of the same files (1,000-product setting); the
 harness went through three protocol corrections, each forced by evidence and archived beside the results; all frozen arms are single runs, and the
