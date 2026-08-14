@@ -175,11 +175,11 @@ anchor, so a graph failure degrades to plain ranked retrieval; and where pure pl
 rank, expansion gives it a query-independent path there.
 
 <figure id="figure-4">
-  <img src="/blog/the-shapes-of-agent-memory/hybrid_light.svg" class="dark:hidden" alt="One panel. Three rooms of dated fact chips form the place core. In the middle room a current fact with an open validity window sits above a superseded fact whose window is closed, labeled a new fact closes the old fact's window. A dashed orange association arc links the first and third rooms, labeled as learned from places that co-occur in retrievals beyond chance. Recall flows in three numbered steps: a query anchors on one room by ranked hybrid search, expands along the learned association to a room the query never ranked, and fuses both into a capped context where the graph augments recall but never swamps it." />
-  <img src="/blog/the-shapes-of-agent-memory/hybrid_dark.svg" class="hidden dark:block" alt="One panel. Three rooms of dated fact chips form the place core. In the middle room a current fact with an open validity window sits above a superseded fact whose window is closed, labeled a new fact closes the old fact's window. A dashed orange association arc links the first and third rooms, labeled as learned from places that co-occur in retrievals beyond chance. Recall flows in three numbered steps: a query anchors on one room by ranked hybrid search, expands along the learned association to a room the query never ranked, and fuses both into a capped context where the graph augments recall but never swamps it." />
+  <img src="/blog/the-shapes-of-agent-memory/hybrid_light.svg" class="dark:hidden" alt="One panel. Three rooms of dated fact chips form the place core. In the middle room a current fact with an open validity window sits above a superseded fact whose window is closed, labeled a new fact closes the old fact's window. A dashed orange association arc links the first and third rooms, labeled as learned from places that co-occur in retrievals beyond chance. Recall flows in three numbered steps: a query anchors on one room by ranked hybrid search, expands along the learned association to a room the query never ranked, and fuses both into a capped context where the graph adds candidates without displacing the anchors." />
+  <img src="/blog/the-shapes-of-agent-memory/hybrid_dark.svg" class="hidden dark:block" alt="One panel. Three rooms of dated fact chips form the place core. In the middle room a current fact with an open validity window sits above a superseded fact whose window is closed, labeled a new fact closes the old fact's window. A dashed orange association arc links the first and third rooms, labeled as learned from places that co-occur in retrievals beyond chance. Recall flows in three numbered steps: a query anchors on one room by ranked hybrid search, expands along the learned association to a room the query never ranked, and fuses both into a capped context where the graph adds candidates without displacing the anchors." />
   <figcaption>Figure 4. The hybrid. The place core keeps raw dated facts cheap to write; a validity window lets a new fact close an old one; recall
-  anchors on ranked search, expands along usage-learned associations to places the query never ranked, and fuses with a cap, so the graph can add
-  recall but never subtract it.</figcaption>
+  anchors on ranked search, expands along usage-learned associations to places the query never ranked, and fuses with a cap, so the graph adds
+  candidates without displacing the anchor set. Whether the added context helps the reader downstream is a separate, empirical question.</figcaption>
 </figure>
 
 One scope note for honesty, and it is a large one: the benchmark protocol below writes facts directly into the store, which never triggers the
@@ -829,13 +829,13 @@ actor gains +0.6 points of success rate (p = 0.8), landing at nearly the same to
 untrained arms is not the catalog alone but what untrained interaction with the hidden rubric extracts. Note what that ceiling does to actor class:
 the same actor swap that buys 31 points of success rate on ALFWorld buys +1.6 score here, because WebShop's reward is shaped by the catalog and its
 partial-credit mechanics, not by actor smarts. The deeper difference between the two benchmarks is what each one hides. ALFWorld states its goal in
-the observation, so success yields to reasoning and a capable enough actor needs nothing else, which is exactly what its frontier row shows. WebShop
-grades with a rubric the agent never sees, weighing attributes, options, and price into partial credit over a catalog that often has no exact match,
-and no amount of reasoning over the observation reveals how that grader will score a near-miss. Only the reward signal teaches it, and retrieval never
-sees the reward: a bank stores what the agent did, not what the grader thought of it. That is why only training reaches the bar: every training-free
-arm lands at a score of 63 to 66 against MemHarness's 87.4, and their number comes from reinforcement learning against the environment's own reward,
-which teaches the policy the reward's _mechanics_, when to settle for a partial match, when to stop browsing, what an option is worth. Neither
-prompting nor a stronger actor replicates that, and none of the stores tested here closes the gap from the outside.
+the observation, so success yields to reasoning, and the one frontier actor tested needed nothing else. WebShop grades with a rubric the agent never
+sees, weighing attributes, options, and price into partial credit over a catalog that often has no exact match, and no amount of reasoning over the
+observation reveals how that grader will score a near-miss. In these experiments nothing taught it except training against the reward signal itself,
+and retrieval never sees the reward: a bank stores what the agent did, not what the grader thought of it. That is why only training reaches the bar:
+every training-free arm lands at a score of 63 to 66 against MemHarness's 87.4, and their number comes from reinforcement learning against the
+environment's own reward, which teaches the policy the reward's _mechanics_, when to settle for a partial match, when to stop browsing, what an option
+is worth. Neither prompting nor a stronger actor replicates that, and none of the stores tested here closes the gap from the outside.
 
 That claim can be probed from the inside too, with one hard scope limit stated up front: the probe runs on my port of their frozen 7B actor, and that
 port falls well short of their published baselines, so it can speak about this port, not about their published system. Hold the port fixed on WebShop
@@ -885,8 +885,8 @@ WebShop, the latter including two voided protocol iterations.
 - **Sparse memory abstains for free.** File-based memory wins the questions whose right answer is "I don't know", on both benchmarks: remembering less
   means over-answering less. Build the structured kind and you must budget for an abstention discipline.
 - **Raw dated facts beat LLM-distilled graphs, and cost less twice over.** Inside the structured family, a good ranker over raw facts beat the graph
-  lineage on the benchmark the graph is sold on, while the hosted graph spent six times the reader context to score lower. Structure only shows its
-  value, in these measurements, only once histories outgrew one ranked query.
+  lineage on the benchmark the graph is sold on, while the hosted graph spent six times the reader context to score lower. Structure only shows its no
+  measured value at the short-history scale and clear value at the long one; where between the two it starts to pay was not measured.
 - **Reasoning at ingest is a product decision, not an implementation detail.** A graph store spends several model calls on every message a user ever
   sends, where a raw-turn store spends one embedding: roughly two orders of magnitude more, about \$14 to ingest one long history against about
   \$0.03. It parallelizes, so it is a bill rather than a wall, but the bill scales with everything your users ever said. It is also why this study has
@@ -899,11 +899,11 @@ WebShop, the latter including two voided protocol iterations.
 - **The ruler can outweigh the architecture, and which one dominates depends on the benchmark.** Swapping the reader-and-judge stack moved a score by
   6.9 points on byte-identical retrieval, more than the gaps between the three stores that work where they tie (0.3 to 3.6 points); on the long
   haystack the same store pair separates by 15. No single benchmark ranks these systems, and no number means anything without its protocol attached.
-- **Retrieved memory paid only where the actor had headroom.** The agentic benchmarks draw the boundary around the whole design space, as an observed
-  pattern on two actor tiers and two tasks rather than a law: real points under a weak actor, no detectable effect under a frontier one, harm under a
-  policy trained for the task. Where the task yields to reasoning, a frontier actor reaches the trained bar with no memory at all; where the reward
-  has a structure only practice teaches, training stands alone, and it buys that bar at the price of narrowness. Below that line the architectures in
-  this post are the game; at the line, the game becomes training.
+- **Retrieved memory paid only where the actor had headroom.** The agentic benchmarks draw the sharpest boundary in this post, as an observed pattern
+  on two actor tiers and two tasks rather than a law: real points under a weak actor, no detectable effect under a frontier one, harm under a policy
+  trained for the task. Where the task yields to reasoning, a frontier actor reaches the trained bar with no memory at all; where the reward has a
+  structure only practice teaches, training stands alone, and it buys that bar at the price of narrowness. Below that line the architectures in this
+  post are the game; at the line, the game becomes training.
 
 Both headline numbers came from the same model answering the same questions. The only thing that changed was the shape of what it remembered with.
 
