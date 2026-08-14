@@ -437,12 +437,15 @@ hybrid's store-only 0.750 sitting above its own agent-loop 0.632 is not the para
 asks for one answer; the agent loop has to decide when to search, what to search for, and how to read the results over multiple rounds, and every one
 of those decisions is a place to fail. A bare store measures the retrieval; the loop measures the whole system operating it, and the same ordering
 appears on LongMemEval-S (store-only 0.80 against agent-loop 0.736). The two -M rows also differ in sample and prompt set, so read their gap as
-directional only. The empty row is its own finding, and the reason it is empty is the finding: a graph store spends a reasoning call on every one of
-the haystack's 3.7 million messages where an embedder spends milliseconds. Ingesting it on my own hardware measured out at roughly twelve days of
-continuous GPU time, and renting a small hosted model to do the same work would have cost roughly \$7,000 at list prices. I was not willing to spend
-either on one row of one table, so the row stays empty and the reason is published. That is not a knock on the lineage so much as a statement of what
-it costs to reach the regime that matters: -M is where real assistants drift, and the paired rows above show it is where the benchmarks disagree,
-since the flat store that ties the hybrid at short haystacks falls 15 points behind exactly here, where multi-session organization starts to pay.
+directional only. But hold onto the shape of it, because it is this post's ending seen early: deciding when to search, what to ask, and whether to
+trust the answer is a competence in its own right, and the experience architecture at the end of this post is what it looks like when that competence
+is trained into the model instead of billed to a scaffold. The empty row is its own finding, and the reason it is empty is the finding: a graph store
+spends a reasoning call on every one of the haystack's 3.7 million messages where an embedder spends milliseconds. Ingesting it on my own hardware
+measured out at roughly twelve days of continuous GPU time, and renting a small hosted model to do the same work would have cost roughly \$7,000 at
+list prices. I was not willing to spend either on one row of one table, so the row stays empty and the reason is published. That is not a knock on the
+lineage so much as a statement of what it costs to reach the regime that matters: -M is where real assistants drift, and the paired rows above show it
+is where the benchmarks disagree, since the flat store that ties the hybrid at short haystacks falls 15 points behind exactly here, where
+multi-session organization starts to pay.
 
 ### LoCoMo
 
