@@ -834,11 +834,13 @@ benchmarks reward it only while the actor is weak; past that line the question s
 One more disclosure belongs with the bar itself, because it cuts against the comparison. MemHarness's numbers above are quoted from its paper. Running
 their _released_ model on my own serving stack, under a faithful port of their harness and prompts, does not reach them: 0.581 macro on ALFWorld
 against their 0.830 without memory, and 71.0 score with a 0.300 success rate on WebShop against their 87.4 and 0.756. Most of that was a prompt-format
-bug on my side, worth 41 points once fixed, but a residual of roughly 25 points survives on both benchmarks and has the same signature each time: the
-approach reproduces and the precision does not, exact option matches on WebShop and multi-step thermal sequences on ALFWorld, which points at serving
-numerics and 8-bit quantization of a sharply peaked policy rather than at anything about memory. I report it because it makes the comparison's frame
-explicit. Their published bar stands as published; my arms are measured on my stack; and the distance between those two statements is the same
-cross-stack caution this post applies to every other number it does not own.
+bug on my side, worth 41 points once fixed: the port initially prompted the released model in its repo's inference format rather than the multi-turn
+chat template it was trained on, and a policy sharpened by reinforcement learning collapses under the wrong template (0.17 macro, against 0.58 the
+moment the training-time format was restored), which is the narrowness argument making itself. A residual of roughly 25 points survives on both
+benchmarks and has the same signature each time: the approach reproduces and the precision does not, exact option matches on WebShop and multi-step
+thermal sequences on ALFWorld, which points at serving numerics and 8-bit quantization of a sharply peaked policy rather than at anything about
+memory. I report it because it makes the comparison's frame explicit. Their published bar stands as published; my arms are measured on my stack; and
+the distance between those two statements is the same cross-stack caution this post applies to every other number it does not own.
 
 Provenance, disclosed: WebShop's official dataset is org-locked, so the runs used the community mirror of the same files (1,000-product setting); the
 harness went through three protocol corrections, each forced by evidence and archived beside the results; all frozen arms are single runs, and the
