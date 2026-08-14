@@ -50,11 +50,12 @@ models come in where fairness demands: the [head-to-head](#the-lineages-head-to-
 have a different policy, not a baseline. The [last section](#remembering-what-worked-the-agentic-benchmarks) meets it on its home ground instead.
 
 **TL;DR** The structured store beats files on accuracy and on token cost at once; files win where memory stays small, or where the right answer is "I
-don't know". Against my own interest, the hybrid's place-plus-time structure buys nothing over a plain vector index on LoCoMo, and the two benchmarks
-rank the same pair of systems in opposite directions, so no single benchmark ranks memory systems. Swapping the model that reads the memory moves the
-score further than swapping between any two of the stores that work, which is why numbers do not travel between protocols. On the agentic benchmarks,
-retrieved experience pays only where the actor is weak and has headroom left; where the task yields to reasoning, a frontier actor reaches the trained
-system's bar with no memory at all, and where the reward has a shape only practice teaches, the trained policy stands alone.
+don't know". Against my own interest, the hybrid's place-plus-time structure buys nothing over a plain vector index on LoCoMo; paired on long-haystack
+LongMemEval-M the same two stores separate by 15 significant points in the hybrid's favour, so structure pays exactly where histories grow long, and
+no single benchmark ranks memory systems. Swapping the model that reads the memory moves the score further than swapping between any two of the stores
+that work, which is why numbers do not travel between protocols. On the agentic benchmarks, retrieved experience pays only where the actor is weak and
+has headroom left; where the task yields to reasoning, a frontier actor reaches the trained system's bar with no memory at all, and where the reward
+has a shape only practice teaches, the trained policy stands alone.
 
 <figure id="figure-1">
   <img src="/blog/the-shapes-of-agent-memory/overview_light.svg" class="dark:hidden" alt="Two panels. Left, store-based memory: a frozen model writes to and reads from a store beside it, the store holding both kinds, file lines and structured dots; writes come from the model's curation or an embedder, reads from grep or ranked recall; it bolts onto any model and is paid at write and read time. Right, experience-based memory: an actor enclosed in a dashed trained-by-reinforcement-learning boundary exchanges episodes with an episode bank, writing finished episodes back and retrieving them; one model, inseparable, paid in training compute." />
@@ -410,31 +411,35 @@ of that is my serving setup, but part of it is intrinsic: a longer read path has
 
 #### The long haystack: LongMemEval-M
 
-The -M variant asks the same questions over roughly ten times the history, and two numbers from the follow-up campaign belong here
-([Tab. 3](#table-3)) even though they are not paired with the main experiment:
+The -M variant asks the same questions over roughly ten times the history. The two store-only rows in [Tab. 3](#table-3) ran on the same
+pre-registered 100-question sample, one retrieval and one reader call each under the benchmark's official per-category judging, so their comparison is
+paired even though neither is paired with the main experiment:
 
 <figure id="table-3" class="table-figure">
 
-| System (LongMemEval-M)                  | Score | Questions scored                                |
-| --------------------------------------- | ----: | ----------------------------------------------- |
-| Hybrid (full agent loop)                | 0.632 | 500 (complete set)                              |
-| Place-organized (MemPalace, store-only) | 0.600 | 100 (pre-registered sample)                     |
-| Entity-and-time (Graphiti OSS)          |  None | None: ~12 GPU-days, or ~\$7,000, just to ingest |
+| System (LongMemEval-M)                  |     Score | Questions scored                                |
+| --------------------------------------- | --------: | ----------------------------------------------- |
+| **Hybrid (store-only)**                 | **0.750** | 100 (pre-registered sample)                     |
+| Place-organized (MemPalace, store-only) |     0.600 | The same 100                                    |
+| Hybrid (full agent loop)                |     0.632 | 500 (complete set, different harness)           |
+| Entity-and-time (Graphiti OSS)          |      None | None: ~12 GPU-days, or ~\$7,000, just to ingest |
 
-<figcaption>Table 3. LongMemEval-M, the long-haystack variant. The two scored rows differ in harness and in sample, so the gap is directional and
-the comparison is not yet settled.</figcaption>
+<figcaption>Table 3. LongMemEval-M, the long-haystack variant. The two store-only rows are paired on one pre-registered sample; the agent-loop row
+is a different harness and sample, directional only.</figcaption>
 </figure>
 
-The two scored rows differ in harness and in sample, so the three-point gap between them is directional at best, and I would not lean on it. A
-store-only run of the hybrid on the same pre-registered sample is what would settle it, and that run is still going as this publishes; whatever it
-returns will be reported here. Note also that the flat store's number moved: an earlier run of it scored 0.530 on a sample whose per-question rows
-were later lost, so both arms were re-drawn on a fresh pre-registered sample, and 0.600 is what it scores there. The empty row is its own finding, and
-the reason it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7 million messages where an embedder
-spends milliseconds. Ingesting it on my own hardware measured out at roughly twelve days of continuous GPU time, and renting a small hosted model to
-do the same work would have cost roughly \$7,000 at list prices. I was not willing to spend either on one row of one table, so the row stays empty and
-the reason is published. That is not a knock on the lineage so much as a statement of what it costs to reach the regime that matters: -M is where real
-assistants drift, and, as the head-to-head below shows, it is where the benchmarks disagree, since the flat store that ties the hybrid elsewhere falls
-behind exactly here, where multi-session organization starts to pay.
+The store-only pair settles what an earlier draft of this post had to leave open. Fifteen points, rescuing 22 questions against losing 7, exact p =
+0.008 under the same paired test as the head-to-head below: the gap clears the sample's own confidence interval, and the shape of the win matches the
+mechanism, with the hybrid sweeping the single-session categories (14/14 and 11/11) and pulling ahead on the multi-session and temporal content that
+long haystacks exist to test. Two disclosures ride along. The flat store's number moved: an earlier run scored 0.530 on a sample whose per-question
+rows were later lost, so both arms were re-drawn on a fresh pre-registered sample, and 0.600 is what it scores there. And the hybrid's store-only
+0.750 sitting above its own agent-loop 0.632 is a different sample and prompt set, directional only. The empty row is its own finding, and the reason
+it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7 million messages where an embedder spends
+milliseconds. Ingesting it on my own hardware measured out at roughly twelve days of continuous GPU time, and renting a small hosted model to do the
+same work would have cost roughly \$7,000 at list prices. I was not willing to spend either on one row of one table, so the row stays empty and the
+reason is published. That is not a knock on the lineage so much as a statement of what it costs to reach the regime that matters: -M is where real
+assistants drift, and the paired rows above show it is where the benchmarks disagree, since the flat store that ties the hybrid at short haystacks
+falls 15 points behind exactly here, where multi-session organization starts to pay.
 
 ### LoCoMo
 
@@ -572,8 +577,9 @@ Four findings ([Tab. 7](#table-7), [Fig. 12](#figure-12)).
   ([McNemar's test](https://en.wikipedia.org/wiki/McNemar%27s_test), which scores only the questions the two systems disagree on; p < 0.01). So,
   separately, does the plain dense store: raw turns beat distilled facts here before any hybrid machinery is added at all.
 - **The hybrid ties the flat vector index** (χ² = 0.06), which is the uncomfortable finding and belongs in the open. Place-plus-time buys nothing over
-  plain dense retrieval on this benchmark. Whether the structure pays once histories grow long is the open question: the LongMemEval-M table above has
-  the hybrid a few points ahead of the flat store, but across different harnesses and different samples, which is not enough to claim it.
+  plain dense retrieval on this benchmark. It is also only half the story: the same two stores, paired on LongMemEval-M's long haystacks
+  ([Tab. 3](#table-3)), separate by 15 points (0.750 against 0.600, p = 0.008). The structure is dead weight at LoCoMo's scale and decisive at -M's,
+  which is the benchmark-disagreement point again, made by one pair of systems.
 - **Distillation loses to raw text.** Both graph rows hand the reader LLM-distilled facts and entity summaries; both trail every raw-turn store, and
   the strongest graph row loses 3.3 points to the flat index while spending six times its context. The pre-built entity aggregates that make the
   lineage attractive for enumeration questions do not surface as a net win anywhere in this table; whatever they recover, the distillation loses more
@@ -593,9 +599,11 @@ systems.
 The campaign also measured the thing this post keeps insisting on, and it is worth putting a number on rather than gesturing at. Re-reading
 byte-identical retrieval with a different reader moved the hybrid's LoCoMo score by 6.9 points (0.7130 under the local 35B, 0.7825 under gpt-4o-mini),
 and re-judging identical answers under different judge prompts moved category-level accuracy by 5 to 15 points. Set that against the architecture
-([Tab. 8](#table-8)): the hybrid and the flat index differ by 0.3 points, and both sit 3.3 to 3.6 from the hosted graph. **Changing who reads the
-memory therefore matters more than changing which of those three stores you built.** Only Graphiti OSS sits further away than the reader does, and by
-a lot: even the cheapest route to it, Zep Cloud to Graphiti OSS, costs 21.2 points, three times the reader's swing.
+([Tab. 8](#table-8)): the hybrid and the flat index differ by 0.3 points, and both sit 3.3 to 3.6 from the hosted graph. **On this benchmark, changing
+who reads the memory matters more than changing which of those three stores you built.** Only Graphiti OSS sits further away than the reader does, and
+by a lot: even the cheapest route to it, Zep Cloud to Graphiti OSS, costs 21.2 points, three times the reader's swing. The scope matters, because the
+claim inverts with the haystack: on LongMemEval-M the same hybrid-versus-flat pair that differs by 0.3 here differs by 15 ([Tab. 3](#table-3)), better
+than twice the reader's swing. The reader dominates where the stores tie; the architecture dominates where the benchmark actually stresses it.
 
 That last gap needs care, because three different things sit behind that number and conflating them makes it unreadable:
 
@@ -633,8 +641,8 @@ tells you nothing.
 | The embedder inside one store                        | Graphiti OSS 0.5338      | Graphiti bge-m3 0.5286             |         0.5 |
 | The store, the _cheapest_ route into the open engine | Zep Cloud 0.7461         | Graphiti OSS 0.5338                |        21.2 |
 
-<figcaption>Table 8. What each single change costs, everything else held fixed. Swapping the reader moves the score further than swapping between any
-two of the three stores that work. The last row is the cheapest of the six routes into the starved open engine, and even that costs three times what
+<figcaption>Table 8. What each single change costs on LoCoMo, everything else held fixed. Here swapping the reader moves the score further than
+swapping between any two of the three stores that work; on the long-haystack benchmark that ordering inverts ([Tab. 3](#table-3)). The last row is the cheapest of the six routes into the starved open engine, and even that costs three times what
 the reader does; the dearest of the six, hybrid to the bge-m3 variant, costs 25.4. Zep Cloud and Graphiti OSS come from one vendor and are read by the
 same model here, so what separates them sits inside the stores rather than in the reader in front of them.</figcaption>
 </figure>
@@ -787,16 +795,23 @@ contains no exact match for the instruction, which caps attainable reward for ev
   and only the trained policy reaches the bar.</figcaption>
 </figure>
 
-WebShop delivers the campaign's only significant memory effect, and its clearest boundary ([Tab. 11](#table-11), [Fig. 15](#figure-15)). The weak
-actor gains 4.2 points of success rate from the bank (paired McNemar, p = 0.022), exactly where theory puts it: far from its ceiling, in a domain
-where episode know-how (query phrasing, option discipline, the scoring rules) transfers between tasks. The frontier actor gains +0.1 (p = 0.8); the
-catalog ceiling binds it to nearly the same total as the 35B. Note what that ceiling does to actor class: the same actor swap that buys 31 points of
-success rate on ALFWorld buys +1.6 score here, because WebShop's reward is shaped by the catalog and its partial-credit mechanics, not by actor
-smarts. That is why only training reaches the bar: every training-free arm lands at a score of 63 to 66 against MemHarness's 87.4, and their number
-comes from reinforcement learning against the environment's own reward, which teaches the policy the reward's _mechanics_, when to settle for a
-partial match, when to stop browsing, what an option is worth. Neither prompting nor a stronger actor replicates that, and no store, of any design,
-closes the gap from the outside. The raw-replay ablation from the experience architecture section completes the picture from above: even their trained
-policy is hurt by untrained memory use, the same null as our frontier arms.
+WebShop delivers the agentic benchmarks' only significant memory-ablation effect, and their clearest boundary ([Tab. 11](#table-11),
+[Fig. 15](#figure-15)). The weak actor gains 4.2 points of success rate from the bank (paired McNemar, p = 0.022), exactly where theory puts it: far
+from its ceiling, in a domain where episode know-how (query phrasing, option discipline, the scoring rules) transfers between tasks. The frontier
+actor gains +0.1 (p = 0.8); the catalog ceiling binds it to nearly the same total as the 35B. Note what that ceiling does to actor class: the same
+actor swap that buys 31 points of success rate on ALFWorld buys +1.6 score here, because WebShop's reward is shaped by the catalog and its
+partial-credit mechanics, not by actor smarts. That is why only training reaches the bar: every training-free arm lands at a score of 63 to 66 against
+MemHarness's 87.4, and their number comes from reinforcement learning against the environment's own reward, which teaches the policy the reward's
+_mechanics_, when to settle for a partial match, when to stop browsing, what an option is worth. Neither prompting nor a stronger actor replicates
+that, and no store, of any design, closes the gap from the outside.
+
+That last claim was then tested from the inside, and the test is the cleanest in the campaign: hold MemHarness's own frozen 7B actor fixed on WebShop
+(full catalog, 500 sessions) and swap what its memory holds. Its own released 7,859-episode bank, injected through its own wire format and retrieval
+semantics, scores 69.5 with a 0.306 success rate against the no-memory 71.0 and 0.300 (p = 0.69). The same bank under a different retrieval semantics,
+situation-match instead of memory-text match, scores 69.1 and 0.298. A three-way statistical tie, every delta under two points: at a frozen actor, not
+even the trained system's own bank helps it, under either way of reading it. Whatever their published 0.756 success rate is made of, it is not the
+bank's content and not the retrieval mechanics, because both are present here and buy nothing; it is the reconstruction _training_. Their own ablation
+says the same thing from above, since raw replay _hurts_ their trained policy, the same null as our frontier arms.
 
 Lay the results beside each other and one law explains the realm: **memory's value is inversely proportional to the actor's headroom.** A weak actor
 far from ceiling gains real points from retrieved experience; a frontier actor saturates the task and gains nothing; a policy trained for the task is
@@ -844,9 +859,9 @@ voided protocol iterations.
 - **Consolidation is the third path, and it pays late.** Both store architectures can run a background pass that reorganizes what is already stored,
   promoting what gets used or merging what repeats. It is built here and it measured as a null, because a capable reader deduplicates a handful of
   restatements in context for free. Tidying storage earns its keep only once the mess outgrows what the reader can hold.
-- **The ruler can outweigh the architecture.** Swapping the reader moved a score by 6.9 points on byte-identical retrieval, more than the gaps between
-  the three stores that work (0.3 to 3.6 points) though not the gap to the one that starves. No single benchmark ranks these systems, and no number
-  means anything without its protocol attached.
+- **The ruler can outweigh the architecture, and which one dominates depends on the benchmark.** Swapping the reader moved a score by 6.9 points on
+  byte-identical retrieval, more than the gaps between the three stores that work where they tie (0.3 to 3.6 points); on the long haystack the same
+  store pair separates by 15. No single benchmark ranks these systems, and no number means anything without its protocol attached.
 - **Retrieved memory earns in proportion to the actor's headroom.** The agentic benchmarks draw the boundary around the whole design space: real
   points under a weak actor, noise under a frontier one, harm under a policy trained for the task. Where the task yields to reasoning, a frontier
   actor reaches the trained bar with no memory at all; where the reward has a structure only practice teaches, training stands alone, and it buys that
