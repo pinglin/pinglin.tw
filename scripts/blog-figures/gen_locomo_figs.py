@@ -55,7 +55,7 @@ def cost(t,c):
     W,H=1100,560; x0,x1,y0,y1=110,1030,440,130
     s=[head(W,H,c)]
     s.append(f'<text class="title" x="70" y="46">The cost of an answer, LoCoMo</text>')
-    s.append(f'<text class="subtitle" x="70" y="74">Model-reasoning tokens, ingest amortized per question. Shorter histories shrink the bill; the ordering holds.</text>')
+    s.append(f'<text class="subtitle" x="70" y="74">Model tokens (prompt+completion), ingest amortized per question. Shorter histories shrink the bill; the ordering holds.</text>')
     grid(s,c,x0,x1,y0,y1,60,20,lambda v:f"{v}k")
     groups=[("Reasoning tokens per question",22.4,11.6),("Reasoning tokens per correct answer",58.0,23.3)]
     gw=(x1-x0)/2

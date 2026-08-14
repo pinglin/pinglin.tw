@@ -33,7 +33,7 @@ def acc(t,c):
     W,H=1100,600
     s=[head(W,H,c)]
     s.append(f'<text class="title" x="70" y="46">Store accuracy, one reader and one judge</text>')
-    s.append(f'<text class="subtitle" x="70" y="74">Each store contributes only its top-20 retrieval; gpt-4o-mini reads and judges every column.</text>')
+    s.append(f'<text class="subtitle" x="70" y="74">Each store contributes only its top-20 retrieval; LoCoMo evaluated by gpt-4o-mini, LongMemEval-S by the local 35B (official rubric).</text>')
     ay0,ay1=430,140
     for v in range(0,101,25):
         y=ay0-(ay0-ay1)*v/100

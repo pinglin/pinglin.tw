@@ -56,7 +56,7 @@ def cost(t,c):
     W,H=1100,560; x0,x1,y0,y1=110,1030,440,130
     s=[head(W,H,c)]
     s.append(f'<text class="title" x="70" y="46">The cost of an answer, LongMemEval-S</text>')
-    s.append(f'<text class="subtitle" x="70" y="74">Model-reasoning tokens, ingest amortized per question. The write path dominates.</text>')
+    s.append(f'<text class="subtitle" x="70" y="74">Model tokens (prompt+completion), ingest amortized per question. The write path dominates.</text>')
     grid(s,c,x0,x1,y0,y1,700,100,lambda v:f"{v}k")
     groups=[("Reasoning tokens per question",287,19),("Reasoning tokens per correct answer",665,27)]
     gw=(x1-x0)/2
