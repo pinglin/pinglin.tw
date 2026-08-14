@@ -167,10 +167,12 @@ no LLM at ingest, so no entity resolution and no maintained summaries, and cross
 The design's answer to that weak point is a third layer the two lineages do not have: an **associative graph learned from usage statistics**.
 Locations that co-occur in retrievals more often than chance predicts get linked (a statistical test, not embedding similarity: "these go together" is
 a stronger claim than "these look alike"), and recall runs as _anchor, expand, fuse_: ranked search anchors on what it can find, the association graph
-expands to linked locations the query never ranked, and the fused result caps the graph's contribution ([Fig. 4](#figure-4)). The principle underneath
-answers both lineages' disclosed failure modes at once: **the graph can only add recall, never subtract it.** Where the entity-and-time store is
-hard-bounded by its extractor, the hybrid keeps raw dated facts as the anchor, so a graph failure degrades to plain ranked retrieval; and where pure
-place organization can never _reach_ an item its one query failed to rank, expansion gives it a query-independent path there.
+expands to linked locations the query never ranked, and the fused result caps the graph's contribution ([Fig. 4](#figure-4)). The design principle
+underneath answers both lineages' disclosed failure modes at once: **the graph is only ever allowed to add candidates, never to displace the anchor
+set.** That guards the retrieval, not the reader, since added context can still distract the model downstream; what the measurements showed is no harm
+at the scale tested, not monotonicity. Where the entity-and-time store is hard-bounded by its extractor, the hybrid keeps raw dated facts as the
+anchor, so a graph failure degrades to plain ranked retrieval; and where pure place organization can never _reach_ an item its one query failed to
+rank, expansion gives it a query-independent path there.
 
 <figure id="figure-4">
   <img src="/blog/the-shapes-of-agent-memory/hybrid_light.svg" class="dark:hidden" alt="One panel. Three rooms of dated fact chips form the place core. In the middle room a current fact with an open validity window sits above a superseded fact whose window is closed, labeled a new fact closes the old fact's window. A dashed orange association arc links the first and third rooms, labeled as learned from places that co-occur in retrievals beyond chance. Recall flows in three numbered steps: a query anchors on one room by ranked hybrid search, expands along the learned association to a room the query never ranked, and fuses both into a capped context where the graph augments recall but never swamps it." />
@@ -341,7 +343,7 @@ how many questions it holds. Structured memory leads every category except abste
 </figure>
 
 On the held-out questions ([Tab. 1](#table-1), [Fig. 7](#figure-7)), the structured arm (the hybrid) scored **73.6%** and file-based scored **44.9%**
-(category-reweighted; raw 73.1% and 44.1%). The paired difference is **28.7 points**, 95% confidence interval **[22.1, 35.1]**, comfortably clear of
+(category-reweighted; raw 73.1% and 44.1%). The paired difference is **28.7 points**, 95% confidence interval **[22.1, 35.4]**, comfortably clear of
 zero. Three checks say the result is solid rather than lucky: the number barely moved from the tuning set to the held-out set for either arm (both
 actually ticked _up_, the opposite of an overfitting signature); widening the held-out set from 256 to all 356 non-tuning questions changed the gap by
 0.0002; and throwing out every question where either arm's answer was truncated by the serving layer still leaves 74.1% against 50.2%. For scale, a
@@ -692,12 +694,12 @@ everything your users ever said. Context sizes are medians over the same 1,540 q
 
 <figure id="table-9" class="table-figure">
 
-| Store                          | Median context / question | Ingest                                                         |
-| ------------------------------ | ------------------------: | -------------------------------------------------------------- |
-| Hybrid                         |                4.0k chars | Embedder only: ~\$0.03 per long user history                   |
-| Place-organized (MemPalace)    |                3.5k chars | Embedder only: ~\$0.03 per long user history                   |
-| Entity-and-time (Zep Cloud)    |               21.5k chars | LLM per message: ~\$14 per long user history                   |
-| Entity-and-time (Graphiti OSS) |                7.9k chars | LLM per message: ~12 days of GPU time, or ~\$7,000, per -M run |
+| Store                          | Median context / question | Ingest                                                                |
+| ------------------------------ | ------------------------: | --------------------------------------------------------------------- |
+| Hybrid                         |                4.0k chars | Embedder only: ~\$0.03 per long user history                          |
+| Place-organized (MemPalace)    |                3.5k chars | Embedder only: ~\$0.03 per long user history                          |
+| Entity-and-time (Zep Cloud)    |               21.5k chars | LLM per message: ~\$14 per long user history                          |
+| Entity-and-time (Graphiti OSS) |                7.9k chars | LLM per message: ~600 single-stream GPU-days, or ~\$7,000, per -M run |
 
 <figcaption>Table 9. What a retrieval costs in the head-to-head: context handed to the reader per question, and what ingest spends to build the
 store. Ingest prices are list-price estimates for a small hosted model.</figcaption>
@@ -833,7 +835,7 @@ and no amount of reasoning over the observation reveals how that grader will sco
 sees the reward: a bank stores what the agent did, not what the grader thought of it. That is why only training reaches the bar: every training-free
 arm lands at a score of 63 to 66 against MemHarness's 87.4, and their number comes from reinforcement learning against the environment's own reward,
 which teaches the policy the reward's _mechanics_, when to settle for a partial match, when to stop browsing, what an option is worth. Neither
-prompting nor a stronger actor replicates that, and no store, of any design, closes the gap from the outside.
+prompting nor a stronger actor replicates that, and none of the stores tested here closes the gap from the outside.
 
 That claim can be probed from the inside too, with one hard scope limit stated up front: the probe runs on my port of their frozen 7B actor, and that
 port falls well short of their published baselines, so it can speak about this port, not about their published system. Hold the port fixed on WebShop
@@ -879,12 +881,12 @@ WebShop, the latter including two voided protocol iterations.
   small, human-owned, and secondary to the task. Structured memory bets on an embedder and a ranker, pays in infrastructure, and is built for recall
   that holds up as history grows; the long-haystack pair here is consistent with that bet, though no scaling curve was measured.
 - **When memory is the task, structure wins on both axes at once.** Under a fixed model on a hard benchmark, the structured store beat files by **28.7
-  points on held-out questions** (95% CI [22.1, 35.1]) at a fraction of the measured model tokens per correct answer.
+  points on held-out questions** (95% CI [22.1, 35.4]) at a fraction of the measured model tokens per correct answer.
 - **Sparse memory abstains for free.** File-based memory wins the questions whose right answer is "I don't know", on both benchmarks: remembering less
   means over-answering less. Build the structured kind and you must budget for an abstention discipline.
 - **Raw dated facts beat LLM-distilled graphs, and cost less twice over.** Inside the structured family, a good ranker over raw facts beat the graph
   lineage on the benchmark the graph is sold on, while the hosted graph spent six times the reader context to score lower. Structure only shows its
-  value once histories outgrow one ranked query.
+  value, in these measurements, only once histories outgrew one ranked query.
 - **Reasoning at ingest is a product decision, not an implementation detail.** A graph store spends several model calls on every message a user ever
   sends, where a raw-turn store spends one embedding: roughly two orders of magnitude more, about \$14 to ingest one long history against about
   \$0.03. It parallelizes, so it is a bill rather than a wall, but the bill scales with everything your users ever said. It is also why this study has

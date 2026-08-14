@@ -63,7 +63,7 @@ def cost(t,c):
         ("Hybrid",4.0,BLUE,1),("Place (MemPalace)",3.5,BLUE,0.55),
         ("Zep Cloud",21.5,GREEN,1),("Graphiti OSS",7.9,GREEN,0.55)],"{:.1f}k")
     s.append(f'<text class="small" x="110" y="496" style="fill:{c["mut"]}">Chars of retrieved context per question. The other cost sits at ingest: raw-turn stores embed, the graphs reason per message,</text>')
-    s.append(f'<text class="small" x="110" y="520" style="fill:{c["mut"]}">roughly twelve days of GPU time per run at LongMemEval-M scale, against hours for the embedding-only stores.</text>')
+    s.append(f'<text class="small" x="110" y="520" style="fill:{c["mut"]}">roughly 600 single-stream GPU-days per run at LongMemEval-M scale, against hours for the embedding-only stores.</text>')
     s.append('</svg>'); return "".join(s)
 if __name__=="__main__":
     for t,c in TH.items():
