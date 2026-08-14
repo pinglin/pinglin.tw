@@ -829,13 +829,14 @@ actor gains +0.6 points of success rate (p = 0.8), landing at nearly the same to
 untrained arms is not the catalog alone but what untrained interaction with the hidden rubric extracts. Note what that ceiling does to actor class:
 the same actor swap that buys 31 points of success rate on ALFWorld buys +1.6 score here, because WebShop's reward is shaped by the catalog and its
 partial-credit mechanics, not by actor smarts. The deeper difference between the two benchmarks is what each one hides. ALFWorld states its goal in
-the observation, so success yields to reasoning, and the one frontier actor tested needed nothing else. WebShop grades with a rubric the agent never
-sees, weighing attributes, options, and price into partial credit over a catalog that often has no exact match, and no amount of reasoning over the
-observation reveals how that grader will score a near-miss. In these experiments nothing taught it except training against the reward signal itself,
-and retrieval never sees the reward: a bank stores what the agent did, not what the grader thought of it. That is why only training reaches the bar:
-every training-free arm lands at a score of 63 to 66 against MemHarness's 87.4, and their number comes from reinforcement learning against the
-environment's own reward, which teaches the policy the reward's _mechanics_, when to settle for a partial match, when to stop browsing, what an option
-is worth. Neither prompting nor a stronger actor replicates that, and none of the stores tested here closes the gap from the outside.
+the observation, so success yields to reasoning, and the one frontier actor tested gained nothing detectable from the bank there (0.959 against 0.973,
+p = 0.5). WebShop grades with a rubric the agent never sees, weighing attributes, options, and price into partial credit over a catalog that often has
+no exact match, and no amount of reasoning over the observation reveals how that grader will score a near-miss. In these experiments nothing taught it
+except training against the reward signal itself, and retrieval never sees the reward: a bank stores what the agent did, not what the grader thought
+of it. That is why only training reaches the bar: every training-free arm lands at a score of 63 to 66 against MemHarness's 87.4, and their number
+comes from reinforcement learning against the environment's own reward, which teaches the policy the reward's _mechanics_, when to settle for a
+partial match, when to stop browsing, what an option is worth. Neither prompting nor a stronger actor replicates that, and none of the stores tested
+here closes the gap from the outside.
 
 That claim can be probed from the inside too, with one hard scope limit stated up front: the probe runs on my port of their frozen 7B actor, and that
 port falls well short of their published baselines, so it can speak about this port, not about their published system. Hold the port fixed on WebShop
@@ -885,8 +886,9 @@ WebShop, the latter including two voided protocol iterations.
 - **Sparse memory abstains for free.** File-based memory wins the questions whose right answer is "I don't know", on both benchmarks: remembering less
   means over-answering less. Build the structured kind and you must budget for an abstention discipline.
 - **Raw dated facts beat LLM-distilled graphs, and cost less twice over.** Inside the structured family, a good ranker over raw facts beat the graph
-  lineage on the benchmark the graph is sold on, while the hosted graph spent six times the reader context to score lower. Structure only shows its no
-  measured value at the short-history scale and clear value at the long one; where between the two it starts to pay was not measured.
+  lineage on the benchmark the graph is sold on, while the hosted graph spent six times the reader context to score lower. Whether place-plus-time
+  beats a flat ranked query depends on where you ask: no detectable advantage on LoCoMo, a significant one on LongMemEval-M's long haystacks, and no
+  scaling curve connecting the two, which differ in more than history length.
 - **Reasoning at ingest is a product decision, not an implementation detail.** A graph store spends several model calls on every message a user ever
   sends, where a raw-turn store spends one embedding: roughly two orders of magnitude more, about \$14 to ingest one long history against about
   \$0.03. It parallelizes, so it is a bill rather than a wall, but the bill scales with everything your users ever said. It is also why this study has

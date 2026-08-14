@@ -71,7 +71,7 @@ def fig(t,c):
     s.append(f'<text class="tiny" x="{fx+fw/2}" y="{fy+40}" text-anchor="middle">Adds candidates; never displaces anchors</text>')
     s.append(f'<line x1="{rxs[0]+225}" y1="{ry+RH+4}" x2="{fx+62}" y2="{fy-4}" stroke="{c["mut"]}" stroke-width="1.8" marker-end="url(#hm_{t})"/>')
     s.append(f'<line x1="{rxs[2]+100}" y1="{ry+RH+4}" x2="{fx+fw-62}" y2="{fy-4}" stroke="{c["mut"]}" stroke-width="1.8" marker-end="url(#hm_{t})"/>')
-    s.append(f'<text class="small" x="{lm+AW/2}" y="{ay+AH-18}" text-anchor="middle" style="fill:{ORANGE}">Embedder-cheap writes &#183; Dated, supersedable facts &#183; Embedder-cheap writes &#183; Dated, supersedable facts &#183; The graph adds candidates, never displaces anchors</text>')
+    s.append(f'<text class="small" x="{lm+AW/2}" y="{ay+AH-18}" text-anchor="middle" style="fill:{ORANGE}">Embedder-cheap writes &#183; Dated, supersedable facts &#183; The graph adds candidates, never displaces anchors</text>')
     s.append('</svg>')
     return "".join(s)
 if __name__=="__main__":
