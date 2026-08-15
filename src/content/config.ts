@@ -9,7 +9,8 @@ const blogCollection = defineCollection({
     image: z.object({
       url: z.string(),
       // Optional light-theme variant; when present the post layout renders a
-      // theme-paired hero. `url` stays the canonical (dark + OG) image.
+      // theme-paired hero and social cards use this one, since previews sit on
+      // light chrome. `url` stays the canonical (dark) image.
       urlLight: z.string().optional(),
       alt: z.string(),
     }),

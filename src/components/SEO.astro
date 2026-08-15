@@ -2,7 +2,7 @@
 interface Props {
   title?: string;
   description?: string;
-  image?: string | { url: string; alt: string };
+  image?: string | { url: string; urlLight?: string; alt: string };
   url?: string;
 }
 
@@ -13,9 +13,12 @@ const {
   url = Astro.url,
 } = Astro.props;
 
-// Ensure absolute URL for OG image, handling both string and object types
-const ogImageUrl = typeof image === 'string' ? image : image.url;
+// Ensure absolute URL for OG image, handling both string and object types.
+// Posts ship a theme pair; social cards render on light chrome on every
+// platform, so the light variant is the one that previews well.
+const ogImageUrl = typeof image === 'string' ? image : (image.urlLight ?? image.url);
 const ogImage = new URL(ogImageUrl, Astro.url);
+const ogImageType = ogImage.pathname.endsWith('.png') ? 'image/png' : 'image/jpeg';
 ---
 
 <!-- Standard Meta -->
@@ -28,7 +31,7 @@ const ogImage = new URL(ogImageUrl, Astro.url);
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogImage} />
-<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:type" content={ogImageType} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="行到水窮處，坐看雲起時。" />
