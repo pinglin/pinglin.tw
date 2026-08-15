@@ -7,8 +7,6 @@ description:
   experience bank on the agentic benchmarks where the state of the art trains memory into the weights.'
 author: 'Ping-Lin Chang'
 lang: 'en'
-hidden: true
-draft: true
 image:
   url: '/blog/the-shapes-of-agent-memory/header.svg'
   urlLight: '/blog/the-shapes-of-agent-memory/header_light.svg'
@@ -432,10 +430,11 @@ with the main experiment:
 | **Hybrid (store-only)**                 | **0.750** | 100 (pre-drawn sample)                                    |
 | Place-organized (MemPalace, store-only) |     0.600 | The same 100                                              |
 | Hybrid (full agent loop)                |     0.632 | 500 (complete set, different harness)                     |
+| File-based                              |      None | None: another ~2-3 days of runs at 10x the history        |
 | Entity-and-time (Graphiti OSS)          |      None | None: ~600 single-stream GPU-days, or ~\$7,000, to ingest |
 
 <figcaption>Table 3. LongMemEval-M, the long-haystack variant. The two store-only rows are paired on one pre-drawn sample; the agent-loop row is a
-different harness and sample, directional only.</figcaption>
+different harness and sample, directional only. Two rows are unscored, each for a different reason, given below.</figcaption>
 </figure>
 
 Long histories are the regime structure exists for, and the paired rows put a number on the claim: fifteen points, rescuing 22 questions against
@@ -443,24 +442,21 @@ losing 7, exact p = 0.008 under the same paired test as the head-to-head below. 
 the win matches the mechanism, with the hybrid sweeping the single-session categories (14/14 and 11/11) and pulling ahead on the multi-session and
 temporal content that long haystacks exist to test.
 
-Two disclosures ride along. The first: the flat store's number moved. An earlier run scored 0.530 on a sample whose per-question rows were later lost,
-so both arms were re-drawn on a fresh pre-drawn sample, and 0.600 is what it scores there.
+Store-only gave the reader one ranked context and outscored the full loop on -M (0.750 vs. 0.632) and the 100-question -S sample in [Tab. 7](#table-7)
+(0.80 vs. 0.72). Prompt and loop effects were not isolated, so both gaps are directional.
 
-The second is that the hybrid's store-only 0.750 sits above its own agent-loop 0.632, which is not the paradox it looks like. Store-only hands the
-reader one ranked context and asks for one answer; the agent loop has to decide when to search, what to search for, and how to read the results over
-multiple rounds, and every one of those decisions is a place to fail. A bare store measures the retrieval; the loop measures the whole system
-operating it, and the same ordering appears on LongMemEval-S, where store-only scores 0.80 against the loop's 0.72 on one sample under one rubric. A
-confound rides with both gaps, disclosed: the store-only rows answer under the shared competitor prompt while the loop uses its own, so part of each
-gap is prompt rather than loop overhead, and the split between the two was not isolated. Read the sizes as directional.
-
-Hold onto the shape of it, though, because it is this post's ending seen early. Deciding when to search, what to ask, and whether to trust the answer
-is a competence in its own right, and the experience architecture at the end of this post is what it looks like when that competence is trained into
-the model instead of billed to a scaffold.
-
-The empty row is its own finding, and the reason it is empty is the finding: a graph store spends a reasoning call on every one of the haystack's 3.7
-million messages where an embedder spends milliseconds. At the roughly 14 seconds per message measured on this hardware, that is about 600 days of
+Graphiti OSS is unscored because ingesting the benchmark would be prohibitively expensive: it requires a reasoning call for each of the haystack's 3.7
+million messages, while an embedder takes milliseconds. At the roughly 14 seconds per message measured on this hardware, that is about 600 days of
 single-stream GPU time; parallel serving divides the wall-clock but not the bill, and renting a small hosted model to do the same work would have cost
 roughly \$7,000 at list prices. I was not willing to spend either on one row of one table, so the row stays empty and the reason is published.
+
+The file-based row is empty for a simpler reason: runtime. Fifty questions over ten times the history is another two to three days of runs, which fell
+outside this study's window. Those runs were the only test of what this post's main comparison implies about scale — that files fall further behind as
+histories grow — so that claim is measured at roughly 47 sessions and untested at 500, precisely where I expected the gap to be widest. Untested is
+not refuted, and the long-haystack rows above are a different pair: they say nothing about how files would have done. My guess is that the gap widens
+rather than narrows, and mostly on the write side, since an index capped at a couple of hundred lines cannot grow tenfold with the history behind it —
+curation drops more of what was never written down, while a ranked store simply retrieves from a larger pool. A guess is all that is, though, and the
+run that would settle it remains outstanding.
 
 That is not a knock on the lineage so much as a statement of what it costs to reach the regime that matters. -M is where real assistants drift, and
 the paired rows above show it is where the benchmarks disagree: the flat store that is indistinguishable from the hybrid on LoCoMo falls 15 points
@@ -962,6 +958,10 @@ frozen.
   reader sees the store, and it loses questions the file arm won), so this is an aggregate split between arms, not an identification of where each
   point was lost. On preference questions the oracle beats the structured arm (72.2% against 61.1%), consistent with a search miss; on abstention it
   scores exactly what the file arm scores, which suggests over-answering tracks eager retrieval rather than context volume.
+- **The comparison is measured at one history length.** Both arms ran at roughly 47 sessions per question. The 500-session variant is another two to
+  three days of runs at ten times the history, outside this study's window, so the prediction that files fall further behind as histories grow
+  ([Tab. 3](#table-3)) is untested rather than confirmed. The long-haystack rows that do exist compare two structured stores, not files against
+  structure.
 - **Wall-clock is indicative, not controlled**; token counts are the load-independent cost metric.
 - **Reproducibility has a scope.** The baseline, file arm, judge, and analysis run against any OpenAI-compatible endpoint; the structured arm calls a
   memory service, and its raw per-question rows are published for inspection either way in [a40-labs/memory](https://github.com/a40-labs/memory). The
