@@ -16,25 +16,78 @@ const {
 // Ensure absolute URL for OG image, handling both string and object types.
 // Posts ship a theme pair; social cards render on light chrome on every
 // platform, so the light variant is the one that previews well.
-const ogImageUrl = typeof image === 'string' ? image : (image.urlLight ?? image.url);
-const ogImage = new URL(ogImageUrl, Astro.url);
+const ogImageSource = typeof image === 'string' ? image : (image.urlLight ?? image.url);
+// No unfurler renders SVG — Slack, X, LinkedIn, Facebook and Discord all drop
+// the image and show a bare text card. An SVG hero ships a PNG sibling.
+const ogImage = new URL(ogImageSource.replace(/\.svg$/, '.png'), Astro.url);
 const ogImageType = ogImage.pathname.endsWith('.png') ? 'image/png' : 'image/jpeg';
+// The default card image is the poem; a post's image carries its own alt.
+const ogImageAlt = typeof image === 'string' ? '行到水窮處，坐看雲起時。' : image.alt;
+
+// A post description doubles as the on-page subtitle, so it runs longer than a
+// preview shows (Google truncates ~160, cards less). Trim for the tags only,
+// leaving the page copy untouched.
+const PREVIEW_LIMIT = 160;
+// Function words that read badly as the last word before an ellipsis.
+const DANGLING = new Set([
+  'a',
+  'an',
+  'and',
+  'as',
+  'at',
+  'but',
+  'for',
+  'in',
+  'of',
+  'on',
+  'or',
+  'that',
+  'the',
+  'to',
+  'with',
+]);
+
+function trimForPreview(text: string) {
+  if (text.length <= PREVIEW_LIMIT) return text;
+
+  // Prefer whole sentences — a complete thought beats a mid-clause cut.
+  let sentences = '';
+  for (const sentence of text.split(/(?<=[.?!])\s+/)) {
+    const next = sentences ? `${sentences} ${sentence}` : sentence;
+    if (next.length > PREVIEW_LIMIT) break;
+    sentences = next;
+  }
+  // ...unless that leaves most of the preview empty (a short opening line),
+  // in which case more text is worth more than a clean break.
+  if (sentences.length >= PREVIEW_LIMIT * 0.6) return sentences;
+
+  const cut = text.slice(0, PREVIEW_LIMIT - 1);
+  const words = cut
+    .slice(0, cut.lastIndexOf(' '))
+    .replace(/[\s,;:—–-]+$/, '')
+    .split(' ');
+  if (DANGLING.has(words[words.length - 1].toLowerCase())) words.pop();
+  return `${words.join(' ')}…`;
+}
+
+const previewDescription = trimForPreview(description);
 ---
 
 <!-- Standard Meta -->
 <title>{title}</title>
-<meta name="description" content={description} />
+<meta name="description" content={previewDescription} />
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:url" content={url} />
 <meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
+<meta property="og:description" content={previewDescription} />
+<meta property="og:site_name" content="pinglin.tw" />
 <meta property="og:image" content={ogImage} />
 <meta property="og:image:type" content={ogImageType} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="行到水窮處，坐看雲起時。" />
+<meta property="og:image:alt" content={ogImageAlt} />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
