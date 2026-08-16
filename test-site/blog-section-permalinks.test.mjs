@@ -6,6 +6,7 @@ import test from 'node:test';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const output = join(root, 'dist', 'client');
+const tableOfContentsSource = readFileSync(join(root, 'src', 'components', 'TableOfContents.astro'), 'utf8');
 
 function meta(html, property) {
   return html.match(new RegExp(`<meta[^>]+property=["']${property.replace(':', '\\:')}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1];
@@ -85,4 +86,11 @@ test('Traditional Chinese headings receive localized section permalinks', () => 
 test('noncanonical section permalinks stay out of the generated sitemap', () => {
   const sitemap = readFileSync(join(output, 'sitemap-0.xml'), 'utf8');
   assert.doesNotMatch(sitemap, /\/sections\//);
+});
+
+test('table-of-contents navigation preserves section permalinks', () => {
+  assert.match(tableOfContentsSource, /link\.dataset\.sectionPath = sectionPath/);
+  assert.match(tableOfContentsSource, /sectionPathFor\(targetElement, targetId\)/);
+  assert.doesNotMatch(tableOfContentsSource, /className = 'header-link'/);
+  assert.doesNotMatch(tableOfContentsSource, /header\.innerHTML = ''/);
 });

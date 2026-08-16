@@ -23,7 +23,22 @@
     tocWrapper.appendChild(tocList);
 
     const headers = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const article = document.querySelector('[data-blog-article]');
+    const articleUrl = article?.getAttribute('data-article-url');
     let topLevel = 6;
+
+    function sectionPathFor(header, sectionId) {
+      if (
+        !articleUrl ||
+        !header?.matches('h2, h3') ||
+        !header.querySelector('[data-section-copy]')
+      ) {
+        return null;
+      }
+
+      const url = new URL(`sections/${encodeURIComponent(sectionId)}/`, articleUrl);
+      return `${url.pathname}${url.search}`;
+    }
 
     headers.forEach((header) => {
       const level = parseInt(header.tagName.charAt(1));
@@ -58,7 +73,10 @@
         header.id = urlSafeId;
       }
 
-      link.href = `#${urlSafeId}`;
+      const sectionPath = sectionPathFor(header, urlSafeId);
+      link.href = sectionPath || `#${urlSafeId}`;
+      link.dataset.scrollTarget = urlSafeId;
+      if (sectionPath) link.dataset.sectionPath = sectionPath;
 
       const actualLevel = parseInt(header.tagName.charAt(1));
       const adjustedLevel = actualLevel - topLevel + 1;
@@ -66,33 +84,6 @@
 
       listItem.appendChild(link);
       tocList.appendChild(listItem);
-
-      // Skip adding clip icon for h1 blog titles
-      if (header.tagName !== 'H1') {
-        header.style.position = 'relative';
-
-        // Wrap header content in a link
-        const headerContent = header.innerHTML;
-        const headerLink = document.createElement('a');
-        headerLink.href = `#${urlSafeId}`;
-        headerLink.style.color = 'inherit';
-        headerLink.style.textDecoration = 'none';
-        header.innerHTML = '';
-        headerLink.innerHTML = headerContent;
-        header.appendChild(headerLink);
-
-        // Add clip icon
-        const clipLink = document.createElement('a');
-        clipLink.href = `#${urlSafeId}`;
-        clipLink.className = 'header-link';
-        clipLink.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"/>
-          </svg>
-        `;
-
-        header.appendChild(clipLink);
-      }
     });
 
     // A "Preface" entry for the prose above the first heading, so the reader can
@@ -190,11 +181,11 @@
       updateTocVisibility();
       updateTocPosition();
 
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      document.querySelectorAll('a[href^="#"], a[data-scroll-target]').forEach((anchor) => {
         anchor.addEventListener('click', function (e) {
           e.preventDefault();
 
-          const targetId = this.getAttribute('href').substring(1);
+          const targetId = this.dataset.scrollTarget || this.getAttribute('href').substring(1);
           const targetElement = document.getElementById(targetId);
 
           if (targetElement) {
@@ -202,8 +193,12 @@
             const yOffset = headerRect.top - 85;
             const y = targetElement.getBoundingClientRect().top + window.scrollY + yOffset;
 
-            // Update URL before scrolling
-            history.pushState(null, '', `#${targetId}`);
+            // H2/H3 headings are social-sharing entry points, so navigating to
+            // one must leave a crawler-visible permalink in the address bar.
+            // Figures, equations and other document anchors remain fragments.
+            const nextUrl =
+              this.dataset.sectionPath || sectionPathFor(targetElement, targetId) || `#${targetId}`;
+            history.pushState(null, '', nextUrl);
 
             window.scrollTo({ top: y, behavior: 'smooth' });
 
@@ -241,37 +236,3 @@
     }
   });
 </script>
-
-<style is:global>
-  .header-link {
-    position: absolute;
-    left: -26px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0;
-    padding: 2px;
-    transition: opacity 0.2s;
-    color: inherit;
-  }
-
-  h2:hover .header-link,
-  h3:hover .header-link,
-  h4:hover .header-link,
-  h5:hover .header-link,
-  h6:hover .header-link {
-    opacity: 1;
-  }
-
-  .header-link:hover {
-    opacity: 0.8;
-  }
-
-  h2 a,
-  h3 a,
-  h4 a,
-  h5 a,
-  h6 a {
-    color: inherit !important;
-    text-decoration: none;
-  }
-</style>
