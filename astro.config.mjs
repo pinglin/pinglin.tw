@@ -42,6 +42,7 @@ const hiddenSlugs = collectHiddenSlugs('./src/content/blog');
 
 export default defineConfig({
   site: 'https://pinglin.tw',
+  trailingSlash: 'always',
   adapter: vercel({
     imageService: true,
     edgeMiddleware: true,

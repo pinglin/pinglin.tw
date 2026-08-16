@@ -25,6 +25,8 @@ Traditional Chinese posts use the same shape beneath `/zh-tw/`.
   are left unchanged.
 - A legacy fragment submitted directly to a social crawler cannot be upgraded because browsers never send fragments to servers. Share the
   `/sections/<id>/` URL shown after opening the link instead.
+- Vercel permanently redirects extensionless URLs without a trailing slash to their slash-form canonical URL, preventing crawlers from caching two
+  identities for the same section.
 
 Run `pnpm test:site` to build the site and verify the section pages, metadata, localized path, PNG signatures and dimensions, hash upgrade, and
 sitemap.

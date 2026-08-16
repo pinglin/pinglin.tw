@@ -6,7 +6,9 @@ import test from 'node:test';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const output = join(root, 'dist', 'client');
+const astroConfigSource = readFileSync(join(root, 'astro.config.mjs'), 'utf8');
 const tableOfContentsSource = readFileSync(join(root, 'src', 'components', 'TableOfContents.astro'), 'utf8');
+const vercelConfig = JSON.parse(readFileSync(join(root, 'vercel.json'), 'utf8'));
 
 function meta(html, property) {
   return html.match(new RegExp(`<meta[^>]+property=["']${property.replace(':', '\\:')}["'][^>]+content=["']([^"']+)["']`, 'i'))?.[1];
@@ -93,4 +95,9 @@ test('table-of-contents navigation preserves section permalinks', () => {
   assert.match(tableOfContentsSource, /sectionPathFor\(targetElement, targetId\)/);
   assert.doesNotMatch(tableOfContentsSource, /className = 'header-link'/);
   assert.doesNotMatch(tableOfContentsSource, /header\.innerHTML = ''/);
+});
+
+test('deployment canonicalizes extensionless URLs with a trailing slash', () => {
+  assert.match(astroConfigSource, /trailingSlash:\s*'always'/);
+  assert.equal(vercelConfig.trailingSlash, true);
 });

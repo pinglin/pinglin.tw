@@ -1,5 +1,6 @@
 {
   "framework": "astro",
+  "trailingSlash": true,
   "devCommand": "pnpm run dev",
   "buildCommand": "pnpm build",
   "outputDirectory": "dist"
