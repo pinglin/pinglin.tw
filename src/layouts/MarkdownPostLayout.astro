@@ -1,8 +1,34 @@
 ---
+import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
+import {
+  blogSectionOgImagePath,
+  blogSectionOgVersion,
+  blogSectionPath,
+  type BlogSection,
+} from '../lib/blog-sections';
 import '../styles/markdown.css';
 import 'katex/dist/katex.min.css';
-const { frontmatter } = Astro.props;
+
+interface Props {
+  frontmatter: CollectionEntry<'blog'>['data'];
+  articlePath: string;
+  section?: BlogSection;
+}
+
+const { frontmatter, articlePath, section } = Astro.props as Props;
+const articleUrl = new URL(articlePath, Astro.site).href;
+const pageUrl = section
+  ? new URL(blogSectionPath(articlePath, section.slug), Astro.site).href
+  : articleUrl;
+const socialTitle = section ? `${section.title} — ${frontmatter.title}` : frontmatter.title;
+const socialDescription = section?.excerpt || frontmatter.description;
+const socialImage = section
+  ? `${new URL(blogSectionOgImagePath(articlePath, section.slug), Astro.site).href}?v=${blogSectionOgVersion(frontmatter, section)}`
+  : frontmatter.image;
+const socialImageAlt = section
+  ? `${section.title}, a section from ${frontmatter.title}`
+  : frontmatter.image.alt;
 
 const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', {
   year: 'numeric',
@@ -12,9 +38,13 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
 ---
 
 <BaseLayout
-  pageTitle={frontmatter.title}
-  description={frontmatter.description}
-  image={frontmatter.image}
+  pageTitle={socialTitle}
+  description={socialDescription}
+  image={socialImage}
+  imageAlt={socialImageAlt}
+  canonical={articleUrl}
+  ogUrl={pageUrl}
+  ogType="article"
 >
   <div class="flex flex-col mb-10">
     <h1 class="text-center my-4 leading-snug">{frontmatter.title}</h1>
@@ -42,9 +72,108 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
     </div>
     <p class="text-sm text-left text-gray-500 dark:text-gray-400">{frontmatter.image.alt}</p>
   </div>
-  <div class="markdown-content">
+  <div
+    class="markdown-content"
+    data-blog-article
+    data-article-url={articleUrl}
+    data-active-section={section?.slug}
+    data-copy-success={frontmatter.lang === 'zh-tw' ? '已複製段落連結' : 'Section link copied'}
+  >
     <slot />
   </div>
+
+  <script is:inline>
+    function sectionPermalink(article, sectionId) {
+      return new URL(
+        'sections/' + encodeURIComponent(sectionId) + '/',
+        article.getAttribute('data-article-url'),
+      ).href;
+    }
+
+    function copyText(value) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(value);
+      }
+      return new Promise(function (resolve, reject) {
+        var input = document.createElement('textarea');
+        input.value = value;
+        input.setAttribute('readonly', '');
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        try {
+          if (!document.execCommand('copy')) throw new Error('copy failed');
+          resolve();
+        } catch (error) {
+          reject(error);
+        } finally {
+          input.remove();
+        }
+      });
+    }
+
+    function initialiseSectionPage() {
+      var article = document.querySelector('[data-blog-article]');
+      if (!article) return;
+
+      var sectionId = article.getAttribute('data-active-section') || '';
+      if (window.location.hash) {
+        try {
+          var legacyId = decodeURIComponent(window.location.hash.slice(1));
+          var legacyTarget = document.getElementById(legacyId);
+          if (
+            legacyTarget &&
+            legacyTarget.matches('h2, h3') &&
+            legacyTarget.querySelector('[data-section-copy]')
+          ) {
+            sectionId = legacyId;
+            var upgraded = new URL(sectionPermalink(article, legacyId));
+            history.replaceState(history.state, '', upgraded.pathname + upgraded.search);
+          }
+        } catch {
+          // Leave malformed percent-encoded fragments untouched.
+        }
+      }
+
+      if (sectionId) {
+        var target = document.getElementById(sectionId);
+        if (target) {
+          requestAnimationFrame(function () {
+            target.scrollIntoView({ block: 'start' });
+          });
+        }
+      }
+    }
+
+    document.addEventListener('click', function (event) {
+      var target = event.target;
+      var button = target && target.closest ? target.closest('[data-section-copy]') : null;
+      if (!button) return;
+
+      var article = button.closest('[data-blog-article]');
+      var sectionId = button.getAttribute('data-section-id');
+      if (!article || !sectionId) return;
+
+      copyText(sectionPermalink(article, sectionId))
+        .then(function () {
+          var originalLabel = button.getAttribute('data-copy-label') || 'Copy section permalink';
+          button.classList.add('is-copied');
+          button.setAttribute(
+            'aria-label',
+            article.getAttribute('data-copy-success') || 'Section link copied',
+          );
+          clearTimeout(button.__copiedTimer);
+          button.__copiedTimer = setTimeout(function () {
+            button.classList.remove('is-copied');
+            button.setAttribute('aria-label', originalLabel);
+          }, 1800);
+        })
+        .catch(function () {});
+    });
+
+    initialiseSectionPage();
+  </script>
 
   <div
     id="mermaid-modal"

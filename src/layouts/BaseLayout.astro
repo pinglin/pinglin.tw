@@ -12,10 +12,22 @@ import '../styles/global.css';
 interface Props {
   pageTitle?: string;
   description?: string;
-  image?: string;
+  image?: string | { url: string; urlLight?: string; alt: string };
+  imageAlt?: string;
+  canonical?: string | URL;
+  ogUrl?: string | URL;
+  ogType?: 'website' | 'article';
 }
 
-const { pageTitle: title, description, image } = Astro.props;
+const {
+  pageTitle: title,
+  description,
+  image,
+  imageAlt,
+  canonical,
+  ogUrl: url,
+  ogType: type,
+} = Astro.props;
 const lang = Astro.currentLocale ?? 'en';
 ---
 
@@ -53,7 +65,7 @@ const lang = Astro.currentLocale ?? 'en';
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <SEO {title} {description} {image} />
+    <SEO {title} {description} {image} {imageAlt} {canonical} {url} {type} />
   </head>
 
   <body

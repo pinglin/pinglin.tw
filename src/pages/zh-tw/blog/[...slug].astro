@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 import MarkdownPostLayout from '../../../layouts/MarkdownPostLayout.astro';
+import { getBlogSections, type BlogSection } from '../../../lib/blog-sections';
 
 export const prerender = true;
 
@@ -19,11 +20,23 @@ export async function getStaticPaths() {
     ({ id, slug }) => !id.startsWith('zh-tw/') && !zhSlugs.has(slug),
   );
 
+  const translatedPaths = await Promise.all(
+    zhEntries.map(async (entry: CollectionEntry<'blog'>) => {
+      const slug = entry.slug.split('/').slice(1).join('/');
+      const articlePath = `/zh-tw/blog/${slug}/`;
+      const sections = await getBlogSections(entry);
+      return [
+        { params: { slug }, props: { entry, articlePath } },
+        ...sections.map((section) => ({
+          params: { slug: `${slug}/sections/${section.slug}` },
+          props: { entry, articlePath, section },
+        })),
+      ];
+    }),
+  );
+
   return [
-    ...zhEntries.map((entry: CollectionEntry<'blog'>) => ({
-      params: { slug: entry.slug.split('/').slice(1).join('/') },
-      props: { entry },
-    })),
+    ...translatedPaths.flat(),
     ...englishOnly.map((entry: CollectionEntry<'blog'>) => ({
       params: { slug: entry.slug },
       props: { redirectTo: `/blog/${entry.slug}` },
@@ -32,10 +45,17 @@ export async function getStaticPaths() {
 }
 
 type Props =
-  | { entry: CollectionEntry<'blog'>; redirectTo?: never }
+  | {
+      entry: CollectionEntry<'blog'>;
+      articlePath: string;
+      section?: BlogSection;
+      redirectTo?: never;
+    }
   | { entry?: never; redirectTo: string };
-const { entry, redirectTo } = Astro.props as {
+const { entry, articlePath, section, redirectTo } = Astro.props as {
   entry?: CollectionEntry<'blog'>;
+  articlePath?: string;
+  section?: BlogSection;
   redirectTo?: string;
 };
 
@@ -46,6 +66,6 @@ if (redirectTo) {
 const { Content } = await entry!.render();
 ---
 
-<MarkdownPostLayout frontmatter={entry!.data}>
+<MarkdownPostLayout frontmatter={entry!.data} articlePath={articlePath!} {section}>
   <Content />
 </MarkdownPostLayout>

@@ -38,6 +38,61 @@
   scroll-margin-top: 6rem;
 }
 
+.markdown-content :is(h2, h3) {
+  position: relative;
+}
+
+.markdown-content .section-copy {
+  all: unset;
+  display: inline-flex;
+  width: 1.15em;
+  height: 1.15em;
+  margin-left: 0.35em;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -0.12em;
+  color: #898781;
+  cursor: pointer;
+  opacity: 0.55;
+  transition:
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.markdown-content .section-copy svg {
+  width: 0.78em;
+  height: 0.78em;
+}
+
+.markdown-content .section-copy:hover,
+.markdown-content .section-copy:focus-visible {
+  color: #eb6834;
+  opacity: 1;
+}
+
+.markdown-content .section-copy:focus-visible {
+  border-radius: 0.2em;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.markdown-content .section-copy.is-copied {
+  color: #2a78d6;
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .markdown-content .section-copy {
+    opacity: 0;
+  }
+
+  .markdown-content :is(h2, h3):hover .section-copy,
+  .markdown-content .section-copy:focus-visible,
+  .markdown-content .section-copy.is-copied {
+    opacity: 1;
+  }
+}
+
 /* Wide content must scroll inside its own box, never widen the page. Mobile
    browsers shrink-to-fit when any child overflows the viewport, which drifts
    the whole layout sideways; multi-column tables and long code blocks are the
@@ -83,7 +138,6 @@
   max-width: 100%;
   height: auto;
 }
-
 
 /* Numbered, captioned tables. The <figure> centres the table block; the table
    itself stays a scrollable box so wide columns never widen the page. */

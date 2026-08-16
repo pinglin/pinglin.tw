@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 import MarkdownPostLayout from '../../layouts/MarkdownPostLayout.astro';
+import { getBlogSections, type BlogSection } from '../../lib/blog-sections';
 
 export const prerender = true;
 
@@ -11,17 +12,34 @@ export async function getStaticPaths() {
   const blogEntries = await getCollection('blog', ({ data }) =>
     import.meta.env.PROD ? !data.draft : true,
   );
-  return blogEntries.map((entry: CollectionEntry<'blog'>) => ({
-    params: { slug: entry.slug },
-    props: { entry },
-  }));
+  const paths = await Promise.all(
+    blogEntries.map(async (entry: CollectionEntry<'blog'>) => {
+      const sections = await getBlogSections(entry);
+      const articlePath = `/blog/${entry.slug}/`;
+      return [
+        {
+          params: { slug: entry.slug },
+          props: { entry, articlePath },
+        },
+        ...sections.map((section) => ({
+          params: { slug: `${entry.slug}/sections/${section.slug}` },
+          props: { entry, articlePath, section },
+        })),
+      ];
+    }),
+  );
+  return paths.flat();
 }
 
-const { entry } = Astro.props;
-type Props = { entry: CollectionEntry<'blog'> };
+type Props = {
+  entry: CollectionEntry<'blog'>;
+  articlePath: string;
+  section?: BlogSection;
+};
+const { entry, articlePath, section } = Astro.props as Props;
 const { Content } = await entry.render();
 ---
 
-<MarkdownPostLayout frontmatter={entry.data}>
+<MarkdownPostLayout frontmatter={entry.data} {articlePath} {section}>
   <Content />
 </MarkdownPostLayout>

@@ -12,6 +12,7 @@ import rehypeKatex from 'rehype-katex';
 import { visit } from 'unist-util-visit';
 
 import { languages, defaultLang } from './src/i18n/ui';
+import { rehypeSectionLinks } from './src/lib/rehype-section-links';
 
 const supportedLanguages = Object.keys(languages);
 
@@ -83,7 +84,7 @@ export default defineConfig({
     preact(),
     tailwind(),
     sitemap({
-      filter: (page) => ![...hiddenSlugs].some((slug) => page.includes(`/${slug}/`)),
+      filter: (page) => !page.includes('/sections/') && ![...hiddenSlugs].some((slug) => page.includes(`/${slug}/`)),
     }),
   ],
   markdown: {
@@ -100,6 +101,7 @@ export default defineConfig({
       // `trust` is scoped to \htmlId so equation tags can carry anchor ids
       // for cross-reference links, without enabling the wider trust surface.
       [rehypeKatex, { trust: (context) => context.command === '\\htmlId' }],
+      rehypeSectionLinks,
     ],
   },
   i18n: {

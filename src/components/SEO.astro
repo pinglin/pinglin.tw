@@ -3,15 +3,24 @@ interface Props {
   title?: string;
   description?: string;
   image?: string | { url: string; urlLight?: string; alt: string };
-  url?: string;
+  imageAlt?: string;
+  url?: string | URL;
+  canonical?: string | URL;
+  type?: 'website' | 'article';
 }
 
 const {
   title = 'Ping-Lin Chang',
   description = 'A space where my thoughts take flight.',
   image = '/og-image.jpg',
+  imageAlt,
   url = Astro.url,
+  canonical = url,
+  type = 'website',
 } = Astro.props;
+
+const canonicalUrl = new URL(canonical, Astro.site ?? Astro.url);
+const socialUrl = new URL(url, Astro.site ?? Astro.url);
 
 // Ensure absolute URL for OG image, handling both string and object types.
 // Posts ship a theme pair; social cards render on light chrome on every
@@ -19,10 +28,10 @@ const {
 const ogImageSource = typeof image === 'string' ? image : (image.urlLight ?? image.url);
 // No unfurler renders SVG — Slack, X, LinkedIn, Facebook and Discord all drop
 // the image and show a bare text card. An SVG hero ships a PNG sibling.
-const ogImage = new URL(ogImageSource.replace(/\.svg$/, '.png'), Astro.url);
+const ogImage = new URL(ogImageSource.replace(/\.svg$/, '.png'), Astro.site ?? Astro.url);
 const ogImageType = ogImage.pathname.endsWith('.png') ? 'image/png' : 'image/jpeg';
 // The default card image is the poem; a post's image carries its own alt.
-const ogImageAlt = typeof image === 'string' ? '行到水窮處，坐看雲起時。' : image.alt;
+const ogImageAlt = imageAlt ?? (typeof image === 'string' ? '行到水窮處，坐看雲起時。' : image.alt);
 
 // A post description doubles as the on-page subtitle, so it runs longer than a
 // preview shows (Google truncates ~160, cards less). Trim for the tags only,
@@ -76,10 +85,11 @@ const previewDescription = trimForPreview(description);
 <!-- Standard Meta -->
 <title>{title}</title>
 <meta name="description" content={previewDescription} />
+<link rel="canonical" href={canonicalUrl} />
 
 <!-- Open Graph -->
-<meta property="og:type" content="website" />
-<meta property="og:url" content={url} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={socialUrl} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={previewDescription} />
 <meta property="og:site_name" content="pinglin.tw" />
@@ -93,3 +103,7 @@ const previewDescription = trimForPreview(description);
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="@pinglin02" />
 <meta name="twitter:creator" content="@pinglin02" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={previewDescription} />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={ogImageAlt} />
