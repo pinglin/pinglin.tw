@@ -2,14 +2,6 @@
   "framework": "astro",
   "trailingSlash": true,
   "devCommand": "pnpm run dev",
-  "buildCommand": "pnpm build",
-  "outputDirectory": "dist",
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.pinglin.tw" }],
-      "destination": "https://pinglin.tw/:path*",
-      "permanent": true
-    }
-  ]
+  "buildCommand": "pnpm build && node scripts/vercel-host-redirect.mjs",
+  "outputDirectory": "dist"
 }
