@@ -44,7 +44,7 @@ export async function GET() {
 
     // Add blog posts for each language
     blogPosts.forEach((post) => {
-      const postDate = post.data.pubDate.toISOString();
+      const postDate = (post.data.updatedDate ?? post.data.pubDate).toISOString();
 
       // Check if the slug already contains a language prefix
       const slug = post.slug;

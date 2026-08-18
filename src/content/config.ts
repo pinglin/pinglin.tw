@@ -21,9 +21,16 @@ const blogCollection = defineCollection({
     hidden: z.boolean().optional().default(false),
     // Draft posts render in `astro dev` for preview but are never built for
     // production, so an unfinished post cannot reach the site by being
-    // committed. Publish by removing the flag.
+    // committed. They are also excluded from every enumeration — listing,
+    // tags, search, RSS, sitemap — in dev as well as production: the built
+    // page does not exist, so an entry pointing at it is a dead link.
+    // Publish by removing the flag.
     draft: z.boolean().optional().default(false),
     pubDate: z.date(),
+    // Set when a post gets a substantive revision. Surfaces as the visible
+    // "Updated" date, schema.org dateModified, and the sitemap lastmod, so
+    // crawlers re-fetch the page instead of trusting a stale copy.
+    updatedDate: z.date().optional(),
   }),
 });
 

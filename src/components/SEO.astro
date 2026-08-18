@@ -9,6 +9,7 @@ interface Props {
   type?: 'website' | 'article';
   locale?: string;
   publishedDate?: Date;
+  updatedDate?: Date;
   tags?: string[];
 }
 
@@ -22,6 +23,7 @@ const {
   type = 'website',
   locale = Astro.currentLocale ?? 'en',
   publishedDate,
+  updatedDate,
   tags,
 } = Astro.props;
 
@@ -100,8 +102,21 @@ const graph: Record<string, unknown>[] = [
     '@id': personId,
     name: 'Ping-Lin Chang',
     alternateName: '張秉霖',
+    description:
+      'Entrepreneur working on AI and data. Founder of Instill AI, co-founder and former CTO of Umbo Computer Vision, now building A40 Labs.',
     url: siteBase.toString(),
     image: new URL('/me.jpg', siteBase).href,
+    worksFor: {
+      '@type': 'Organization',
+      name: 'A40 Labs',
+      url: 'https://a40.ai',
+    },
+    knowsAbout: [
+      'artificial intelligence',
+      'machine learning',
+      'computer vision',
+      'unstructured data infrastructure',
+    ],
     sameAs: [
       'https://github.com/pinglin',
       'https://www.linkedin.com/in/pinglin',
@@ -128,6 +143,7 @@ if (type === 'article' && publishedDate) {
     description: previewDescription,
     image: ogImage.href,
     datePublished: publishedDate.toISOString(),
+    dateModified: (updatedDate ?? publishedDate).toISOString(),
     author: { '@id': personId },
     publisher: { '@id': personId },
     inLanguage,
@@ -136,6 +152,27 @@ if (type === 'article' && publishedDate) {
 }
 
 const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
+
+// hreflang alternates for the pages that exist in both languages. Blog posts
+// are originals in one language, not translations, so only the static routes
+// pair up. x-default points at the English version.
+const STATIC_PAIRS = ['', 'about', 'blog'];
+const pagePath = Astro.url.pathname.replace(/^\/|\/$/g, '');
+const pairBase = pagePath === 'zh-tw' ? '' : pagePath.replace(/^zh-tw\//, '');
+const isStaticPair =
+  STATIC_PAIRS.includes(pairBase) &&
+  (pagePath === pairBase || pagePath === (pairBase ? `zh-tw/${pairBase}` : 'zh-tw'));
+const alternates = isStaticPair
+  ? (() => {
+      const en = new URL(pairBase ? `/${pairBase}/` : '/', siteBase).href;
+      const zh = new URL(pairBase ? `/zh-tw/${pairBase}/` : '/zh-tw/', siteBase).href;
+      return [
+        { hreflang: 'en', href: en },
+        { hreflang: 'zh-TW', href: zh },
+        { hreflang: 'x-default', href: en },
+      ];
+    })()
+  : [];
 ---
 
 <!-- Standard Meta -->
@@ -148,6 +185,7 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': grap
   title="pinglin.tw"
   href={new URL('/rss.xml', siteBase)}
 />
+{alternates.map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
 
 <!-- Open Graph -->
 <meta property="og:type" content={type} />

@@ -30,11 +30,13 @@ const socialImageAlt = section
   ? `${section.title}, a section from ${frontmatter.title}`
   : frontmatter.image.alt;
 
-const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const dateFormat: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+const dateLocale = frontmatter.lang === 'zh-tw' ? 'zh-TW' : 'en-US';
+const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString(dateLocale, dateFormat);
+const formattedUpdatedDate = frontmatter.updatedDate
+  ? new Date(frontmatter.updatedDate).toLocaleDateString(dateLocale, dateFormat)
+  : null;
+const updatedLabel = frontmatter.lang === 'zh-tw' ? '更新於' : 'Updated';
 ---
 
 <BaseLayout
@@ -47,11 +49,14 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
   ogType="article"
   lang={frontmatter.lang}
   publishedDate={frontmatter.pubDate}
+  updatedDate={frontmatter.updatedDate}
   tags={frontmatter.tags}
 >
   <div class="flex flex-col mb-10">
     <h1 class="text-center my-4 leading-snug">{frontmatter.title}</h1>
-    <p class="text-sm text-center text-gray-500 dark:text-gray-400">{formattedDate}</p>
+    <p class="text-sm text-center text-gray-500 dark:text-gray-400">
+      {formattedDate}{formattedUpdatedDate && ` · ${updatedLabel} ${formattedUpdatedDate}`}
+    </p>
     <p class="text-md text-left my-6 text-gray-500 dark:text-gray-400">{frontmatter.description}</p>
     <div class="img-container">
       {
