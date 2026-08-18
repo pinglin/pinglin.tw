@@ -45,6 +45,9 @@ const formattedDate = new Date(frontmatter.pubDate).toLocaleDateString('en-US', 
   canonical={articleUrl}
   ogUrl={pageUrl}
   ogType="article"
+  lang={frontmatter.lang}
+  publishedDate={frontmatter.pubDate}
+  tags={frontmatter.tags}
 >
   <div class="flex flex-col mb-10">
     <h1 class="text-center my-4 leading-snug">{frontmatter.title}</h1>

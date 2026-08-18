@@ -13,14 +13,19 @@ export async function GET() {
 
     const languages = ['zh-tw'];
 
+    // Production 308s the no-slash form to the slash form (trailingSlash in
+    // vercel.json), so sitemap entries must carry the slash to be canonical.
+    // No lastmod on static routes: stamping build time would claim a change
+    // on every deploy and erode crawler trust in the field.
+    const withSlash = (path: string) => `${path}/`;
+
     // Add URLs for each language
     languages.forEach((lang) => {
       staticRoutes.forEach((route) => {
         sitemapStream.write({
-          url: `/${lang}${route}`,
+          url: withSlash(`/${lang}${route}`),
           changefreq: 'weekly',
           priority: route === '' ? 1.0 : 0.8,
-          lastmod: new Date().toISOString(),
         });
       });
     });
@@ -28,15 +33,14 @@ export async function GET() {
     // Add default language routes without prefix
     staticRoutes.forEach((route) => {
       sitemapStream.write({
-        url: route,
+        url: withSlash(route),
         changefreq: 'weekly',
         priority: route === '' ? 1.0 : 0.8,
-        lastmod: new Date().toISOString(),
       });
     });
 
     // Get all blog posts (excluding hidden ones)
-    const blogPosts = await getCollection('blog', ({ data }) => !data.hidden);
+    const blogPosts = await getCollection('blog', ({ data }) => !data.hidden && !data.draft);
 
     // Add blog posts for each language
     blogPosts.forEach((post) => {
@@ -49,7 +53,7 @@ export async function GET() {
       if (hasLanguagePrefix) {
         // If slug already has language prefix, just add it directly
         sitemapStream.write({
-          url: `/blog/${slug}`,
+          url: withSlash(`/blog/${slug}`),
           lastmod: postDate,
           changefreq: 'monthly',
           priority: 0.7,
@@ -57,7 +61,7 @@ export async function GET() {
       } else {
         // Add default language version
         sitemapStream.write({
-          url: `/blog/${slug}`,
+          url: withSlash(`/blog/${slug}`),
           lastmod: postDate,
           changefreq: 'monthly',
           priority: 0.7,

@@ -1,5 +1,7 @@
-# Example: Allow all bots to scan and index your site.
-# Full syntax: https://developers.google.com/search/docs/advanced/robots/create-robots-txt
+# All crawlers welcome, including AI/answer-engine bots
+# (Googlebot, Bingbot, GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, ...).
 User-agent: *
 Allow: /
+
 Sitemap: https://pinglin.tw/sitemap.xml
+Sitemap: https://pinglin.tw/sitemap-index.xml

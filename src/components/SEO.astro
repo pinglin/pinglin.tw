@@ -7,6 +7,9 @@ interface Props {
   url?: string | URL;
   canonical?: string | URL;
   type?: 'website' | 'article';
+  locale?: string;
+  publishedDate?: Date;
+  tags?: string[];
 }
 
 const {
@@ -17,6 +20,9 @@ const {
   url = Astro.url,
   canonical = url,
   type = 'website',
+  locale = Astro.currentLocale ?? 'en',
+  publishedDate,
+  tags,
 } = Astro.props;
 
 const canonicalUrl = new URL(canonical, Astro.site ?? Astro.url);
@@ -80,12 +86,68 @@ function trimForPreview(text: string) {
 }
 
 const previewDescription = trimForPreview(description);
+
+// Structured data for search engines and answer engines. A stable @graph of
+// Person + WebSite gives crawlers a durable entity for "Ping-Lin Chang";
+// articles additionally get a BlogPosting keyed to the canonical URL.
+const siteBase = Astro.site ?? Astro.url;
+const inLanguage = locale === 'zh-tw' ? 'zh-TW' : 'en';
+const personId = new URL('/#person', siteBase).href;
+
+const graph: Record<string, unknown>[] = [
+  {
+    '@type': 'Person',
+    '@id': personId,
+    name: 'Ping-Lin Chang',
+    alternateName: '張秉霖',
+    url: siteBase.toString(),
+    image: new URL('/me.jpg', siteBase).href,
+    sameAs: [
+      'https://github.com/pinglin',
+      'https://www.linkedin.com/in/pinglin',
+      'https://x.com/pinglin02',
+      'https://scholar.google.com/citations?user=mR95vtsAAAAJ',
+    ],
+  },
+  {
+    '@type': 'WebSite',
+    '@id': new URL('/#website', siteBase).href,
+    url: siteBase.toString(),
+    name: 'pinglin.tw',
+    publisher: { '@id': personId },
+    inLanguage: ['en', 'zh-TW'],
+  },
+];
+
+if (type === 'article' && publishedDate) {
+  graph.push({
+    '@type': 'BlogPosting',
+    '@id': `${canonicalUrl.href}#article`,
+    mainEntityOfPage: canonicalUrl.href,
+    headline: title,
+    description: previewDescription,
+    image: ogImage.href,
+    datePublished: publishedDate.toISOString(),
+    author: { '@id': personId },
+    publisher: { '@id': personId },
+    inLanguage,
+    ...(tags?.length ? { keywords: tags.join(', ') } : {}),
+  });
+}
+
+const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
 ---
 
 <!-- Standard Meta -->
 <title>{title}</title>
 <meta name="description" content={previewDescription} />
 <link rel="canonical" href={canonicalUrl} />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title="pinglin.tw"
+  href={new URL('/rss.xml', siteBase)}
+/>
 
 <!-- Open Graph -->
 <meta property="og:type" content={type} />
@@ -107,3 +169,6 @@ const previewDescription = trimForPreview(description);
 <meta name="twitter:description" content={previewDescription} />
 <meta name="twitter:image" content={ogImage} />
 <meta name="twitter:image:alt" content={ogImageAlt} />
+
+<!-- Structured Data -->
+<script type="application/ld+json" set:html={jsonLd} />
