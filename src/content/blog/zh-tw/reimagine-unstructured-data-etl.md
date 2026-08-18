@@ -56,15 +56,15 @@ Learning）。由於人類語言本身就有一定的泛化能力，基於轉換
 
 ## 曲折的旅程
 
-[Instill AI](https://www.instill-ai.com)
-如何在如此變動的大環境下適應和應變呢？我們一直不斷在反思，如何最有效率地實現我們的最終目標，也就是讓每個人都能輕易使用 AI。我們公司的使命是賦與人們自動化日常任務的能力，提高個人生產力，並從繁瑣、重複的瑣事中解放出來。
+Instill
+AI 如何在如此變動的大環境下適應和應變呢？我們一直不斷在反思，如何最有效率地實現我們的最終目標，也就是讓每個人都能輕易使用 AI。我們公司的使命是賦與人們自動化日常任務的能力，提高個人生產力，並從繁瑣、重複的瑣事中解放出來。
 
 作為一家早期新創公司，我們最大的挑戰是實現產品市場契合度（product-market fit,
-PMF），這是一個持續的、迭代的過程，而不是一次性的里程碑。為了能讓公司生存下去，我們總是必須在「創新」和「產品可行性」之間謹慎平衡。雖然[人工通用智能（Artificial General Intelligence，AGI）](https://en.wikipedia.org/wiki/Artificial_general_intelligence)看起來可能是最終所有問題的解決方案，但我們相信僅靠它是無法實現我們的目標的。此外，儘管我們公司的強項是技術，但我們並沒有可以讓我們搞研究和訓練基礎模型的資金。所以，我們採取了一種更務實的路徑，根據軟體工具必須與 AI 一同發展的事實，我們不僅僅關注 AI 基礎模型的發展，也優先考慮資料的配套工具，因為我們深刻理解到，[僅靠 AI 模型是無法完善整條 AI 價值鏈的](https://www.instill-ai.com/blog/missing-piece-in-modern-data-stack-unstructured-data-etl)。
+PMF），這是一個持續的、迭代的過程，而不是一次性的里程碑。為了能讓公司生存下去，我們總是必須在「創新」和「產品可行性」之間謹慎平衡。雖然[人工通用智能（Artificial General Intelligence，AGI）](https://en.wikipedia.org/wiki/Artificial_general_intelligence)看起來可能是最終所有問題的解決方案，但我們相信僅靠它是無法實現我們的目標的。此外，儘管我們公司的強項是技術，但我們並沒有可以讓我們搞研究和訓練基礎模型的資金。所以，我們採取了一種更務實的路徑，根據軟體工具必須與 AI 一同發展的事實，我們不僅僅關注 AI 基礎模型的發展，也優先考慮資料的配套工具，因為我們深刻理解到，僅靠 AI 模型是無法完善整條 AI 價值鏈的。
 
 ### 一步式非結構化資料 ETL（2022年）
 
-基於這樣的想法，我們[最初](https://www.instill-ai.com/blog/why-instill-ai-exists)確定了我們的目標受眾為資料工程師、資料科學家、AI 工程師和 AI 研究人員，這些需要構建非結構化資料 ETL 管道的 AI 建構者。
+基於這樣的想法，我們最初確定了我們的目標受眾為資料工程師、資料科學家、AI 工程師和 AI 研究人員，這些需要構建非結構化資料 ETL 管道的 AI 建構者。
 
 受到 dbt（主要是處理 ETL 中的 "T"）和 Airbyte（主要是 ELT 中的 "EL" 資料遷移）的啟發，我們最初構建了一個系統，將資料源和目的地與單個 DL 模型（無論是 LLM、STT/TTS 模型還是物件檢測模型）連接起來（[見圖 1](#figure-1)）。這是我們的第一個最小可行性產品（Minimum
 Viable Product，MVP），主要是用來展示如何在 ETL 框架中處理非結構化資料的概念，好讓我們可以進行種子輪融資。
@@ -91,8 +91,8 @@ AI 和 Pika（用於影片生成），以及 ElevenLabs 和 HeyGen（用於語�
 
 ### 無程式碼管道構建器（2023年）
 
-有了 MVP 的開發經驗後，我們將重點轉向處理資料的多功能性，於是我們開發了一款非結構化資料 ETL 管道工具，讓其具有標準化接口以連接所有的第三方整合元件。也就是在此階段，我們的開源項目
-[Instill Core](https://github.com/instill-ai/instill-core) 問世。
+有了 MVP 的開發經驗後，我們將重點轉向處理資料的多功能性，於是我們開發了一款非結構化資料 ETL 管道工具，讓其具有標準化接口以連接所有的第三方整合元件。也就是在此階段，我們的開源項目 Instill
+Core 問世。
 
 Instill Core 採取了 [Unix 哲學](https://en.wikipedia.org/wiki/Unix_philosophy) - "Do one thing and do it well." 它是基於雲原生、API 優先（RESTful +
 gRPC）、高度模塊化的設計。後端核心使用 Go 實現，並提供 Python 和 TypeScript
@@ -142,8 +142,8 @@ Language，DSL），只是我們更喜歡用 YAML 作為 DSL。
 一些開發者可能會不喜歡基於 YAML 的程式管理實作，認為檔案內容的冗長性會使開發者失去大局觀。我們確實也有同樣的疑慮，於是我們選擇了一條魚與熊掌都能兼得的方案，將 YAML 管道配方編輯器和管道預覽畫布並排放在一起不就好了！這就是目前版本的 Instill
 Core 的設計方式，並且我們還有一長串 UI/UX 改進計劃，持續不斷地優化產品體驗是我們公司的核心文化。
 
-今天，你可以使用 [Instill Core](https://github.com/instill-ai/instill-core)
-來構建聊天機器人、[植物表型分析器](https://www.instill.tech/blog/abrc-customer-success)、[複雜 PDF 解析器](https://www.instill-ai.com/blog/the-best-way-to-parse-complex-pdfs-for-rag-hybrid-multimodal-parsing)、[網站爬蟲](https://www.instill-ai.com/blog/semantic-web-crawler-insights-unstructured-data-ai)，甚至[為 AI 代理人工具構建進階 RAG 系統](https://www.instill-ai.com/blog/llm-based-evaluations)。等等。。。AI 代理人？這又是我在什麼賣弄學問的話術？其實不然，在 Instill
+今天，你可以使用 Instill
+Core 來構建聊天機器人、植物表型分析器、複雜 PDF 解析器、網站爬蟲，甚至為 AI 代理人工具構建進階 RAG 系統。等等。。。AI 代理人？這又是我在什麼賣弄學問的話術？其實不然，在 Instill
 AI，我們將所有 AI 的軟體程式和任務都視為非結構化資料 ETL 管道。[影片 1](#video-1) 和[影片 2](#video-2) 展示了一些 AI 代理人工具的實際例子。
 
 <figure id="video-1">
@@ -185,10 +185,6 @@ AI 仍然專注於非結構化資料價值開發，但它現在將通過基於�
 - 忠實性：獲得您可以信任的高保真答案。
 
 您也可以將 Instill AI 視為一個 AI 代理人，它可以清理、處理和組織資料，使您能夠高效地簡化和優化知識工作流程（[見圖 5](#figure-5)）。
-
-[Instill AI](https://www.instill-ai.com) 於今年 3 月封測發布後，我們會馬上終止 [Instill Cloud](https://www.instill.tech)，也就是
-[Instill Core](https://github.com/instill-ai/instill-core) 的全託管雲服務。如果您希望成為 Instill AI 的早期用戶，同時繼續通過後端控制台使用 Instill
-Core 的核心功能，請馬上[註冊 Instill AI 等候名單](https://forms.instill-ai.com/early-access)，並跟我們分享您的非結構化資料 ETL 管道使用案例，我們將會根據情況與您聯繫並授予訪問權限。
 
 <figure id="figure-5">
   <img src="/blog/reimagine-unstructured-data-etl/instill-ai-peek.png" alt="新Instill AI的預覽。" />  

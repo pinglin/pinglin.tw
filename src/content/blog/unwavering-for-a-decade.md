@@ -27,22 +27,19 @@ ultimately failing to convince myself to continue as a co-founder. Deep Learning
 
 I was fortunate to be part of a startup building the first AI product, a real-time object detection system for autonomous video security. We shipped
 AI products running on both cloud GPU and edge AI ASIC platforms. I gained experience in building large-scale AI systems and production-level AI
-products. It was also a $9.2M-raised lesson in learning the hard way that solid technology doesn't necessarily speak for itself. Go-to-market is the
+products. It was also a \$9.2M-raised lesson in learning the hard way that solid technology doesn't necessarily speak for itself. Go-to-market is the
 key. I left the founding team due to conflicts over long-term company vision.
 
 In June 2020, I started Instill AI with my UCL lab colleague, Xiaofei. We had worked together in the research lab for years, and she had joined Umbo
-after completing her PhD. We shared the same vision of how AI should be implemented and adopted as a software infrastructure. The initial
-[article](https://www.instill-ai.com/blog/why-instill-ai-exists) addresses Instill AI's vision in more detail.
+after completing her PhD. We shared the same vision of how AI should be implemented and adopted as a software infrastructure.
 
-It has been 4 years since founding Instill AI. Our effort focuses on executing a firm belief in
-[unstructured data ETL](https://www.instill-ai.com/blog/missing-piece-in-modern-data-stack-unstructured-data-etl). Processing unstructured data should
-be as easy as processing structured data. [Instill Core](https://github.com/instill-ai/instill-core) has been our open-source initiative to realize
-our vision of an ideal unstructured data ETL tool. We've been quite opinionated about its design and architecture. See this
-[article](https://www.instill.tech/blog/vdp-open-beta) for more details.
+It has been 4 years since founding Instill AI. Our effort focuses on executing a firm belief in unstructured data ETL. Processing unstructured data
+should be as easy as processing structured data. Instill Core has been our open-source initiative to realize our vision of an ideal unstructured data
+ETL tool. We've been quite opinionated about its design and architecture.
 
 ## Looking ahead to the future
 
-Since 2020, we've raised $4.2M from top-tier investors, and Instill Core (and its fully managed service Instill Cloud) has been accessed by more than
+Since 2020, we've raised \$4.2M from top-tier investors, and Instill Core (and its fully managed service Instill Cloud) has been accessed by more than
 1,500 users.
 
 In 2025, the AI and data market will be booming. Large language models (LLMs) and large multi-modal models (LMMs) are the new frontier of AI and have
