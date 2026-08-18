@@ -3,5 +3,13 @@
   "trailingSlash": true,
   "devCommand": "pnpm run dev",
   "buildCommand": "pnpm build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.pinglin.tw" }],
+      "destination": "https://pinglin.tw/:path*",
+      "permanent": true
+    }
+  ]
 }

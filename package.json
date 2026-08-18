@@ -10,6 +10,7 @@
     "build": "astro build",
     "test:site": "astro build --force && node --test test-site/*.test.mjs",
     "preview": "astro preview",
+    "indexnow": "node scripts/indexnow-ping.mjs",
     "prepare": "husky",
     "lint-staged": "lint-staged"
   },
