@@ -103,13 +103,18 @@ const graph: Record<string, unknown>[] = [
     name: 'Ping-Lin Chang',
     alternateName: '張秉霖',
     description:
-      'Entrepreneur working on AI and data. Founder of Instill AI, co-founder and former CTO of Umbo Computer Vision, now building A40 Labs.',
+      'Entrepreneur working on AI and data. Founder of Instill AI, co-founder and former CTO of Umbo Computer Vision, now building A40 Labs. PhD in robotic vision from Imperial College London.',
     url: siteBase.toString(),
     image: new URL('/me.jpg', siteBase).href,
     worksFor: {
       '@type': 'Organization',
       name: 'A40 Labs',
       url: 'https://a40.ai',
+    },
+    alumniOf: {
+      '@type': 'CollegeOrUniversity',
+      name: 'Imperial College London',
+      url: 'https://www.imperial.ac.uk',
     },
     knowsAbout: [
       'artificial intelligence',
