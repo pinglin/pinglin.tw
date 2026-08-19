@@ -8,7 +8,9 @@ export const prerender = true;
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('blog');
-  const localizedPosts = allPosts.filter((post) => post.data.lang === 'en' && !post.data.hidden);
+  const localizedPosts = allPosts.filter(
+    (post) => post.data.lang === 'en' && !post.data.hidden && !post.data.draft,
+  );
   const uniqueTags = [...new Set(localizedPosts.map((post) => post.data.tags).flat())];
 
   return uniqueTags.map((tag) => {

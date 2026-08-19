@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ url }) => {
       const title = post.data.title.toLowerCase();
       const body = post.body.toLowerCase();
 
-      return post.data.lang === lang && (title.includes(searchText) || body.includes(searchText));
+      return post.data.lang === lang && !post.data.draft && (title.includes(searchText) || body.includes(searchText));
     })
     .map((post: CollectionEntry<'blog'>) => ({
       title: post.data.title,

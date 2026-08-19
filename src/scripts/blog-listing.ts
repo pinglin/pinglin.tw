@@ -5,7 +5,7 @@ import { getCollection } from 'astro:content';
 // preferred language when a translation exists, otherwise in whichever
 // language the post was written.
 export async function getListingPosts(preferred: 'en' | 'zh-tw'): Promise<CollectionEntry<'blog'>[]> {
-  const all = await getCollection('blog', ({ data }) => !data.hidden);
+  const all = await getCollection('blog', ({ data }) => !data.hidden && !data.draft);
 
   const baseSlug = (entry: CollectionEntry<'blog'>) => (entry.id.startsWith('zh-tw/') ? entry.slug.split('/').slice(1).join('/') : entry.slug);
 
