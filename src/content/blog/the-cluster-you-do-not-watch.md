@@ -367,17 +367,17 @@ The shape outlives the component. On a managed control plane you will never touc
 has the same failure mode — a database replica, a broker, a queue consumer. Internally consistent, externally dead, and reporting healthy is a
 category, not an incident.
 
-**The repair, gated.** A rebuild, where one is still needed, deletes state on a consensus member — irreversible. So the script proves safety before
-each destructive step: it executes a **real write through a healthy peer** and refuses to continue unless it succeeds. It also refuses to touch a
-member whose progress is still advancing. That second gate has stopped me twice: I was sure the member was dead, the script declined, and the member
-recovered on its own a few minutes later.
+**The repair, gated.** A rebuild, where one is still needed, deletes state on a consensus member — irreversible. So nobody does it by hand: it runs as
+a rebuild script of exactly the gated kind the fix section describes, proving safety before each destructive step. It executes a **real write through
+a healthy peer** and refuses to continue unless it succeeds. It also refuses to touch a member whose progress is still advancing. That second gate has
+stopped me twice: I was sure the member was dead, the script declined, and the member recovered on its own a few minutes later.
 
-**The lie.** The first version of that script was written carefully: check that the dead member's data directory exists, delete it, check again to
-confirm it is gone. What it got wrong was _who asks_. The directory sits behind a parent only root can enter, and the script ran its checks as my
-ordinary login user — and to a user who cannot enter the parent, a path that exists and a path that does not look identical. Both answer "not there."
-So the guard decided there was nothing to wipe, the delete never ran, and the confirmation — the same question, asked with the same missing privilege
-— certified a wipe that had not happened. Green checkmarks over an untouched directory, and a member rebuilt on top of the very state it was supposed
-to shed, broken for another twenty-five minutes while I believed the output.
+**The lie.** The first version of that rebuild script was written carefully: check that the dead member's data directory exists, delete it, check
+again to confirm it is gone. What it got wrong was _who asks_. The directory sits behind a parent only root can enter, and the script ran its checks
+as my ordinary login user — and to a user who cannot enter the parent, a path that exists and a path that does not look identical. Both answer "not
+there." So the guard decided there was nothing to wipe, the delete never ran, and the confirmation — the same question, asked with the same missing
+privilege — certified a wipe that had not happened. Green checkmarks over an untouched directory, and a member rebuilt on top of the very state it was
+supposed to shed, broken for another twenty-five minutes while I believed the output.
 
 The script was not wrong about what to do; it was wrong about whether it had done it, and nothing it printed could tell those two apart. That is the
 verification section in one story.
