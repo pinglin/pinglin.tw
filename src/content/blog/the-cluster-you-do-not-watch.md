@@ -372,10 +372,16 @@ each destructive step: it executes a **real write through a healthy peer** and r
 member whose progress is still advancing. That second gate has stopped me twice: I was sure the member was dead, the script declined, and the member
 recovered on its own a few minutes later.
 
-**The lie.** The first version of that script reported `data directory removed` without removing anything. Its guard was an existence test run as the
-login user against a root-only path — which returns _false_ whether or not the path is there — and its "verification" reused the same test. Green
-checkmarks for twenty-five minutes, on a member that still held every byte. The script was not wrong about what to do; it was wrong about whether it
-had done it, and nothing in its output distinguished the two. That is the verification section in one paragraph.
+**The lie.** The first version of that script had one destructive step: wipe the dead member's data directory, so the rebuild starts clean. It was
+written carefully — check that the directory exists, delete it, check again to confirm it is gone. The trap is _who_ asks. The directory sits behind a
+parent that only root can enter, and the script ran its checks as my ordinary login user — and a path you are not allowed to enter looks exactly like
+a path that is not there. So the existence check answered "not there" regardless of what the disk held. Walk that through the script: the guard sees
+"not there" and concludes there is nothing left to wipe; the delete is skipped; the confirmation asks the same question the same way, gets the same
+false answer, and certifies the wipe. Green checkmarks all the way down, while every byte of the old state still sat on disk — and the member, rebuilt
+on top of data it was supposed to have shed, stayed broken for another twenty-five minutes while I trusted the output.
+
+The script was not wrong about what to do; it was wrong about whether it had done it, and nothing it printed could tell those two apart. That is the
+verification section in one story.
 
 ## What it costs
 
