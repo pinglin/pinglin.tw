@@ -372,13 +372,12 @@ each destructive step: it executes a **real write through a healthy peer** and r
 member whose progress is still advancing. That second gate has stopped me twice: I was sure the member was dead, the script declined, and the member
 recovered on its own a few minutes later.
 
-**The lie.** The first version of that script had one destructive step: wipe the dead member's data directory, so the rebuild starts clean. It was
-written carefully — check that the directory exists, delete it, check again to confirm it is gone. The trap is _who_ asks. The directory sits behind a
-parent that only root can enter, and the script ran its checks as my ordinary login user — and a path you are not allowed to enter looks exactly like
-a path that is not there. So the existence check answered "not there" regardless of what the disk held. Walk that through the script: the guard sees
-"not there" and concludes there is nothing left to wipe; the delete is skipped; the confirmation asks the same question the same way, gets the same
-false answer, and certifies the wipe. Green checkmarks all the way down, while every byte of the old state still sat on disk — and the member, rebuilt
-on top of data it was supposed to have shed, stayed broken for another twenty-five minutes while I trusted the output.
+**The lie.** The first version of that script was written carefully: check that the dead member's data directory exists, delete it, check again to
+confirm it is gone. What it got wrong was _who asks_. The directory sits behind a parent only root can enter, and the script ran its checks as my
+ordinary login user — and to a user who cannot enter the parent, a path that exists and a path that does not look identical. Both answer "not there."
+So the guard decided there was nothing to wipe, the delete never ran, and the confirmation — the same question, asked with the same missing privilege
+— certified a wipe that had not happened. Green checkmarks over an untouched directory, and a member rebuilt on top of the very state it was supposed
+to shed, broken for another twenty-five minutes while I believed the output.
 
 The script was not wrong about what to do; it was wrong about whether it had done it, and nothing it printed could tell those two apart. That is the
 verification section in one story.
