@@ -98,6 +98,9 @@ test('table-of-contents navigation preserves section permalinks', () => {
 });
 
 test('deployment canonicalizes extensionless URLs with a trailing slash', () => {
-  assert.match(astroConfigSource, /trailingSlash:\s*'always'/);
+  // Vercel issues the 308 that keeps one crawler-visible identity per section.
   assert.equal(vercelConfig.trailingSlash, true);
+  // Astro stays permissive so both forms resolve locally; a dev-time 404 on the
+  // no-slash form buys nothing that the production redirect does not already.
+  assert.match(astroConfigSource, /trailingSlash:\s*'ignore'/);
 });

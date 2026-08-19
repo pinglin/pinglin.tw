@@ -42,7 +42,11 @@ const hiddenSlugs = collectHiddenSlugs('./src/content/blog');
 
 export default defineConfig({
   site: 'https://pinglin.tw',
-  trailingSlash: 'always',
+  // Permissive here so both URL forms resolve, including on the dev server.
+  // Canonicalization is Vercel's job (`trailingSlash: true` in vercel.json):
+  // production 308s the no-slash form to the slash form, so crawlers and
+  // social caches still see exactly one identity per page.
+  trailingSlash: 'ignore',
   adapter: vercel({
     imageService: true,
     edgeMiddleware: true,
