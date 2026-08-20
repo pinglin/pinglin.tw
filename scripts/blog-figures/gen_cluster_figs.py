@@ -195,8 +195,8 @@ def fig_curation(t, c):
         s.append(f'<text class="tiny" x="{x + 204}" y="{y + 55}" text-anchor="end" '
                  f'style="fill:{ORANGE};font-size:12.5px">Measured p99</text>')
         s.append(spark(x + 14, y + 74, 190, 72, vals, col, 2.2))
-    s.append(f'<text class="tiny" x="592" y="{572}">4 panels {DOT} Every one with traffic {DOT} '
-             f'Thresholds from a 14-day distribution</text>')
+    s.append(f'<text class="tiny" x="592" y="{572}">4 panels {DOT} All carrying traffic {DOT} '
+             f'14-day measured thresholds</text>')
     return "".join(s) + "</svg>"
 
 
