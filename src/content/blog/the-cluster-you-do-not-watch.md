@@ -1,6 +1,6 @@
 ---
 title: 'The Cluster You Do Not Watch'
-pubDate: 2026-08-14
+pubDate: 2026-08-19
 description:
   'I almost never open Grafana any more. This is the operations architecture that made that true, on under US$10 a month of infrastructure — an agent
   that reads everything and writes nothing directly, alerts precise enough to act on, repairs that must prove they are safe before running, and one
