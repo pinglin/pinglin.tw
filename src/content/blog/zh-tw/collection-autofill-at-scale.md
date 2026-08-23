@@ -154,7 +154,7 @@ flowchart TD
 
 上面的架構切法是比較明顯的一半。真正每天都在回本的，是下面這三個比較小的設計選擇。
 
-### 把狀態欄位拆開，不要共用同一組欄位
+### 把狀態列位拆開，不要共用同一組欄位
 
 Cell row 裡有 **兩個 state machines**，但它們住在不同欄位裡：
 
@@ -268,7 +268,7 @@ payload bytes、每個 pool queue cell 192 row bytes 加上 96 index bytes，而
 
 這張圖使用 log-log axes，所以對 **O(n)** workload 來說，接近直線是預期中的結果。真正有用的訊號是：在這個 simulation 裡，兩種設計都大致隨 cell
 count 線性成長，但 worker-pool 架構的 constant factor 比較低，也避開了 Temporal history
-events 持續膨脹的問題。對只用 Temporal 的設計來說，這個問題會在遠低於一千萬 cells 的規模時，就先成為實際運維上的瓶頸。
+events 持續膨脹的問題。對只用 Temporal 的設計來說，這個問題會在遠低於一千萬 cells 的規模時，就先成為實際維運上的瓶頸。
 
 <figure id="figure-2">
   <img src="/blog/collection-autofill-at-scale/autofill_cpu_simulation.svg" alt="Log-log benchmark chart，比較最初的 Temporal-only 設計和 Collection Autofill worker-pool design 從 100K 到 10M cells 的 modeled CPU units。" />

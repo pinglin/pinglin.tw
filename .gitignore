@@ -9,3 +9,10 @@ node_modules/
 
 # Build output
 dist
+
+# The global ~/.gitignore excludes .claude entirely; re-include the versioned
+# skills so they travel with a clone. Each level must be re-included in turn —
+# git cannot un-ignore a path whose parent directory is still excluded.
+!.claude/
+!.claude/skills/
+!.claude/skills/**
