@@ -16,7 +16,7 @@ interface Props {
 const {
   title = 'Ping-Lin Chang',
   description = 'A space where my thoughts take flight.',
-  image = '/og-image.jpg',
+  image = '/og-image-v2.jpg',
   imageAlt,
   url = Astro.url,
   canonical = url,
@@ -38,8 +38,12 @@ const ogImageSource = typeof image === 'string' ? image : (image.urlLight ?? ima
 // the image and show a bare text card. An SVG hero ships a PNG sibling.
 const ogImage = new URL(ogImageSource.replace(/\.svg$/, '.png'), Astro.site ?? Astro.url);
 const ogImageType = ogImage.pathname.endsWith('.png') ? 'image/png' : 'image/jpeg';
-// The default card image is the poem; a post's image carries its own alt.
-const ogImageAlt = imageAlt ?? (typeof image === 'string' ? '行到水窮處，坐看雲起時。' : image.alt);
+// Posts carry their own alt; the default card illustrates the blog's themes.
+const ogImageAlt =
+  imageAlt ??
+  (typeof image === 'string'
+    ? 'Documents and data flow through a connected graph into a silicon chip and a looping trajectory over a watercolor mountain landscape.'
+    : image.alt);
 
 // A post description doubles as the on-page subtitle, so it runs longer than a
 // preview shows (Google truncates ~160, cards less). Trim for the tags only,
