@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="714" viewBox="0 0 1100 714">
+<rect width="100%" height="100%" fill="#1a1a2e" rx="8"/>
+<style>
+text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #c9c9d4; font-size: 16px; }
+.title { font-size: 30px; font-weight: 700; fill: #ffffff; }
+.subtitle { font-size: 17px; fill: #c9c9d4; }
+.lab { fill: #ffffff; font-weight: 600; }
+.tick { font-size: 14.5px; fill: #8f8f9c; }
+.val { font-weight: 600; font-size: 15px; fill: #ffffff; }
+.axis { stroke: #55556a; stroke-width: 1.2; }
+.grid { stroke: #3a3a4e; stroke-width: 1; }
+</style>
+<text class="title" x="60" y="42">Pages a reader left empty</text>
+<text class="subtitle" x="60" y="68">Of the 1,250 held-out pages. The orange part had ground-truth text and counts as a total loss;</text>
+<text class="subtitle" x="60" y="92">the grey part is figure-only pages, where an empty read costs nothing.</text>
+<text x="318" y="154" text-anchor="end">Composite</text>
+<rect x="330" y="136" width="64.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="136" width="0.0" height="26" fill="#d95926"/>
+<text x="404.0" y="154" class="tick">2 (0 with text)</text>
+<text x="318" y="198" text-anchor="end">MinerU2.5-Pro alone</text>
+<rect x="330" y="180" width="96.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="180" width="32.0" height="26" fill="#d95926"/>
+<text x="436.0" y="198" class="tick">3 (1 with text)</text>
+<text x="318" y="242" text-anchor="end">dots.mocr</text>
+<rect x="330" y="224" width="640.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="224" width="512.0" height="26" fill="#d95926"/>
+<text x="980.0" y="242" class="tick">20 (16 with text)</text>
+<text x="318" y="286" text-anchor="end">GLM-OCR</text>
+<rect x="330" y="268" width="32.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="268" width="0.0" height="26" fill="#d95926"/>
+<text x="372.0" y="286" class="tick">1 (0 with text)</text>
+<text x="318" y="330" text-anchor="end">PaddleOCR-VL-1.6</text>
+<rect x="330" y="312" width="32.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="312" width="0.0" height="26" fill="#d95926"/>
+<text x="372.0" y="330" class="tick">1 (0 with text)</text>
+<text x="318" y="374" text-anchor="end">Unlimited-OCR</text>
+<rect x="330" y="356" width="1.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="356" width="0.0" height="26" fill="#d95926"/>
+<text x="340.0" y="374" class="tick">0</text>
+<text x="318" y="418" text-anchor="end">RapidOCR</text>
+<rect x="330" y="400" width="128.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="400" width="64.0" height="26" fill="#d95926"/>
+<text x="468.0" y="418" class="tick">4 (2 with text)</text>
+<line class="grid" x1="60" y1="453" x2="970" y2="453" stroke-dasharray="4 4"/>
+<text x="318" y="496" text-anchor="end">Apple Vision (OS OCR, tuned)</text>
+<rect x="330" y="478" width="32.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="478" width="32.0" height="26" fill="#d95926"/>
+<text x="372.0" y="496" class="tick">1 (1 with text)</text>
+<text x="318" y="540" text-anchor="end">Qwen 3.6 (VLM)</text>
+<rect x="330" y="522" width="1.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="522" width="0.0" height="26" fill="#d95926"/>
+<text x="340.0" y="540" class="tick">0</text>
+<text x="318" y="584" text-anchor="end">Claude Fable 5.1 (VLM)</text>
+<rect x="330" y="566" width="384.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="566" width="384.0" height="26" fill="#d95926"/>
+<text x="724.0" y="584" class="tick">12 (12 with text)</text>
+<text x="318" y="628" text-anchor="end">GPT-6 Astra (VLM)</text>
+<rect x="330" y="610" width="32.0" height="26" fill="#8fa3b8" opacity="0.45"/>
+<rect x="330" y="610" width="0.0" height="26" fill="#d95926"/>
+<text x="372.0" y="628" class="tick">1 (0 with text)</text>
+</svg>

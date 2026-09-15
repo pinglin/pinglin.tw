@@ -162,6 +162,30 @@
   }
 }
 
+/* Opt-in for a table that is wider than the prose column even on the wide
+   layout (many numeric columns). The table becomes a scroll box at every
+   width, so it scrolls inside the figure instead of widening the page. Keep
+   it off tables that fit, for the scrollbar-track reason above. */
+.markdown-content .table-figure--wide > table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Emphasis. The body face, Metrophobic, ships a single weight, so `strong` only gets a faint
+   synthesized bold; IBM Plex Sans is already loaded at 700 and makes emphasis unmistakable —
+   in prose (the bold lead-ins of the results paragraphs) and in the numbered tables (black bold =
+   best per column, blue bold = second). */
+.markdown-content :is(strong, b) {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.markdown-content .table-figure :is(strong, b) {
+  font-size: 1.04em;
+}
+
 .markdown-content .table-figure > figcaption {
   margin-top: 0.6rem;
   font-size: 0.9rem;
