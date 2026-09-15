@@ -117,7 +117,7 @@ def panels(missed, gold):
         title="B · A grid of short tokens (1)",
         crops=[crop_with_boxes(pB, [(box(tables(pB)[0]), RED)], (80, 240, 380, 60), 640, 430)],
         emitted='"VO Pr NG RelN" … six lines',
-        why="Six rows of four tokens come out as six lines — the layout stage calls it a list; eight other readers get the grid."))
+        why="Six rows of four tokens come out as six lines — the layout stage calls it a list; nine other readers get the grid."))
     # C. an infographic on a photograph
     kC = key_for("magazinesclubnew_page_031", 0)
     pC = page_of(kC)
@@ -125,7 +125,7 @@ def panels(missed, gold):
         title="C · An infographic on a photograph (1)",
         crops=[crop_with_boxes(pC, [(box(tables(pC)[0]), RED)], (40, 40, 40, 40), 640, 430)],
         emitted='"How budget will affect labour costs" — the title only',
-        why="The figures sit on artwork rather than in a grid; nothing below the title survives here, though eight other readers read it."))
+        why="The figures sit on artwork rather than in a grid; nothing below the title survives here, though nine other readers read it."))
     # D. two stacked panels merged into one grid
     kD = key_for("c7771a62", 1)
     pD = page_of(kD)

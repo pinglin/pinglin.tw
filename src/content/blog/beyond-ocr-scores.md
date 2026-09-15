@@ -44,7 +44,9 @@ tags: ['engineering', 'benchmark', 'ocr']
      four, Qwen five). UPDATE 2026-09-14: three rows re-run under the makers' own protocols (glmsdk,
      mocrnative, unlimnative) and two readers added (paddlevl, rapidpipe); Tables 2/3 and Figures
      3-5 regenerated with eleven readers; Formula CDM measured for every arm (cdm_<arm>.json) and
-     quoted in the formula paragraphs; the "eight missing tables" sentence recomputed. Unlimited-OCR's native row landed 18:22 and
+     quoted in the formula paragraphs; the "eight missing tables" sentence recomputed. LiteParse (liteparseocr, LlamaIndex's local parser, OCR on, default
+     tessdata_best, eng+chi_sim+chi_tra) added 2026-09-15 in place of hosted LlamaParse; Figure 5 stays at nine readers
+     (nine validated colour pairs). Unlimited-OCR's native row landed 18:22 and
      its paragraphs are rewritten; speed claims still predate the timing pass. -->
 
 Every document system has a moment where it must turn a page — a real page, scanned or photographed or exported, with its columns and footnotes and
@@ -89,8 +91,8 @@ compounded, since every later stage treats the text it was handed as ground trut
 It is the one part of the system whose failures the rest of the system cannot see, let alone fix — the only remedy for a bad read is a better read.
 
 <figure id="figure-1">
-  <img src="/blog/beyond-ocr-scores/pipeline_light.svg" class="dark:hidden" alt="System diagram in two rows. The top row, labelled ingest, runs left to right: Documents, then a Text layer? check that branches to Extract text layer (born-digital, no OCR) and to Read the page (scan or photo, layout plus OCR, highlighted as the eleven readers in this post); both branches feed Structured text, then an Index. The bottom row, labelled serve, runs right to left: the Index feeds Retrieve, then an LLM or agent that takes a Question or task, then Answer or action. A dashed arrow from the LLM or agent back up into Read the page is labelled read a page on demand (tool call)." />
-  <img src="/blog/beyond-ocr-scores/pipeline_dark.svg" class="hidden dark:block" alt="System diagram in two rows. The top row, labelled ingest, runs left to right: Documents, then a Text layer? check that branches to Extract text layer (born-digital, no OCR) and to Read the page (scan or photo, layout plus OCR, highlighted as the eleven readers in this post); both branches feed Structured text, then an Index. The bottom row, labelled serve, runs right to left: the Index feeds Retrieve, then an LLM or agent that takes a Question or task, then Answer or action. A dashed arrow from the LLM or agent back up into Read the page is labelled read a page on demand (tool call)." />
+  <img src="/blog/beyond-ocr-scores/pipeline_light.svg" class="dark:hidden" alt="System diagram in two rows. The top row, labelled ingest, runs left to right: Documents, then a Text layer? check that branches to Extract text layer (born-digital, no OCR) and to Read the page (scan or photo, layout plus OCR, highlighted as the twelve readers in this post); both branches feed Structured text, then an Index. The bottom row, labelled serve, runs right to left: the Index feeds Retrieve, then an LLM or agent that takes a Question or task, then Answer or action. A dashed arrow from the LLM or agent back up into Read the page is labelled read a page on demand (tool call)." />
+  <img src="/blog/beyond-ocr-scores/pipeline_dark.svg" class="hidden dark:block" alt="System diagram in two rows. The top row, labelled ingest, runs left to right: Documents, then a Text layer? check that branches to Extract text layer (born-digital, no OCR) and to Read the page (scan or photo, layout plus OCR, highlighted as the twelve readers in this post); both branches feed Structured text, then an Index. The bottom row, labelled serve, runs right to left: the Index feeds Retrieve, then an LLM or agent that takes a Question or task, then Answer or action. A dashed arrow from the LLM or agent back up into Read the page is labelled read a page on demand (tool call)." />
   <figcaption>Figure 1. Where the reader sits in a retrieval or agent system. A born-digital page carries its own text layer and skips the
   reader; a scanned or photographed page cannot. Everything downstream inherits the reader's output. The highlighted box is the step this post
   measures; the dashed arrow is an agent reading a page on demand.</figcaption>
@@ -261,6 +263,12 @@ layout model GLM-OCR's SDK uses), `rapid_table` (SLANet+) for the table regions 
 number and was never going to win a column. It is here because it is the cleanest experiment in the study: the same recogniser with and without a
 layout stage in front of it.
 
+**LiteParse.** [LlamaIndex's open-source local parser](https://github.com/run-llama/liteparse) (Apache-2.0, March 2026), the free sibling of their
+hosted LlamaParse and a different kind of reader: no model of its own beyond Tesseract OCR, with the page's layout rebuilt from where the text sits
+rather than by a trained layout model. It runs through LlamaIndex's own ParseBench integration with OCR on, its default Tesseract models, and the OCR
+languages set to the corpus's — English, Simplified and Traditional Chinese — because its English-only default reads half these pages as noise. It is
+the one reader in the study whose pipeline is built from rules instead of models.
+
 **Apple Vision.** The [`RecognizeDocumentsRequest`](https://developer.apple.com/documentation/vision/recognizedocumentsrequest) API built into macOS
 26 — the same engine behind Live Text. Zero download, zero GPU memory beyond the OS, and 1.9 s per page on an M4 Max against 16.1 s for the two-stage
 parser on the same machine ([Tab. 4](#table-4)). One configuration note that decides everything: Vision's `minimumTextHeightFraction` defaults to 1/32
@@ -303,15 +311,15 @@ the API already better than anything you can run?
 
 [Tab. 2](#table-2) is the full held-out table; [Fig. 3](#figure-3) draws its six columns to scale.
 
-The first seven rows are document readers built for this job: Composite is MinerU2.5-Pro + dots.mocr, the production reader; MinerU2.5-Pro and
+The first eight rows are document readers built for this job: Composite is MinerU2.5-Pro + dots.mocr, the production reader; MinerU2.5-Pro and
 dots.mocr are its two halves on their own; GLM-OCR and PaddleOCR-VL-1.6 are the two leaderboard pipelines, each run through its own SDK; Unlimited-OCR
-reads the page in one pass; RapidOCR is the CPU-only pipeline. The last four are controls that were never built for document parsing: Apple Vision is
-the operating system's text recognizer, at the tuned text-height threshold, with no layout stage and no table model; Qwen 3.6 is an open-weights VLM
-on my own hardware, prompted to transcribe; Claude Fable 5.1 and GPT-6 Astra are the same prompt sent to Anthropic's and OpenAI's APIs, the first at
-the API's capped resolution with thinking off, the second at full page resolution with reasoning at its lowest setting. Two figure-only pages have
-zero ground-truth text and every reader is scored on them identically. A page a reader left empty counts as a total loss on every metric it carries;
-[Fig. 4](#figure-4) counts them per reader, and Claude Fable 5.1's twelve are pages the API declined to transcribe on every one of four attempts
-rather than pages it read as blank.
+reads the page in one pass; RapidOCR is the CPU-only pipeline, and LiteParse the rule-based one. The last four are controls that were never built for
+document parsing: Apple Vision is the operating system's text recognizer, at the tuned text-height threshold, with no layout stage and no table model;
+Qwen 3.6 is an open-weights VLM on my own hardware, prompted to transcribe; Claude Fable 5.1 and GPT-6 Astra are the same prompt sent to Anthropic's
+and OpenAI's APIs, the first at the API's capped resolution with thinking off, the second at full page resolution with reasoning at its lowest
+setting. Two figure-only pages have zero ground-truth text and every reader is scored on them identically. A page a reader left empty counts as a
+total loss on every metric it carries; [Fig. 4](#figure-4) counts them per reader, and Claude Fable 5.1's twelve are pages the API declined to
+transcribe on every one of four attempts rather than pages it read as blank.
 
 <figure id="table-2" class="table-figure table-figure--wide">
 
@@ -324,6 +332,7 @@ rather than pages it read as blank.
 | <span style="white-space: nowrap">PaddleOCR-VL-1.6</span>       |                                                   0.0616 |                                                   77.92 |                                                   0.1686 |                                                   0.3545 |                                                   0.803 | <b class="text-green-600 dark:text-green-400">14</b>/473 |
 | <span style="white-space: nowrap">Unlimited-OCR</span>          |                                                   0.2083 |                                                   68.66 |                                                   0.2716 |                                                   0.2240 |                                                   0.852 |                                                   91/473 |
 | <span style="white-space: nowrap">RapidOCR</span>               |                                                   0.1227 |                                                   76.97 |                                                   0.2314 |                                                   0.4893 |                                                   0.796 |                                                   15/473 |
+| <span style="white-space: nowrap">LiteParse</span>              |                                                   0.4107 |                                                   20.91 |                                                   0.3669 |                                                   0.9320 |                                                   0.313 |                                                  150/473 |
 | <span style="white-space: nowrap">Apple Vision (OS OCR)</span>  |                                                   0.1881 |                                                   50.68 |                                                   0.3812 |                                                   0.8097 |                                                   0.781 |                                                  166/473 |
 | <span style="white-space: nowrap">Qwen 3.6 (VLM)</span>         |                                                   0.0646 |                                                   80.86 |                                                   0.1762 |                                                   0.1286 |                                                   0.858 |                                                   27/473 |
 | <span style="white-space: nowrap">Claude Fable 5.1 (VLM)</span> |                                                   0.0463 | <b class="text-green-600 dark:text-green-400">89.86</b> |                                                   0.1337 |                                                   0.1309 |                                                   0.930 |                                                   16/473 |
@@ -340,8 +349,8 @@ reading-order edit distance; Found-only TEDS scores only the tables a reader det
 </figure>
 
 <figure id="figure-4">
-  <img src="/blog/beyond-ocr-scores/empty_pages_light.svg" class="dark:hidden" alt="Horizontal bar chart of pages each reader left empty, out of 1,250: composite 2, MinerU2.5-Pro alone 3, dots.mocr 20, GLM-OCR 1, RapidOCR 4, Apple Vision 1, Qwen 3.6 0, Claude Fable 5.1 12, GPT-6 Astra 1. Each bar is split: the orange part is empties on pages with ground-truth text (dots.mocr 16, Claude Fable 5.1 12, RapidOCR 2, MinerU2.5-Pro 1, Apple Vision 1, all others 0), the grey part is figure-only pages.">
-  <img src="/blog/beyond-ocr-scores/empty_pages_dark.svg" class="hidden dark:block" alt="Horizontal bar chart of pages each reader left empty, out of 1,250: composite 2, MinerU2.5-Pro alone 3, dots.mocr 20, GLM-OCR 1, RapidOCR 4, Apple Vision 1, Qwen 3.6 0, Claude Fable 5.1 12, GPT-6 Astra 1. Each bar is split: the orange part is empties on pages with ground-truth text (dots.mocr 16, Claude Fable 5.1 12, RapidOCR 2, MinerU2.5-Pro 1, Apple Vision 1, all others 0), the grey part is figure-only pages.">
+  <img src="/blog/beyond-ocr-scores/empty_pages_light.svg" class="dark:hidden" alt="Horizontal bar chart of pages each reader left empty, out of 1,250: composite 2, MinerU2.5-Pro alone 3, dots.mocr 20, GLM-OCR 1, PaddleOCR-VL-1.6 1, Unlimited-OCR 0, RapidOCR 4, LiteParse 0, Apple Vision 1, Qwen 3.6 0, Claude Fable 5.1 12, GPT-6 Astra 1. Each bar is split: the orange part is empties on pages with ground-truth text (dots.mocr 16, Claude Fable 5.1 12, RapidOCR 2, MinerU2.5-Pro 1, Apple Vision 1, all others 0), the grey part is figure-only pages.">
+  <img src="/blog/beyond-ocr-scores/empty_pages_dark.svg" class="hidden dark:block" alt="Horizontal bar chart of pages each reader left empty, out of 1,250: composite 2, MinerU2.5-Pro alone 3, dots.mocr 20, GLM-OCR 1, PaddleOCR-VL-1.6 1, Unlimited-OCR 0, RapidOCR 4, LiteParse 0, Apple Vision 1, Qwen 3.6 0, Claude Fable 5.1 12, GPT-6 Astra 1. Each bar is split: the orange part is empties on pages with ground-truth text (dots.mocr 16, Claude Fable 5.1 12, RapidOCR 2, MinerU2.5-Pro 1, Apple Vision 1, all others 0), the grey part is figure-only pages.">
   <figcaption>Figure 4. Pages each reader left empty, of 1,250. The orange part of a bar had ground-truth text and counts as a total loss on every metric; the grey part is figure-only pages, where an empty read costs nothing. Claude Fable 5.1's twelve are pages the API refused to transcribe on every one of four attempts, not pages it read as blank.</figcaption>
 </figure>
 
@@ -398,6 +407,15 @@ magazines, and nothing at all on handwriting (0.163 → 0.163), where there are 
 count. Both pipelines run PP-DocLayoutV3, and measured against the gold boxes their detection is indistinguishable — recall 0.970 against 0.977 — yet
 one misses 15 tables and the other 83. With detection held equal, the difference is the table recogniser: SLANet+ returns exactly one table per
 region, and a general OCR prompt does not.
+
+**A pipeline built from rules finds the columns and still reads like a line recogniser.** LiteParse lands at 0.4107 text, 20.91 TEDS with 150 tables
+missed, and 0.3669 reading order — the tier of RapidOCR with no layout stage at all, and nowhere near the 0.1227 and 76.97 the RapidAI pipeline gets
+from learned models. Its two halves come apart cleanly by page. The layout rules do real work: on English three-column pages it reads at 0.125, ahead
+of Apple Vision's 0.358 and within 0.05 of the RapidAI layout model, so column order can be recovered from text positions alone. Recognition is where
+it loses: on plain single-column English, where layout has nothing to do, it reads at 0.255 against Apple Vision's 0.113, and on Simplified Chinese it
+sits between 0.52 and 0.61 whatever the layout. And its tables are found but not read — 150 missed, close to Apple's 166, but 0.313 on the ones it
+finds against Apple's 0.781, because a grid inferred from where words sit is not a table structure. Tesseract's larger models moved none of this by
+more than a few thousandths. The pipeline is not what buys a specialist its structure; the learned models inside it are.
 
 **An open-weights 35B VLM lands between the specialists and the free OCR.** Qwen 3.6 at 0.0646 is 0.025 behind MinerU2.5-Pro alone on text and 0.029
 behind the composite — respectable for a model tuned for nothing on this task — but the gap widens the moment structure matters: ten TEDS points
@@ -459,9 +477,9 @@ reads at 0.525 against 0.184 everywhere else. What it writes there is the next s
 ## Where each reader actually fails
 
 <figure id="figure-5">
-  <img src="/blog/beyond-ocr-scores/layout_collapse_light.svg" class="dark:hidden" alt="Grouped bar chart of text edit distance by page layout for eleven readers: the composite, MinerU2.5-Pro, dots.mocr, GLM-OCR, Unlimited-OCR, Apple Vision, Qwen 3.6, Claude Fable 5.1, and GPT-6 Astra. Six are flat across single-column, double-column, three-column, mixed-column, and other layouts: the composite and MinerU2.5-Pro between 0.02 and 0.06, dots.mocr between 0.05 and 0.08, Qwen between 0.04 and 0.10, Claude Fable 5.1 between 0.024 and 0.060, and GPT-6 Astra between 0.018 and 0.040. Three fall apart: GLM-OCR holds between 0.04 and 0.07 on column layouts and collapses to 0.20 on other layouts; Apple Vision climbs from 0.12 on single-column to 0.24 on double-column and 0.37 on three-column pages; and Unlimited-OCR follows the same climb, 0.13 to 0.23 to 0.33." />
-  <img src="/blog/beyond-ocr-scores/layout_collapse_dark.svg" class="hidden dark:block" alt="Grouped bar chart of text edit distance by page layout for eleven readers: the composite, MinerU2.5-Pro, dots.mocr, GLM-OCR, Unlimited-OCR, Apple Vision, Qwen 3.6, Claude Fable 5.1, and GPT-6 Astra. Six are flat across single-column, double-column, three-column, mixed-column, and other layouts: the composite and MinerU2.5-Pro between 0.02 and 0.06, dots.mocr between 0.05 and 0.08, Qwen between 0.04 and 0.10, Claude Fable 5.1 between 0.024 and 0.060, and GPT-6 Astra between 0.018 and 0.040. Three fall apart: GLM-OCR holds between 0.04 and 0.07 on column layouts and collapses to 0.20 on other layouts; Apple Vision climbs from 0.12 on single-column to 0.24 on double-column and 0.37 on three-column pages; and Unlimited-OCR follows the same climb, 0.13 to 0.23 to 0.33." />
-  <figcaption>Figure 5. Text edit distance by page layout, all eleven readers; best per layout in bold. Nine readers stay flat across column counts and two fall apart, each on different pages.</figcaption>
+  <img src="/blog/beyond-ocr-scores/layout_collapse_light.svg" class="dark:hidden" alt="Grouped bar chart of text edit distance by page layout for nine of the twelve readers: the composite, MinerU2.5-Pro, dots.mocr, GLM-OCR, Unlimited-OCR, Apple Vision, Qwen 3.6, Claude Fable 5.1, and GPT-6 Astra. Six are flat across single-column, double-column, three-column, mixed-column, and other layouts: the composite and MinerU2.5-Pro between 0.02 and 0.06, dots.mocr between 0.05 and 0.08, Qwen between 0.04 and 0.10, Claude Fable 5.1 between 0.024 and 0.060, and GPT-6 Astra between 0.018 and 0.040. Three fall apart: GLM-OCR holds between 0.04 and 0.07 on column layouts and collapses to 0.20 on other layouts; Apple Vision climbs from 0.12 on single-column to 0.24 on double-column and 0.37 on three-column pages; and Unlimited-OCR follows the same climb, 0.13 to 0.23 to 0.33." />
+  <img src="/blog/beyond-ocr-scores/layout_collapse_dark.svg" class="hidden dark:block" alt="Grouped bar chart of text edit distance by page layout for nine of the twelve readers: the composite, MinerU2.5-Pro, dots.mocr, GLM-OCR, Unlimited-OCR, Apple Vision, Qwen 3.6, Claude Fable 5.1, and GPT-6 Astra. Six are flat across single-column, double-column, three-column, mixed-column, and other layouts: the composite and MinerU2.5-Pro between 0.02 and 0.06, dots.mocr between 0.05 and 0.08, Qwen between 0.04 and 0.10, Claude Fable 5.1 between 0.024 and 0.060, and GPT-6 Astra between 0.018 and 0.040. Three fall apart: GLM-OCR holds between 0.04 and 0.07 on column layouts and collapses to 0.20 on other layouts; Apple Vision climbs from 0.12 on single-column to 0.24 on double-column and 0.37 on three-column pages; and Unlimited-OCR follows the same climb, 0.13 to 0.23 to 0.33." />
+  <figcaption>Figure 5. Text edit distance by page layout for nine of the twelve readers — the palette holds nine colour pairs validated for colour-blind readers, so PaddleOCR-VL-1.6, RapidOCR and LiteParse are in Tables 2 and 3 instead; best per layout in bold. Seven of the nine stay flat across column counts and two fall apart, each on different pages.</figcaption>
 </figure>
 
 Every reader with a layout stage in front of it, and every whole-page VLM, stays flat: GPT-6 Astra is the flattest of all, 0.024–0.040 at every column
@@ -493,6 +511,7 @@ never finds 166 of 473 — table _detection_ is a layout problem too.
 | <span style="white-space: nowrap">PaddleOCR-VL-1.6</span>       |                                                   0.0439 |                                                   0.0413 |                                                   0.0736 |                                                   0.0697 |                                                   0.0421 |                                                   0.0568 |                                                   0.0822 |                                                   0.1082 |                                               **0.0416** |
 | <span style="white-space: nowrap">Unlimited-OCR</span>          |                                                   0.1457 |                                                   0.0982 |                                                   0.1551 |                                                   0.2001 |                                                   0.1182 |                                                   0.6020 |                                                   0.3154 |                                                   0.1775 |                                                   0.1144 |
 | <span style="white-space: nowrap">RapidOCR</span>               |                                                   0.0766 |                                                   0.1268 |                                                   0.0759 |                                                   0.0716 |                                                   0.1167 |                                                   0.0728 |                                                   0.1623 |                                                   0.2138 |                                                   0.1632 |
+| <span style="white-space: nowrap">LiteParse</span>              |                                                   0.3705 |                                                   0.3946 |                                                   0.2702 |                                                   0.2441 |                                                   0.3699 |                                                   0.4066 |                                                   0.4373 |                                                   0.4276 |                                                   0.9591 |
 | <span style="white-space: nowrap">Apple Vision (OS OCR)</span>  |                                                   0.0588 |                                                   0.0611 |                                                   0.1387 |                                                   0.2109 |                                                   0.1675 |                                                   0.3984 |                                                   0.2575 |                                                   0.1958 |                                                   0.2484 |
 | <span style="white-space: nowrap">Qwen 3.6 (VLM)</span>         |                                                   0.0281 |                                                   0.0336 |                                                   0.0400 |                                                   0.0415 |                                                   0.0602 |                                                   0.0601 |                                                   0.1142 |                                                   0.1027 |                                                   0.1042 |
 | <span style="white-space: nowrap">Claude Fable 5.1 (VLM)</span> |   <b class="text-blue-600 dark:text-blue-400">0.0083</b> |                                                   0.0246 |                                                   0.0298 |                                                   0.0526 |                                                   0.0512 |                                                   0.0508 |                                               **0.0541** |   <b class="text-blue-600 dark:text-blue-400">0.0645</b> |                                                   0.0837 |
@@ -505,7 +524,7 @@ carry ground-truth text; best per column in black bold, second in blue bold, thi
 <figure id="figure-6">
   <img src="/blog/beyond-ocr-scores/source_bars_light.svg" class="dark:hidden" alt="Nine small horizontal bar charts, one per page source in Table 3's order: research reports, slides, magazines, academic papers, books, newspapers, exam papers, textbooks and handwritten notes. Nine readers in each, document readers first and the four controls set apart; each panel on its own scale with the best reader's value in bold. The values are those of Table 3.">
   <img src="/blog/beyond-ocr-scores/source_bars_dark.svg" class="hidden dark:block" alt="Nine small horizontal bar charts, one per page source in Table 3's order: research reports, slides, magazines, academic papers, books, newspapers, exam papers, textbooks and handwritten notes. Nine readers in each, document readers first and the four controls set apart; each panel on its own scale with the best reader's value in bold. The values are those of Table 3.">
-  <figcaption>Figure 6. Table 3 drawn to scale: text edit distance by page source, one panel per source in Table 3's order, eleven readers each,
+  <figcaption>Figure 6. Table 3 drawn to scale: text edit distance by page source, one panel per source in Table 3's order, twelve readers each,
   best per source in bold. Each panel has its own scale, so compare the numbers across panels, not the bar lengths.</figcaption>
 </figure>
 
@@ -543,9 +562,10 @@ If it contains anything multi-column, it is not, and no amount of tuning changes
 at 0.0874 — the composite and the MinerU2.5-Pro inside it, identical because the composite hands every formula page over untouched. The readers that
 write LaTeX from a whole-page or per-region read land at 1.2 to 2.6 times that: GPT-6 Astra at 0.1055, GLM-OCR at 0.1228, Qwen 3.6 at 0.1286, Claude
 Fable 5.1 at 0.1309 and Unlimited-OCR at 0.2240. Then there is a cliff, and it is not a difference of degree. PaddleOCR-VL-1.6 (0.3545), RapidOCR
-(0.4893) and dots.mocr (0.6335) attempt every equation and get it wrong, each its own way; Apple Vision, at 0.8097, is not reading equations badly; it
-is not reading them at all. It transcribes the glyphs in front of it and has no notion of LaTeX — across the 231 pages that carry a display equation,
-its output contains LaTeX on eight — so an equation comes back as a line of loose symbols that scores as text and means nothing.
+(0.4893) and dots.mocr (0.6335) attempt every equation and get it wrong, each its own way; Apple Vision, at 0.8097, and LiteParse, at 0.9320, are not
+reading equations badly; they are not reading them at all. Both transcribe the glyphs in front of them and have no notion of LaTeX — across the 231
+pages that carry a display equation, Apple's output contains LaTeX on eight and LiteParse's on none — so an equation comes back as a line of loose
+symbols that scores as text and means nothing.
 
 **But the cliff has more than one mechanism on it, and I originally described two of them as the same one.** dots.mocr sits at 0.6335, and it is not
 in Apple's category: run under its own protocol it writes LaTeX on 225 of those same 231 pages. It attempts the equation and gets it wrong — median
@@ -571,9 +591,9 @@ a photograph rather than in a grid, and only its title survives (C). One is the 
 single grid — the upper panel pairs with its ground truth and the lower is left without a partner (D). And one is the signature block at the foot of a
 financial statement, four titles over four names, read as a run of headings (E). They are this layout head's blind spots, not the field's:
 MinerU2.5-Pro alone misses all eight, and the composite inherits that head untouched, but every one of the eight is read by someone. The RapidAI
-layout stage — the same PP-DocLayoutV3 that GLM-OCR and PaddleOCR-VL-1.6 run — finds all eight, reading them at 0.23 to 0.69; PaddleOCR-VL-1.6 and
-Claude Fable 5.1 read six each, GLM-OCR, Qwen 3.6 and GPT-6 Astra five, and Unlimited-OCR one — the token grid, at 0.95. The signature block, which no
-reader in the first draft of this study found, is read at 0.99 by GLM-OCR.
+layout stage — the same PP-DocLayoutV3 that GLM-OCR and PaddleOCR-VL-1.6 run — finds all eight, reading them at 0.23 to 0.69; PaddleOCR-VL-1.6, Claude
+Fable 5.1 and LiteParse read six each (LiteParse four of them below 0.25), GLM-OCR, Qwen 3.6 and GPT-6 Astra five, and Unlimited-OCR one — the token
+grid, at 0.95. The signature block, which no reader in the first draft of this study found, is read at 0.99 by GLM-OCR.
 
 **Two of them score below zero, and that is the scorer rather than the page.** The scoreboard page carries twenty-six gold tables, and the readers
 emit ninety-six table regions on it — the transactions column, cut into two-row fragments — so the matcher has a partner for every gold table whether
@@ -612,6 +632,7 @@ decision, not a property of the reader.
 | <span style="white-space: nowrap">PaddleOCR-VL-1.6</span>      | M4 Max laptop, GPU + CPU layout |               12.9 |              280 |         1.95 GB |
 | <span style="white-space: nowrap">Unlimited-OCR</span>         | M4 Max laptop, GPU              |               42.3 |               85 |         3.84 GB |
 | <span style="white-space: nowrap">RapidOCR</span>              | M4 Max laptop, CPU              |                5.4 |              668 |          349 MB |
+| <span style="white-space: nowrap">LiteParse</span>             | M4 Max laptop, CPU              |               14.8 |              243 |           42 MB |
 | <span style="white-space: nowrap">Apple Vision (OS OCR)</span> | M4 Max laptop, Neural Engine    |                1.9 |            1,938 |               0 |
 | <span style="white-space: nowrap">Qwen 3.6 (VLM)</span>        | M4 Max laptop, GPU              |               72.3 |               50 |        19.35 GB |
 
@@ -626,8 +647,9 @@ write the whole page in one pass take three to six times as long — Unlimited-O
 to generate every token of the page in sequence, and its slow pages are slower still: a dense page is a long answer, and a runaway page is the whole
 output budget. GLM-OCR makes the trade concrete. Its pipeline is barely slower than its recogniser reading the whole page on its own, 23.3 s against
 21.8, and finds 309 more tables. The composite's 61.3 s buys the best row in [Tab. 2](#table-2) with two models per page, on the fleet's older chips.
-At the fast end the price is structure: Apple Vision reads a page in 1.9 s and misses a third of all tables, while the RapidAI pipeline adds a layout
-and a table model and still reads a page in 5.4 s on the CPU alone.
+At the fast end the price is structure: Apple Vision reads a page in 1.9 s and misses a third of all tables, while the RapidAI pipeline adds a learned
+layout and table model and still reads a page in 5.4 s on the CPU alone. Rules are not the cheap route they sound like: LiteParse, with its default
+Tesseract models and three OCR languages, takes 14.8 s a page on the CPU — about MinerU2.5-Pro's time on the GPU — for the line recognisers' accuracy.
 
 ## Who controls what your system reads?
 
@@ -684,7 +706,8 @@ model you cannot pin to a build is exactly the case where that matters most.
    two whose columns collapse somewhere: formulas for one, dense pages for the other. The hosted frontier models are the only one-shot readers in the
    study that keep tables, order and formulas at once — Claude Fable 5.1 within two TEDS points of the composite, GPT-6 Astra ahead of it on text —
    which is the more elegant engineering, and it costs the resolution rule, the refusals and the unpinnable build of the section before this one. On
-   hardware you own the elegance runs the other way: the one-shot readers are the slowest here, three to six times the pipelines' time per page. A
+   hardware you own the elegance runs the other way: the one-shot readers are the slowest here, three to six times the pipelines' time per page. The
+   stages have to be learned, too: LiteParse, a pipeline built from rules instead of models, finds the columns and still reads like the free OCR. A
    specialist is a pipeline whether or not its README says so; a generalist is a prompt.
 8. **Split detection from transcription before you read a table score.** Apple "scores 51 TEDS" and "transcribes found tables at 78 while missing a
    third of them" are the same number — only the second tells you what to fix.

@@ -36,6 +36,7 @@ ARMS = [
     ("PaddleOCR-VL-1.6", "paddlevl", "PaddleOCR-VL-1.6", "PaddleOCR-VL-1.6"),
     ("Unlimited-OCR", "unlimnative", "Unlimited-OCR", "Unlimited-OCR"),
     ("RapidOCR", "rapidpipe", "RapidOCR", "RapidOCR"),
+    ("LiteParse", "liteparseocr", "LiteParse", "LiteParse"),
     ("Apple Vision", "applefresh", "Apple Vision (OS OCR)", "Apple Vision (OS OCR)"),
     ("Qwen 3.6", os.environ.get("QWEN_ARM", "qwenfull32"), "Qwen 3.6 (VLM)", "Qwen 3.6 (VLM)"),
     ("Claude Fable 5.1", "fablefull", "Claude Fable 5.1 (VLM)", "Claude Fable 5.1 (VLM)"),
@@ -123,6 +124,7 @@ SPEED = [("Composite", "composite", "fleet M3 Max, 1 page at a time", "5.81 GB")
          ("PaddleOCR-VL-1.6", "paddlevl", "M4 Max laptop, GPU + CPU layout", "1.95 GB"),
          ("Unlimited-OCR", "unlimnative", "M4 Max laptop, GPU", "3.84 GB"),
          ("RapidOCR", "rapidpipe", "M4 Max laptop, CPU", "349 MB"),
+         ("LiteParse", "liteparse", "M4 Max laptop, CPU", "42 MB"),
          ("Apple Vision (OS OCR)", "apple", "M4 Max laptop, Neural Engine", "0"),
          ("Qwen 3.6 (VLM)", "qwenlocal", "M4 Max laptop, GPU", "19.35 GB")]
 

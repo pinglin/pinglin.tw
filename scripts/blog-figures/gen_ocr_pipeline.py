@@ -70,7 +70,7 @@ def fig(t, c):
     box(s, c, 70, r1-28, 170, 56, c["ln"], "Documents", "PDFs, scans, photos")
     box(s, c, 270, r1-28, 150, 56, c["ln"], "Text layer?", "Check the PDF")
     box(s, c, 465, up-28, 230, 56, c["ln"], "Extract text layer", "Born-digital · no OCR")
-    s.append(f'<text class="tiny" x="580" y="{lo-38}" text-anchor="middle" style="fill:{ORANGE}">The eleven readers in this post</text>')
+    s.append(f'<text class="tiny" x="580" y="{lo-38}" text-anchor="middle" style="fill:{ORANGE}">The twelve readers in this post</text>')
     box(s, c, 465, lo-28, 230, 56, ORANGE, "Read the page", "Scan, photo · layout + OCR", sw=2.2)
     box(s, c, 735, r1-28, 210, 56, c["ln"], "Structured text", "Blocks, tables, formulas")
     box(s, c, 980, r1-28, 150, 56, BLUE, "Index", "Chunk · embed")

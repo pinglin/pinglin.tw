@@ -24,10 +24,10 @@ os.makedirs(OUT, exist_ok=True)
 THEMES = {
     "dark": dict(BG="#1a1a2e", INK="#ffffff", INK2="#c9c9d4", MUTED="#8f8f9c",
                  GRID="#3a3a4e", AXIS="#55556a",
-                 C1="#3987e5", C2="#199e70", C3="#d95926", C4="#a06be0", C5="#e0b32a", C6="#e0609a", C7="#8fa3b8", C8="#33bfb8", C9="#c98a3a", C10="#5cc45c", C11="#e08a8a", HALO="#1a1a2e"),
+                 C1="#3987e5", C2="#199e70", C3="#d95926", C4="#a06be0", C5="#e0b32a", C6="#e0609a", C7="#8fa3b8", C8="#33bfb8", C9="#c98a3a", HALO="#1a1a2e"),
     "light": dict(BG="#fcfcfb", INK="#0b0b0b", INK2="#52514e", MUTED="#898781",
                   GRID="#e1e0d9", AXIS="#c3c2b7",
-                  C1="#2a78d6", C2="#1baf7a", C3="#eb6834", C4="#8f5bd0", C5="#c99a06", C6="#d1417f", C7="#6b7d8f", C8="#0f8f8a", C9="#a8641c", C10="#3a9a3a", C11="#c25a5a", HALO="#fcfcfb"),
+                  C1="#2a78d6", C2="#1baf7a", C3="#eb6834", C4="#8f5bd0", C5="#c99a06", C6="#d1417f", C7="#6b7d8f", C8="#0f8f8a", C9="#a8641c", HALO="#fcfcfb"),
 }
 
 # label -> (result prefix, palette slot, group). Order = display order: the document readers first,
@@ -46,6 +46,7 @@ ARMS = [
     ("PaddleOCR-VL-1.6",                "paddlevl",      "C4", "readers"),
     ("Unlimited-OCR",                   "unlimnative",   "C4", "readers"),
     ("RapidOCR",                        "rapidpipe",     "C4", "readers"),
+    ("LiteParse",                       "liteparseocr",  "C4", "readers"),
     ("Apple Vision (OS OCR, tuned)",    "applefresh",    "C3", "controls"),
     ("Qwen 3.6 (VLM)",                  QWEN_ARM,        "C3", "controls"),
     ("Claude Fable 5.1 (VLM)",          "fablefull",     "C3", "controls"),
@@ -170,10 +171,10 @@ LAYOUT_LABELS = {"single_column": "single column", "double_column": "double colu
                  "other_layout": "other layout"}
 
 # Same order as ARMS: readers, then the controls. Every series needs its own colour here, and the
-# palette holds exactly nine CVD-validated pairs — so this figure charts nine of the eleven readers.
-# PaddleOCR-VL-1.6 and RapidOCR are the two it leaves out, and they are NOT omitted for being
+# palette holds exactly nine CVD-validated pairs — so this figure charts nine of the twelve readers.
+# PaddleOCR-VL-1.6, RapidOCR and LiteParse are the three it leaves out, and they are NOT omitted for being
 # inconvenient: both appear in Tables 2/3 and Figures 3/4/6. Inventing two unvalidated colours to
-# fit them here would trade a real accessibility property for a cosmetic one; revisit by extending
+# fit them here (done once on 2026-09-15 and reverted the same day) would trade a real accessibility property for a cosmetic one; revisit by extending
 # the validated palette, not by guessing hex values.
 #
 # The three specialist series are their makers' own pipelines now (see ARMS above). This changes what
@@ -183,9 +184,7 @@ LAYOUT_ARMS = [("Composite", "compositev6full", "C1"),
                ("MinerU2.5-Pro", "mineru0617", "C5"),
                ("dots.mocr", "mocrnative", "C6"),
                ("GLM-OCR", "glmsdk", "C7"),
-               ("PaddleOCR-VL-1.6", "paddlevl", "C10"),
                ("Unlimited-OCR", "unlimnative", "C4"),
-               ("RapidOCR", "rapidpipe", "C11"),
                ("Apple Vision", "applefresh", "C3"),
                ("Qwen 3.6", QWEN_ARM, "C2"),
                ("Claude Fable 5.1", "fablefull", "C9"),
