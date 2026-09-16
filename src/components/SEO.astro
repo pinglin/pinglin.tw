@@ -16,7 +16,7 @@ interface Props {
 const {
   title = 'Ping-Lin Chang',
   description = 'A space where my thoughts take flight.',
-  image = '/og-crane-riverbank.jpg',
+  image = '/og-image.jpg',
   imageAlt,
   url = Astro.url,
   canonical = url,
@@ -38,11 +38,11 @@ const ogImageSource = typeof image === 'string' ? image : (image.urlLight ?? ima
 // the image and show a bare text card. An SVG hero ships a PNG sibling.
 const ogImage = new URL(ogImageSource.replace(/\.svg$/, '.png'), Astro.site ?? Astro.url);
 const ogImageType = ogImage.pathname.endsWith('.png') ? 'image/png' : 'image/jpeg';
-// Posts carry their own alt; the default card is a Chinese landscape painting.
+// Posts carry their own alt; the default card is the original mountain photograph.
 const ogImageAlt =
   imageAlt ??
   (typeof image === 'string'
-    ? 'A solitary crane stands on a rocky riverbank beneath misty charcoal mountains, with subtle jade washes and sparse pines on warm parchment.'
+    ? 'Mountain peaks rise above a sea of clouds beneath a clear blue sky.'
     : image.alt);
 
 // A post description doubles as the on-page subtitle, so it runs longer than a
