@@ -677,8 +677,9 @@ fixing an API call and never revisited: a chart came back as its caption and the
 model writes the chart's data points as a table, which is what the 61.64 measures. Element positions collapse to 37.10 because on the pages the
 composite serves straight from MinerU it stamped every element with a box covering the whole page, and on the merged pages it never labelled a
 picture, a page header or a footer as what it was; the rest of the gap is boxes that are simply imprecise. Neither shows on OmniDocBench, whose six
-columns never ask where a block sits or what a chart says — which is the point of running a second benchmark. Both are being fixed in the served
-parser as this is written.
+columns never ask where a block sits or what a chart says — which is the point of running a second benchmark. Both are fixed in the parser as this is
+written: on 60-page subsets of ParseBench, charts go from 1.67 to 77.98 and element grounding from 32.83 to 57.59, while the OmniDocBench text score
+of the same 50 pages moves by 0.0004 and tables and formulas do not move at all.
 
 ## Who controls what your system reads?
 

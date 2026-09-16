@@ -140,16 +140,12 @@
       function updateTocPosition() {
         const headerRect = topHeader.getBoundingClientRect();
         const topOffset = headerRect.height + 20;
-        // Align with the header's inner content area (matching its `px-4`
-        // / 16 px padding), so the TOC button sits in line with the social
-        // icons rather than flush against the viewport edge.
-        const rightOffset = window.innerWidth - headerRect.right + 16;
-
-        tocWrapperElement.style.transition = 'all 0.8s ease';
+        // ScrollToTop positions both controls horizontally from the same header edge.
+        // Only fade visibility; layout changes should never animate their position.
+        tocWrapperElement.style.transition = 'opacity 0.3s ease';
         tocWrapperElement.style.position = 'fixed';
         tocWrapperElement.style.left = 'auto';
         tocWrapperElement.style.top = `${topOffset}px`;
-        tocWrapperElement.style.right = `${rightOffset}px`;
 
         // The panel is fixed, so a long post's list would otherwise extend past
         // the bottom of the window with its last entries unreachable. Cap it to
@@ -178,8 +174,8 @@
       window.addEventListener('scroll', updateTocVisibility);
       window.addEventListener('resize', updateTocPosition);
       window.addEventListener('resize', handleResize);
-      updateTocVisibility();
       updateTocPosition();
+      updateTocVisibility();
 
       document.querySelectorAll('a[href^="#"], a[data-scroll-target]').forEach((anchor) => {
         anchor.addEventListener('click', function (e) {

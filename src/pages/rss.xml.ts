@@ -2,7 +2,11 @@ import { getCollection } from 'astro:content';
 import rss from '@astrojs/rss';
 
 export async function GET(context) {
-  const posts = await getCollection('blog', ({ data }) => data.lang === 'en' && !data.hidden && !data.draft);
+  // Newest first. getCollection returns store order, not date order, so the sort is what makes
+  // the feed chronological -- readers show items in document order.
+  const posts = (await getCollection('blog', ({ data }) => data.lang === 'en' && !data.hidden && !data.draft)).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  );
 
   // Generate the RSS feed
   const rssResponse = await rss({
