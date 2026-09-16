@@ -178,17 +178,17 @@ fix — than one that finds everything and garbles cells. The headline TEDS char
 
 ### Why I report six numbers instead of one
 
-The public leaderboard reports a single aggregate, and it is an equal-weight mean of three of the metrics above:
+The public leaderboard reports a single aggregate, [Eq. (1)](#eq-1), an equal-weight mean of three of the metrics above:
 
-```
-Overall = [ (1 − text edit) × 100  +  table TEDS  +  formula CDM ] / 3
-```
+$$
+\htmlId{eq-1}{\text{Overall} = \frac{(1 - \text{text edit}) \times 100 \;+\; \text{table TEDS} \;+\; \text{formula CDM}}{3}} \tag{1}
+$$
 
 I don't use it, because one number cannot tell you _what_ broke. A reader that finds every table and garbles the cells, one that transcribes cells
 perfectly but never detects a third of them, and one that reads every block correctly in the wrong order can all land on the same Overall — and each
-needs a different fix. The aggregate also drops reading order entirely, which is the column that separates these readers most sharply, and it folds
-table detection into table transcription, the split that decides the most below. So the columns stay separate here, and the two table failures are
-reported apart.
+needs a different fix. Eq. (1) also drops reading order entirely, which is the column that separates these readers most sharply, and it folds table
+detection into table transcription, the split that decides the most below. So the columns stay separate here, and the two table failures are reported
+apart.
 
 It follows that these are not the leaderboard's numbers and should not be read against them: mine are a 1,250-page held-out subset scored with an
 edit-distance formula metric and an older matcher, where the published scores are full-set results from whole hosted pipelines. Why that gap cannot be
@@ -650,6 +650,35 @@ output budget. GLM-OCR makes the trade concrete. Its pipeline is barely slower t
 At the fast end the price is structure: Apple Vision reads a page in 1.9 s and misses a third of all tables, while the RapidAI pipeline adds a learned
 layout and table model and still reads a page in 5.4 s on the CPU alone. Rules are not the cheap route they sound like: LiteParse, with its default
 Tesseract models and three OCR languages, takes 14.8 s a page on the CPU — about MinerU2.5-Pro's time on the GPU — for the line recognisers' accuracy.
+
+## The same reader on a different benchmark
+
+Everything above is one benchmark, and a benchmark decides what counts. So I ran the composite through [ParseBench](https://arxiv.org/abs/2604.08538),
+LlamaIndex's benchmark of 2,037 insurance, finance and government pages, which scores five things: tables, charts, faithfulness to the page's text,
+semantic formatting, and where each element sits on the page. Two of those five, charts and element positions, OmniDocBench never asks about. The
+composite went through the same production front door, one page at a time, with each page rendered to an image first so the text-layer fast path could
+not answer for the readers.
+
+<figure id="table-5" class="table-figure table-figure--wide">
+
+| Reader                                                                        | Tables ↑ | Charts ↑ | Content ↑ | Formatting ↑ | Grounding ↑ | Overall ↑ |
+| ----------------------------------------------------------------------------- | -------: | -------: | --------: | -----------: | ----------: | --------: |
+| <span style="white-space: nowrap">Composite, as served</span>                 |    76.91 |     0.79 |     85.41 |        48.52 |       37.10 |     49.75 |
+| <span style="white-space: nowrap">MinerU2.5-Pro (their leaderboard)</span>    |    77.59 |    61.64 |     87.88 |        57.49 |       79.30 |     72.78 |
+| <span style="white-space: nowrap">Claude Fable 5.1 (their leaderboard)</span> |    91.52 |    67.06 |     91.19 |        76.52 |       68.30 |     78.92 |
+| <span style="white-space: nowrap">LlamaParse Agentic (their product)</span>   |    88.88 |    88.68 |     91.78 |        81.44 |       84.25 |     87.01 |
+
+<figcaption>Table 5. The served composite on ParseBench, against three rows from ParseBench's own leaderboard. Overall is the mean of the
+five dimensions. The composite's row is my run; the others are LlamaIndex's, scored by the same public evaluator on the same pages.</figcaption> </figure>
+
+**The reader that led every column of Table 2 is twenty-three points behind the model inside it here, and both reasons are mine, not the models'.**
+Tables hold — 76.91 against MinerU's 77.59. Charts collapse to 0.79 because production ran MinerU with its image analysis turned off, a flag set while
+fixing an API call and never revisited: a chart came back as its caption and the prose around it, and none of its data. With that pass on, the same
+model writes the chart's data points as a table, which is what the 61.64 measures. Element positions collapse to 37.10 because on the pages the
+composite serves straight from MinerU it stamped every element with a box covering the whole page, and on the merged pages it never labelled a
+picture, a page header or a footer as what it was; the rest of the gap is boxes that are simply imprecise. Neither shows on OmniDocBench, whose six
+columns never ask where a block sits or what a chart says — which is the point of running a second benchmark. Both are being fixed in the served
+parser as this is written.
 
 ## Who controls what your system reads?
 
