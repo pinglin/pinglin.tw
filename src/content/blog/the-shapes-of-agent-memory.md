@@ -39,10 +39,10 @@ In this post, I measure which shape is better rather than argue it, which meant 
 the [two structured lineages](#two-lineages-place-and-entity-and-time), plus a layer neither has: an associative graph learned from which places
 actually get retrieved together, so recall can reach an item the query never ranked. The [file-based arm](#file-based) is a reconstruction of a
 shipping coding agent's auto-memory, traced claim by claim to public documentation and
-[published with its spec](https://github.com/a40-labs/memory/tree/main/systems/file-based), not a strawman written to lose. Both run behind the _same_
+[published with its spec](https://github.com/a40-labs/memory-bench/tree/main/systems/file-based), not a strawman written to lose. Both run behind the _same_
 agent loop, on the _same_ local open-weight model, scored by the _same_ judge on the same public benchmark, so only the memory layer can move the
 number, and the per-question rows, with the scripts that recompute each figure and an explicit ledger of the few published scores whose rows could not
-be released, are in [a40-labs/memory](https://github.com/a40-labs/memory). Hosted models come in where fairness demands: the
+be released, are in [a40-labs/memory-bench](https://github.com/a40-labs/memory-bench). Hosted models come in where fairness demands: the
 [head-to-head](#the-lineages-head-to-head) reads every store through one shared reader and judge, `gpt-4o-mini`, the same model the graph vendor's own
 numbers were scored with; the agentic experiment fields a frontier actor, `claude-sonnet-5`. The [trained shape](#experience-architecture) cannot join
 the controlled comparison at all, because the training _is_ the method: unplug its bank and you have a different policy, not a baseline. The
@@ -964,7 +964,7 @@ frozen.
   structure.
 - **Wall-clock is indicative, not controlled**; token counts are the load-independent cost metric.
 - **Reproducibility has a scope.** The baseline, file arm, judge, and analysis run against any OpenAI-compatible endpoint; the structured arm calls a
-  memory service, and its raw per-question rows are published for inspection either way in [a40-labs/memory](https://github.com/a40-labs/memory). The
+  memory service, and its raw per-question rows are published for inspection either way in [a40-labs/memory-bench](https://github.com/a40-labs/memory-bench). The
   protocol, including every amendment and its timing, was recorded in the study's private repository before the scored runs; the public repository
   carries the artifacts and an explicit ledger of what it cannot substantiate, not a timestamped registration.
 
@@ -988,7 +988,7 @@ Every head-to-head row is a single run, and identical reruns at temperature 0 dr
 is a best-effort parity configuration of the vendor's open-source engine, not their hosted product. The hybrid's retrieval was verified against a call
 ledger to confirm its reranker actually ran on every row, because that component fails open (a degraded run returns a full, silently unranked result
 set; 295 early rows failed exactly that check and were quarantined and re-run). What is published, stated precisely: per-question verdicts, hit
-counts, and context sizes for every head-to-head arm, with the shared judge prompt, in [a40-labs/memory](https://github.com/a40-labs/memory), where a
+counts, and context sizes for every head-to-head arm, with the shared judge prompt, in [a40-labs/memory-bench](https://github.com/a40-labs/memory-bench), where a
 verifier re-tallies every score and re-derives every statistic. The retrieved contexts, answers, and grades themselves are not republished: Zep
 Cloud's contexts are their data ([their repository](https://github.com/getzep/zep-papers) has them), and the full bundles for the other arms live in
 the study archive. The published artifacts support re-tallying and re-deriving, not independent re-judging.
