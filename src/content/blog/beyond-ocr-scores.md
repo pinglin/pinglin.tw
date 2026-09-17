@@ -47,7 +47,13 @@ tags: ['engineering', 'benchmark', 'ocr']
      quoted in the formula paragraphs; the "eight missing tables" sentence recomputed. LiteParse (liteparseocr, LlamaIndex's local parser, OCR on, default
      tessdata_best, eng+chi_sim+chi_tra) added 2026-09-15 in place of hosted LlamaParse; Figure 5 stays at nine readers
      (nine validated colour pairs). Unlimited-OCR's native row landed 18:22 and
-     its paragraphs are rewritten; speed claims still predate the timing pass. -->
+     its paragraphs are rewritten; speed claims still predate the timing pass. UPDATE 2026-09-17: the ParseBench
+     section carries the FULL-SET re-run of the served composite (parsebench/output/a40_composite_153: 2,037 PDFs
+     through production after models#153 was rolled to both parser primaries, 21.6 h, 2,078 responses, 0
+     failures) — Overall 49.75 -> 66.34, charts 0.79 -> 61.12, grounding 37.10 -> 60.31, tables/formatting/
+     content flat; the 60-document subset estimates (charts 77.98, grounding 57.59) are GONE from the prose,
+     and the leaderboard rank and the 35,439-box count come from that run's _leaderboard.html and raw outputs.
+     Backend record: FINAL_REPORT.md section 6 + RUNS.md 2026-09-17 (a40-labs/backend#1314). -->
 
 Every document system has a moment where it must turn a page — a real page, scanned or photographed or exported, with its columns and footnotes and
 smudged tables — into text a machine can use. Whatever you build downstream inherits the quality of that step. Retrieval cannot find a paragraph the
@@ -663,23 +669,37 @@ not answer for the readers.
 
 | Reader                                                                        | Tables ↑ | Charts ↑ | Content ↑ | Formatting ↑ | Grounding ↑ | Overall ↑ |
 | ----------------------------------------------------------------------------- | -------: | -------: | --------: | -----------: | ----------: | --------: |
-| <span style="white-space: nowrap">Composite, as served</span>                 |    76.91 |     0.79 |     85.41 |        48.52 |       37.10 |     49.75 |
+| <span style="white-space: nowrap">Composite, as served now</span>             |    76.90 |    61.12 |     84.83 |        48.52 |       60.31 |     66.34 |
+| <span style="white-space: nowrap">Composite, before the two fixes</span>      |    76.91 |     0.79 |     85.41 |        48.52 |       37.10 |     49.75 |
 | <span style="white-space: nowrap">MinerU2.5-Pro (their leaderboard)</span>    |    77.59 |    61.64 |     87.88 |        57.49 |       79.30 |     72.78 |
 | <span style="white-space: nowrap">Claude Fable 5.1 (their leaderboard)</span> |    91.52 |    67.06 |     91.19 |        76.52 |       68.30 |     78.92 |
 | <span style="white-space: nowrap">LlamaParse Agentic (their product)</span>   |    88.88 |    88.68 |     91.78 |        81.44 |       84.25 |     87.01 |
 
-<figcaption>Table 5. The served composite on ParseBench, against three rows from ParseBench's own leaderboard. Overall is the mean of the
-five dimensions. The composite's row is my run; the others are LlamaIndex's, scored by the same public evaluator on the same pages.</figcaption> </figure>
+<figcaption>Table 5. The served composite on ParseBench, before and after the two fixes described below, against three rows from
+ParseBench's own leaderboard. Overall is the mean of the five dimensions. The composite's two rows are my runs, the whole corpus each time;
+the others are LlamaIndex's, scored by the same public evaluator on the same pages.</figcaption> </figure>
 
-**The reader that led every column of Table 2 is twenty-three points behind the model inside it here, and both reasons are mine, not the models'.**
-Tables hold — 76.91 against MinerU's 77.59. Charts collapse to 0.79 because production ran MinerU with its image analysis turned off, a flag set while
-fixing an API call and never revisited: a chart came back as its caption and the prose around it, and none of its data. With that pass on, the same
-model writes the chart's data points as a table, which is what the 61.64 measures. Element positions collapse to 37.10 because on the pages the
+**The reader that led every column of Table 2 was twenty-three points behind the model inside it here, and both reasons were mine, not the models'.**
+Tables held — 76.91 against MinerU's 77.59. Charts collapsed to 0.79 because production ran MinerU with its image analysis turned off, a flag set
+while fixing an API call and never revisited: a chart came back as its caption and the prose around it, and none of its data. With that pass on, the
+same model writes the chart's data points as a table, which is what the 61.64 measures. Element positions collapsed to 37.10 because on the pages the
 composite serves straight from MinerU it stamped every element with a box covering the whole page, and on the merged pages it never labelled a
-picture, a page header or a footer as what it was; the rest of the gap is boxes that are simply imprecise. Neither shows on OmniDocBench, whose six
-columns never ask where a block sits or what a chart says — which is the point of running a second benchmark. Both are fixed in the parser as this is
-written: on 60-page subsets of ParseBench, charts go from 1.67 to 77.98 and element grounding from 32.83 to 57.59, while the OmniDocBench text score
-of the same 50 pages moves by 0.0004 and tables and formulas do not move at all.
+picture, a page header or a footer as what it was; the rest of the gap was boxes that are simply imprecise. Neither shows on OmniDocBench, whose
+columns never ask where a block sits or what a chart says — which is the point of running a second benchmark.
+
+Both are fixed in the parser now, and the whole corpus went through production a second time to see what the fixes were worth. Charts read 61.12,
+within half a point of the same model run by ParseBench themselves, so that dimension was never about the reader. Element positions read 60.31, and
+the whole-page boxes are gone: none of the 35,439 boxes in the second run covers a whole page, where a fifth of the pages carried one before. Nothing
+else moved, which is the part a small sample could not have shown me: tables changed by 0.01, formatting not at all, faithfulness by half a point, and
+the OmniDocBench text score of the same 50 pages by 0.0004 with tables and formulas unchanged. The composite's Overall goes from 49.75 to 66.34, which
+would place it 34th of the 99 rows on ParseBench's public leaderboard, and ahead of every rules-and-OCR parser listed there, the best of which scores
+53.49.
+
+What is left is worth naming, because it is the same kind of finding. The composite is still 6.44 behind the model inside it, and all of that is two
+habits of my serving path rather than anything either reader failed to read. It drops page headers and footers as furniture, which is right for a
+retrieval index and wrong for a benchmark that expects them as elements, so those score near zero. And its markdown carries titles and bold but not
+italics, superscripts, underlines or code blocks, so the formatting dimension stays at 48.52. A second benchmark did not change which reader I serve.
+It changed what I knew about the thing serving it.
 
 ## Who controls what your system reads?
 
