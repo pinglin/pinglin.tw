@@ -682,8 +682,11 @@ not answer for the readers.
 | <span style="white-space: nowrap">LlamaParse Agentic (their product)</span>   |    88.88 |    88.68 |     91.78 |        81.44 |       84.25 |     87.01 |
 
 <figcaption>Table 5. The served composite on ParseBench, before and after the two fixes described below, against three rows from
-ParseBench's own leaderboard. Overall is the mean of the five dimensions. The composite's two rows are my runs, the whole corpus each time;
-the others are LlamaIndex's, scored by the same public evaluator on the same pages.</figcaption> </figure>
+ParseBench's own leaderboard. Overall is the mean of the five dimensions. The composite's two rows are my runs, the whole corpus each time. The
+other three are LlamaIndex's own published results, read from
+<a href="https://github.com/run-llama/ParseBench/blob/main/leaderboard.csv">leaderboard.csv</a> in the benchmark repository (the raw data behind
+<a href="https://parsebench.ai">parsebench.ai</a>), at the commit this study ran against: they ran those readers, including LlamaParse Agentic, which
+is their own commercial product, and I ran mine through the same public evaluator on the same pages.</figcaption> </figure>
 
 **The reader that led every column of Table 2 was twenty-three points behind the model inside it here, and both reasons were mine, not the models'.**
 Tables held — 76.91 against MinerU's 77.59. Charts collapsed to 0.79 because production ran MinerU with its image analysis turned off, a flag set
