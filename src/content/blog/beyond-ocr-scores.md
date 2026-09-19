@@ -190,11 +190,18 @@ $$
 \htmlId{eq-1}{\text{Overall} = \frac{(1 - \text{text edit}) \times 100 \;+\; \text{table TEDS} \;+\; \text{formula CDM}}{3}} \tag{1}
 $$
 
-I don't use it, because one number cannot tell you _what_ broke. A reader that finds every table and garbles the cells, one that transcribes cells
-perfectly but never detects a third of them, and one that reads every block correctly in the wrong order can all land on the same Overall — and each
-needs a different fix. Eq. (1) also drops reading order entirely, which is the column that separates these readers most sharply, and it folds table
-detection into table transcription, the split that decides the most below. So the columns stay separate here, and the two table failures are reported
-apart.
+The third term needs a word, because it is the one metric in this post that is not an edit distance. **CDM**
+([Character Detection Matching](https://arxiv.org/abs/2409.03643), higher is better) scores a formula by rendering both the prediction and the gold
+LaTeX to images and matching the symbols it sees in them. Mathematics can be written many ways — `\frac{a}{b}` and `\dfrac{a}{b}`, `x^{2}` and `x^2`,
+an `\mathrm` wrapper or none — and edit distance charges for every character that differs, while CDM asks only whether the rendered formula looks
+right. Where the two disagree, the reader spelled the same mathematics differently; where both fall, it read the mathematics wrong. Table 2's formula
+column is the edit distance, and CDM appears in the prose wherever that difference decides what a reader's formula score actually means.
+
+I don't use Eq. (1), because one number cannot tell you _what_ broke. A reader that finds every table and garbles the cells, one that transcribes
+cells perfectly but never detects a third of them, and one that reads every block correctly in the wrong order can all land on the same Overall — and
+each needs a different fix. Eq. (1) also drops reading order entirely, which is the column that separates these readers most sharply, and it folds
+table detection into table transcription, the split that decides the most below. So the columns stay separate here, and the two table failures are
+reported apart.
 
 It follows that these are not the leaderboard's numbers and should not be read against them: mine are a 1,250-page held-out subset scored with an
 edit-distance formula metric and an older matcher, where the published scores are full-set results from whole hosted pipelines. Why that gap cannot be
@@ -398,12 +405,11 @@ pipeline scored through Z.ai's hosted service on a different page set; why the t
 0.0616 text, 77.92 TEDS and 0.1686 reading order, and misses only 14 of 473 tables — third in the study behind the composite's 8 and MinerU2.5-Pro's
 13, ahead of every hosted VLM — with a table on 322 of the 324 pages that carry one, in proper HTML. That is the layout stage its documentation
 insists on, doing its job. But the tables it finds it reads at 0.803 against the composite's 0.933, and its formula column is the worst of any
-two-stage parser here: 0.3545 by edit distance, and 60.34 by CDM, the rendered-glyph score the leaderboard uses, against the composite's 95.93 and its
-own published 97.53. Part of that is a defect of the pipeline as it runs on a Mac: 136 of its 1,693 matched formulas end in a stray second `\]`, which
-no LaTeX renderer accepts, so identical mathematics scores zero. Remove that closer and nothing else and its CDM would be 66.59 — one sixth of the
-gap; the other five sixths are fragments, blanks and equations it got wrong. It loses every column to the composite, so it replaces nothing in
-production — but it is the clearest evidence in this post that finding the blocks is a solved problem for a small layout model and transcribing them
-is not.
+two-stage parser here: 0.3545 by edit distance, and 60.34 by CDM, against the composite's 95.93 and its own published 97.53. Part of that is a defect
+of the pipeline as it runs on a Mac: 136 of its 1,693 matched formulas end in a stray second `\]`, which no LaTeX renderer accepts, so identical
+mathematics scores zero. Remove that closer and nothing else and its CDM would be 66.59 — one sixth of the gap; the other five sixths are fragments,
+blanks and equations it got wrong. It loses every column to the composite, so it replaces nothing in production — but it is the clearest evidence in
+this post that finding the blocks is a solved problem for a small layout model and transcribing them is not.
 
 **Thirty-two megabytes of OCR with a layout model in front of it finds more tables than any hosted frontier model.** RapidOCR alone — PP-OCRv6
 detection and recognition, no layout stage — reads at 0.4337 text and, by construction, 0 TEDS with all 473 tables missed: a line reader cannot emit a
