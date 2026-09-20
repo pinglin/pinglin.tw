@@ -133,16 +133,17 @@ stay separate here, and for the same reason these are not the leaderboard's numb
 Twelve readers, each run under the protocol its authors ship — their prompts, their stages, their decoding guards — on the same Apple-silicon
 hardware, except the two hosted models, which ran on their providers' servers.
 
-**Composite — MinerU2.5-Pro + dots.mocr**, the production reader, and the one that needs a justification.
-[MinerU2.5-Pro](https://arxiv.org/abs/2509.22186) (OpenDataLab, 1.2B) parses a page in two decoupled stages, layout on a downsampled view then
-recognition on native-resolution crops, which is what lets a small model handle dense pages. But a two-stage parser sends every block through the same
-recognizer — table, formula, paragraph alike — and paragraphs are most of what a retrieval index holds. So the composite keeps MinerU2.5-Pro for
-layout, reading order, tables and formulas, and hands the prose blocks of formula-free pages to
-[dots.mocr](https://huggingface.co/rednote-hilab/dots.mocr) (rednote-hilab, ~3B), a model trained to do nothing but transcribe prose. Every table and
-formula it emits is MinerU2.5-Pro's own, untouched.
+The production reader is the one that needs a justification, so here it is first. A two-stage parser sends every block through the same recognizer —
+table, formula, paragraph alike — and paragraphs are most of what a retrieval index holds. So rather than serve the best single parser, I keep
+MinerU2.5-Pro for layout, reading order, tables and formulas, and hand the prose blocks of formula-free pages to a model trained to do nothing but
+transcribe prose. Every table and formula the composite emits is MinerU2.5-Pro's own, untouched.
 
-- **MinerU2.5-Pro alone**, the same parser without the prose swap, to show what the composite adds.
-- **dots.mocr alone**, run its authors' way: the whole page in one pass with its own prompt, no layout or table model in front of it.
+- **Composite — [MinerU2.5-Pro](https://arxiv.org/abs/2509.22186) + [dots.mocr](https://huggingface.co/rednote-hilab/dots.mocr)**, the production
+  reader. MinerU2.5-Pro (OpenDataLab, 1.2B) parses a page in two decoupled stages, layout on a downsampled view then recognition on native-resolution
+  crops, which is what lets a small model handle dense pages; dots.mocr (rednote-hilab, ~3B) is the prose specialist it hands paragraphs to.
+- **[MinerU2.5-Pro](https://arxiv.org/abs/2509.22186) alone**, the same parser without the prose swap, to show what the composite adds.
+- **[dots.mocr](https://huggingface.co/rednote-hilab/dots.mocr) alone**, run its authors' way: the whole page in one pass with its own prompt, no
+  layout or table model in front of it.
 - **[GLM-OCR](https://huggingface.co/zai-org/GLM-OCR)** (Z.ai, 0.9B), 95.22 on the public OmniDocBench leaderboard, run through its own SDK: a layout
   model finds the regions and their order, and the recogniser is asked for each one.
 - **[PaddleOCR-VL-1.6](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6)** (Baidu, 0.9B), 96.34 on the same leaderboard, and the reader whose
@@ -158,9 +159,9 @@ formula it emits is MinerU2.5-Pro's own, untouched.
   newspaper body column before recognition begins, so I lowered it.
 - **[Qwen 3.6](https://huggingface.co/Qwen)** (Alibaba, 35B open weights), prompted to transcribe the page. It is the control every specialist should
   have to beat: trained for everything, tuned for nothing here.
-- **[Claude Fable 5.1](https://platform.claude.com/docs/en/about-claude/pricing)** and
-  **[GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra)**, the same prompt sent to Anthropic's and OpenAI's APIs. They answer the
-  question every team asks first: is the API already better than anything you can run?
+- **[Claude Fable 5.1](https://platform.claude.com/docs/en/about-claude/pricing)**, the same prompt sent to Anthropic's API, with thinking off.
+- **[GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra)**, the same prompt again, to OpenAI's API at full page resolution. The
+  two hosted models answer the question every team asks first: is the API already better than anything you can run?
 
 ## Results
 
@@ -202,9 +203,9 @@ assay and a table of convulsant doses in mice — were refused outright, consist
 score every reader on the 1,238 pages that remain, and it reads at 0.0365 text, 90.43 TEDS and 0.1253 order against the composite's 0.0358, 91.60 and
 0.1223. A reader that declines pages is a failure mode no local reader in this study has.
 
-**GPT-6 Astra is the best text reader in the study, and fourth on structure.** It reads at **0.0331** and orders at **0.1189**, ahead of the composite
-on both, and takes newspapers at 0.0198 against the composite's 0.0481. On structure it is fourth: 88.71 TEDS and **23 of 473 tables never found**
-against the composite's 8, at an identical 0.933 on the tables both do find, so the whole table gap is detection.
+**GPT-6 Astra is the best text reader in the study, and fourth on structure.** It reads at 0.0331 and orders at 0.1189, ahead of the composite on
+both, and takes newspapers at 0.0198 against the composite's 0.0481. On structure it is fourth: 88.71 TEDS and 23 of 473 tables never found against
+the composite's 8, at an identical 0.933 on the tables both do find, so the whole table gap is detection.
 
 **That text lead is resolution, not reasoning.** It sees the whole page at full resolution, where a two-stage parser reads crops cut from a
 downsampled layout pass; reading order is a property of the whole page, and a model holding the page in one context never has to reconstruct it from
