@@ -60,7 +60,15 @@ tags: ['engineering', 'benchmark', 'ocr']
      states the accuracy-only scope. Speed claims elsewhere went with them (Apple 1.9 s / MinerU 16.1 s in the
      readers section and the fails section, the one-shot-readers sentence in take-home 7). The removed text is
      recoverable from git history (commit before this one) and the numbers stay in the backend report §5/§6.
-     gen_ocr_bench_tables.py still generates the speed table; it is simply unused by the article now. -->
+     gen_ocr_bench_tables.py still generates the speed table; it is simply unused by the article now.
+     UPDATE 2026-09-20 (second pass, owner: cut 1, 2, 3 "drop the tables", 4): the composite rationale and the
+     reader catalogue are compressed (1,676 -> 1,092 words); the four mid-table readers (GLM-OCR,
+     PaddleOCR-VL-1.6, RapidOCR, LiteParse) are ONE paragraph in Results (847 -> 318); **Tables 2 and 3 are
+     REMOVED and Figures 3 and 6 kept** — the owner chose the figures over the tables, and both SVGs label every
+     value, so no number is lost (gen_ocr_bench_tables.py is now unused entirely; gen_ocr_bench_figs.py still
+     owns Figs 3/6); the missed-tables section is one paragraph plus Fig. 7. Only Table 1 remains, so table
+     numbering is unchanged; every Tab. 2 / Tab. 3 reference now points at Fig. 3 / Fig. 6, and the captions and
+     alt text no longer name the tables. Rendered length 12.7k -> 9.5k words. -->
 
 Every document system has a moment where it must turn a page — a real page, scanned or photographed or exported, with its columns and footnotes and
 smudged tables — into text a machine can use. Whatever you build downstream inherits the quality of that step. Retrieval cannot find a paragraph the
@@ -205,8 +213,8 @@ The third term needs a word, because it is the one metric in this post that is n
 ([Character Detection Matching](https://arxiv.org/abs/2409.03643), higher is better) scores a formula by rendering both the prediction and the gold
 LaTeX to images and matching the symbols it sees in them. Mathematics can be written many ways — `\frac{a}{b}` and `\dfrac{a}{b}`, `x^{2}` and `x^2`,
 an `\mathrm` wrapper or none — and edit distance charges for every character that differs, while CDM asks only whether the rendered formula looks
-right. Where the two disagree, the reader spelled the same mathematics differently; where both fall, it read the mathematics wrong. Table 2's formula
-column is the edit distance, and CDM appears in the prose wherever that difference decides what a reader's formula score actually means.
+right. Where the two disagree, the reader spelled the same mathematics differently; where both fall, it read the mathematics wrong. The formula metric
+below is the edit distance, and CDM appears in the prose wherever that difference decides what a reader's formula score actually means.
 
 I don't use Eq. (1), because one number cannot tell you _what_ broke. A reader that finds every table and garbles the cells, one that transcribes
 cells perfectly but never detects a third of them, and one that reads every block correctly in the wrong order can all land on the same Overall — and
@@ -230,145 +238,101 @@ PaddleOCR-VL-1.6, whose port needs mlx-vlm 0.7 and runs its own server. The set 
 is worth 0.007 on text and halves its formula error, more than the gap between the two best readers, which is why every local row is on it. GPT-6
 Astra and Claude Fable 5.1 ran on OpenAI's and Anthropic's servers, the two readers whose weights and precision I cannot inspect.
 
-Three rows in an earlier draft of this table measured my harness rather than the model, and they are why the paragraph above exists. GLM-OCR had been
-sent one whole-page text prompt instead of its own layout-then-recognise pipeline; dots.mocr's output had gone through the composite's merge step,
-whose job is to throw dots.mocr's tables away; Unlimited-OCR had been run behind my layout stage without the n-gram guard its own recipe relies on.
-All three are re-run their makers' way below, and the difference — 54 TEDS points for GLM-OCR, 81 for dots.mocr — is the size of the mistake a
-benchmark makes when it runs a reader any way but the one it ships with.
+Three readers in an earlier draft of this study were measured through my harness rather than their own, and they are why the paragraph above exists.
+GLM-OCR had been sent one whole-page text prompt instead of its own layout-then-recognise pipeline; dots.mocr's output had gone through the
+composite's merge step, whose job is to throw dots.mocr's tables away; Unlimited-OCR had been run behind my layout stage without the n-gram guard its
+own recipe relies on. All three are re-run their makers' way below, and the difference — 54 TEDS points for GLM-OCR, 81 for dots.mocr — is the size of
+the mistake a benchmark makes when it runs a reader any way but the one it ships with.
 
 ### Why a composite rather than MinerU2.5-Pro alone?
 
-MinerU2.5-Pro is the strongest document parser in this study and the base of the production reader, so the obvious question is why I run anything else
-beside it. A two-stage parser sends every block through the same 1.2B recognizer — a table, a formula, a paragraph — and paragraphs are most of what a
-retrieval index holds. dots.mocr is a 1.7B model trained to do nothing but transcribe prose, and it transcribes prose better. The composite therefore
-keeps MinerU2.5-Pro for everything it is best at — layout, reading order, tables, formulas — and hands the prose blocks on formula-free pages to
-dots.mocr. Every table and formula in its output is MinerU2.5-Pro's own, untouched, so it inherits that structure; what changes is the prose, and on
-the held-out pages that is worth 11% on text edit distance (0.0356 against 0.0401) and a better reading order (0.1213 against 0.1263). The price is a
-second model on those blocks. For a RAG system that is the right trade — the gain lands exactly where retrieval happens — and it turns out to be a
-free one: the composite leads or ties every column in Table 2, the table columns included, which is more than a pipeline inheriting another model's
-layout should be able to manage. Why it can is a later section.
+MinerU2.5-Pro is the strongest document parser here and the base of the production reader, so why run anything beside it? A two-stage parser sends
+every block through the same 1.2B recognizer — table, formula, paragraph alike — and paragraphs are most of what a retrieval index holds. dots.mocr is
+a model trained to do nothing but transcribe prose, and it transcribes prose better. So the composite keeps MinerU2.5-Pro for layout, reading order,
+tables and formulas, and hands the prose blocks of formula-free pages to dots.mocr. Every table and formula it emits is MinerU2.5-Pro's own,
+untouched. On the held-out pages the swap is worth 11% on text edit distance (0.0356 against 0.0401) and a better reading order (0.1213 against
+0.1263), and it costs a second model on those blocks. For a RAG system that is the right trade, because the gain lands exactly where retrieval happens
+— and it turns out to be a free one: the composite leads or ties every column below, tables included, which is more than a pipeline inheriting another
+model's layout should manage. Why it can is a later section.
 
-**Composite — MinerU2.5-Pro + dots.mocr.** The production reader, and the reason for the question above.
-[MinerU2.5-Pro](https://arxiv.org/abs/2509.22186) (OpenDataLab; 1.2B parameters) parses the page in two decoupled stages — layout on a downsampled
-view, then content recognition on native-resolution crops — which is what lets a small model handle dense pages. The composite keeps that pipeline —
-and its output, verbatim, for every table and formula — and routes the prose blocks on formula-free pages to
-[dots.mocr](https://huggingface.co/rednote-hilab/dots.mocr) (rednote-hilab; ~3B — a 1.2B vision encoder over a 1.7B decoder), the renamed successor of
-[dots.ocr](https://github.com/rednote-hilab/dots.ocr), which transcribes text better than the parser's own recognizer. Its row in Table 2 is the
-pipeline as it serves in production.
+**Composite — MinerU2.5-Pro + dots.mocr.** The production reader. [MinerU2.5-Pro](https://arxiv.org/abs/2509.22186) (OpenDataLab, 1.2B) parses the
+page in two decoupled stages, layout on a downsampled view then recognition on native-resolution crops, which is what lets a small model handle dense
+pages. The prose blocks of formula-free pages go to [dots.mocr](https://huggingface.co/rednote-hilab/dots.mocr) (rednote-hilab, ~3B), the renamed
+successor of [dots.ocr](https://github.com/rednote-hilab/dots.ocr).
 
-**MinerU2.5-Pro alone.** The same MinerU2.5-Pro without the prose swap, included to show what the composite adds.
+**MinerU2.5-Pro alone.** The same parser without the prose swap, to show what the composite adds.
 
-**dots.mocr alone.** The other half of the composite on its own, run the way its authors run it: the whole page in one pass with its own
-layout-and-text prompt, tables as the HTML it writes and formulas as the LaTeX it writes, no layout model and no table model in front of it. It shows
-what the prose specialist is worth by itself — and, since the composite discards its tables by design, what the composite leaves on the floor.
+**dots.mocr alone.** The other half on its own, run its authors' way: the whole page in one pass with its own layout-and-text prompt, its own HTML
+tables and LaTeX formulas, no layout or table model in front of it. It shows what the prose specialist is worth alone — and, since the composite
+discards its tables by design, what the composite leaves on the floor.
 
-**GLM-OCR.** [Z.ai's 0.9B OCR model](https://huggingface.co/zai-org/GLM-OCR) ([technical report](https://arxiv.org/abs/2603.10910); MIT) — a CogViT
-encoder over a GLM-0.5B decoder — 95.22 on the public OmniDocBench v1.6 leaderboard as a full pipeline. It runs here through its own `glmocr` SDK on
-the SDK's documented Apple-silicon path: PP-DocLayoutV3 finds the regions and their reading order, and the recogniser is asked for each one with the
-SDK's own text, table and formula prompts. The leaderboard number is the same pipeline scored through Z.ai's hosted service; the row below is what the
-shipped SDK does on a Mac.
+**GLM-OCR.** [Z.ai's 0.9B OCR model](https://huggingface.co/zai-org/GLM-OCR) ([report](https://arxiv.org/abs/2603.10910); MIT), 95.22 on the public
+OmniDocBench v1.6 leaderboard as a full pipeline. It runs through its own `glmocr` SDK on the SDK's documented Apple-silicon path: PP-DocLayoutV3
+finds the regions and their order, and the recogniser is asked for each one with the SDK's own prompts. The leaderboard number is that pipeline
+through Z.ai's hosted service; the row below is what the shipped SDK does on a Mac.
 
-**PaddleOCR-VL-1.6.** [Baidu's 0.9B document VLM](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6), 96.34 on the v1.6 leaderboard — third behind
-TeleOCR and OvisOCR2 at the time of writing — and the reader whose documentation is most explicit that the VLM must not be run alone: it ships as a
-two-stage pipeline, PP-DocLayoutV3 in front of the recogniser, and that is how it runs here, PaddleOCR's own `PaddleOCRVL` pipeline with its own
-Apple-silicon backend over a community 16-bit MLX conversion of the weights. Its markdown is the pipeline's, untouched, which matters for one defect
-in the formula column below.
+**PaddleOCR-VL-1.6.** [Baidu's 0.9B document VLM](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6), 96.34 on the same leaderboard, and the reader
+whose documentation is most explicit that the VLM must not be run alone. It runs as it ships, PP-DocLayoutV3 in front of the recogniser, through
+PaddleOCR's own pipeline over a community 16-bit MLX conversion. Its markdown is the pipeline's, untouched, which matters for one defect in the
+formula column below.
 
 **Unlimited-OCR.** [Baidu's continuation](https://huggingface.co/baidu/Unlimited-OCR) of [DeepSeek-OCR](https://arxiv.org/abs/2510.18234)'s
-optical-compression architecture — a DeepEncoder feeding a small MoE decoder — run its authors' way: the whole page in one pass with the
-`document parsing` prompt, decoded greedily under the no-repeat n-gram guard every one of Baidu's inference examples carries (35-grams over a
-128-token window), implemented here as a logits processor because mlx-vlm has no built-in one. The weights are a community MLX port at mxfp8; a bf16
-port runs away on the same dense pages, so precision is not what decides its row. What the port lacks is the tiled high-resolution mode the reference
-recipe uses on dense pages, and the next section is where that shows.
+optical-compression architecture, run its authors' way: the whole page in one pass with the `document parsing` prompt, decoded greedily under the
+no-repeat n-gram guard every one of Baidu's examples carries. The weights are a community MLX port at mxfp8; a bf16 port runs away on the same dense
+pages, so precision is not what decides its row. What the port lacks is the tiled high-resolution mode the reference recipe uses on dense pages, and
+the next section is where that shows.
 
-**RapidOCR.** The [RapidAI](https://github.com/RapidAI/RapidOCR) stack: PP-OCRv6 detection and recognition as 32 MB of ONNX weights on the CPU — the
-class of reader Apple's `RecognizeText` also occupies — with the rest of the RapidAI packages in front of it: `rapid_layout` (PP-DocLayoutV3, the same
-layout model GLM-OCR's SDK uses), `rapid_table` (SLANet+) for the table regions and `rapid_latex_ocr` for the formulas. It publishes no OmniDocBench
-number and was never going to win a column. It is here because it is the cleanest experiment in the study: the same recogniser with and without a
-layout stage in front of it.
+**RapidOCR.** The [RapidAI](https://github.com/RapidAI/RapidOCR) stack: PP-OCRv6 detection and recognition as 32 MB of ONNX weights on the CPU, with
+`rapid_layout` (PP-DocLayoutV3), `rapid_table` (SLANet+) and `rapid_latex_ocr` in front of it. It publishes no OmniDocBench number and was never going
+to win a column. It is here because it is the cleanest experiment in the study: the same recogniser with and without a layout stage.
 
-**LiteParse.** [LlamaIndex's open-source local parser](https://github.com/run-llama/liteparse) (Apache-2.0, March 2026), the free sibling of their
-hosted LlamaParse and a different kind of reader: no model of its own beyond Tesseract OCR, with the page's layout rebuilt from where the text sits
-rather than by a trained layout model. It runs through LlamaIndex's own wrapper for it, with OCR on, its default Tesseract models, and the OCR
-languages set to the corpus's — English, Simplified and Traditional Chinese — because its English-only default reads half these pages as noise. It is
-the one reader in the study whose pipeline is built from rules instead of models.
+**LiteParse.** [LlamaIndex's open-source local parser](https://github.com/run-llama/liteparse) (Apache-2.0), the free sibling of their hosted
+LlamaParse and a different kind of reader: no model of its own beyond Tesseract OCR, with the layout rebuilt from where the text sits rather than by a
+trained model. It runs through LlamaIndex's own wrapper with OCR on and the languages set to the corpus's — English, Simplified and Traditional
+Chinese — because its English-only default reads half these pages as noise. It is the one reader here built from rules instead of models.
 
 **Apple Vision.** The [`RecognizeDocumentsRequest`](https://developer.apple.com/documentation/vision/recognizedocumentsrequest) API built into macOS
-26 — the same engine behind Live Text. Zero download and zero GPU memory beyond the OS. One configuration note that decides everything: Vision's
+26, the same engine behind Live Text: zero download, zero GPU memory beyond the OS. One setting decides everything. Vision's
 `minimumTextHeightFraction` defaults to 1/32 of the page height, which silently discards every newspaper body column before recognition begins. I set
-it to 0.005. At the default the engine never sees most of the text on a dense page, so a benchmark run out of the box measures that constant rather
-than the recognizer.
+it to 0.005; at the default a benchmark measures that constant rather than the recognizer.
 
-**Qwen 3.6.** [Alibaba's open-weights VLM](https://huggingface.co/Qwen) (April 2026), a model many teams already run for chat. The build is
-`qwen3.6-35b-a3b`: 35 billion parameters in total, arranged as a mixture of experts of which about 3 billion are active for any one token — the A3B —
-so it runs at the speed and memory of a model a tenth its size while carrying the knowledge of the whole. Here it is the mxfp4 build the fleet serves,
-prompted to transcribe the page to Markdown with tables as HTML and formulas as LaTeX. It is here as the control every specialist should have to beat:
-it was trained for everything, tuned for nothing on this task, and is 20–40× larger than the specialists. One more fact about this row belongs here
-rather than in a footnote. The fleet serves it from three Macs behind one load balancer, and when I re-rendered the set at a larger output budget I
-found that the same page, sent six times with the same prompt at temperature 0, came back clean in a second or so from one host and as a
-65,000-character repetition loop, 25 minutes long, from another — byte-identical within each host, same model file, same server version. The fleet now
-cuts such a loop off after about a hundred repeated tokens, but the divergence itself remains. The row in Table 2 is that re-render — a 32,768-token
-budget, four pages in flight, the fleet's current serving set — and it carries fourteen such loops; the earlier sequential render at an 8,192-token
-budget scored 0.0662 to its 0.0646 with nine loops of its own, and the two disagree on 228 pages, which is a fact about the lottery rather than the
-reader. The reason a local reader must be pinned to a machine as well as a build is the subject of the
-[last section](#who-controls-what-your-system-reads).
+**Qwen 3.6.** [Alibaba's open-weights VLM](https://huggingface.co/Qwen) (April 2026), the build `qwen3.6-35b-a3b` at mxfp4, prompted to transcribe the
+page to Markdown with HTML tables and LaTeX formulas. It is the control every specialist should have to beat: trained for everything, tuned for
+nothing here, and 20–40× larger than they are. One fact about its row belongs with it. The fleet serves it from three Macs behind one load balancer,
+and the same page, sent six times at temperature 0, came back clean from one host and as a 65,000-character repetition loop from another,
+byte-identical within each host. The row below carries fourteen such loops. That is why a local reader must be pinned to a machine as well as a build,
+which is the subject of the [last section](#who-controls-what-your-system-reads).
 
-**Claude Fable 5.1.** [Anthropic's frontier model](https://platform.claude.com/docs/en/about-claude/pricing) (API model `claude-fable-5-1`), added as
-the third control and the second hosted reader, sent the same prompt as Qwen 3.6 through the Messages API with thinking off. Two API rules decide its
-row. The model refuses a `temperature` parameter, so decoding is the API default and the row is not deterministic. And images are read at a capped
-resolution: the API bills ⌈w/28⌉ × ⌈h/28⌉ visual tokens and downsizes any page past a 2,576-pixel long edge or 4,784 visual tokens, so the median
-1654×2200 page arrives whole while the p90 2754×3939 newspaper is read at about two-thirds of its linear resolution — the rule is the API's, and it is
-the one setting that separates this row from GPT-6 Astra's, which saw every page at full size. Output budget 32k, after a probe found a dense Chinese
-newspaper unfinished at 16k. And the API can decline a page outright: a refusal was re-sent up to three more times, and the twelve pages it refused
-every time are scored as empty ([Fig. 4](#figure-4)).
+**Claude Fable 5.1.** [Anthropic's frontier model](https://platform.claude.com/docs/en/about-claude/pricing) (`claude-fable-5-1`), sent the same
+prompt as Qwen 3.6 through the Messages API with thinking off. Two API rules decide its row. The model refuses a `temperature` parameter, so the row
+is not deterministic. And images are read at a capped resolution: any page past a 2,576-pixel long edge is downsized, so the median page arrives whole
+while a newspaper is read at about two-thirds of its linear resolution. The API can also decline a page outright: a refusal was re-sent up to three
+more times, and the twelve pages it refused every time are scored as empty ([Fig. 4](#figure-4)).
 
-**GPT-6 Astra.** [OpenAI's frontier model](https://developers.openai.com/api/docs/models/gpt-6-astra) (API model `gpt-6-astra`, released on 3
-September 2026), added as the third control and the one reader not on my hardware, sent the same prompt as Qwen 3.6. Two settings decide its row.
-`reasoning_effort` is `low`, the lowest the API accepts (`none` is refused), and it spent 0.05M reasoning tokens across the 1,257 calls of the run —
-transcription is not a task that thinks. `detail` is `original`, which sends the page at full resolution: the API bills 1.2 tokens per 32-pixel patch
-and downscales nothing until 30,000 patches, so a 5,933×3,985 newspaper reaches the model as 23,000 patches, and the 51 pages above the limit were
-downscaled to it. Six dense newspaper pages exhausted the 8,192-token output budget on the first pass, producing nothing, and were re-run at 32k,
-where they came back as 8k–19k tokens of transcription. The 1,250 pages cost \$154. It is here to answer the question every team now asks first: is
-the API already better than anything you can run?
+**GPT-6 Astra.** [OpenAI's frontier model](https://developers.openai.com/api/docs/models/gpt-6-astra) (`gpt-6-astra`, September 2026), sent the same
+prompt, and the one reader not on my hardware. Two settings decide its row. `reasoning_effort` is `low`, the lowest the API accepts, and it spent
+0.05M reasoning tokens across 1,257 calls — transcription is not a task that thinks. `detail` is `original`, which sends the page at full resolution
+and downscales nothing below 30,000 patches, so only 51 pages were reduced at all. The 1,250 pages cost \$154. It is here to answer the question every
+team asks first: is the API already better than anything you can run?
 
 ## Results
 
-[Tab. 2](#table-2) is the full held-out table; [Fig. 3](#figure-3) draws its six columns to scale.
+[Fig. 3](#figure-3) is the held-out result: every metric, every reader, each panel labelled with its values.
 
-The first eight rows are document readers built for this job: Composite is MinerU2.5-Pro + dots.mocr, the production reader; MinerU2.5-Pro and
-dots.mocr are its two halves on their own; GLM-OCR and PaddleOCR-VL-1.6 are the two leaderboard pipelines, each run through its own SDK; Unlimited-OCR
-reads the page in one pass; RapidOCR is the CPU-only pipeline, and LiteParse the rule-based one. The last four are controls that were never built for
-document parsing: Apple Vision is the operating system's text recognizer, at the tuned text-height threshold, with no layout stage and no table model;
-Qwen 3.6 is an open-weights VLM on my own hardware, prompted to transcribe; Claude Fable 5.1 and GPT-6 Astra are the same prompt sent to Anthropic's
-and OpenAI's APIs, the first at the API's capped resolution with thinking off, the second at full page resolution with reasoning at its lowest
-setting. Two figure-only pages have zero ground-truth text and every reader is scored on them identically. A page a reader left empty counts as a
-total loss on every metric it carries; [Fig. 4](#figure-4) counts them per reader, and Claude Fable 5.1's twelve are pages the API declined to
-transcribe on every one of four attempts rather than pages it read as blank.
-
-<figure id="table-2" class="table-figure table-figure--wide">
-
-| Reader                                                          |                                              Text edit ↓ |                                                  TEDS ↑ |                                                  Order ↓ |                                                Formula ↓ |                                       Found-only TEDS ↑ |                                                 Missed ↓ |
-| --------------------------------------------------------------- | -------------------------------------------------------: | ------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: | ------------------------------------------------------: | -------------------------------------------------------: |
-| <span style="white-space: nowrap">Composite</span>              |   <b class="text-blue-600 dark:text-blue-400">0.0356</b> |                                               **91.63** |   <b class="text-blue-600 dark:text-blue-400">0.1213</b> |                                               **0.0874** |                                               **0.933** |                                                **8**/473 |
-| <span style="white-space: nowrap">MinerU2.5-Pro</span>          | <b class="text-green-600 dark:text-green-400">0.0401</b> |   <b class="text-blue-600 dark:text-blue-400">90.59</b> | <b class="text-green-600 dark:text-green-400">0.1263</b> |                                               **0.0874** | <b class="text-green-600 dark:text-green-400">0.932</b> |   <b class="text-blue-600 dark:text-blue-400">13</b>/473 |
-| <span style="white-space: nowrap">dots.mocr</span>              |                                                   0.0537 |                                                   81.34 |                                                   0.2116 |                                                   0.6335 |                                                   0.903 |                                                   47/473 |
-| <span style="white-space: nowrap">GLM-OCR</span>                |                                                   0.0881 |                                                   68.15 |                                                   0.1524 | <b class="text-green-600 dark:text-green-400">0.1228</b> |                                                   0.827 |                                                   83/473 |
-| <span style="white-space: nowrap">PaddleOCR-VL-1.6</span>       |                                                   0.0616 |                                                   77.92 |                                                   0.1686 |                                                   0.3545 |                                                   0.803 | <b class="text-green-600 dark:text-green-400">14</b>/473 |
-| <span style="white-space: nowrap">Unlimited-OCR</span>          |                                                   0.2083 |                                                   68.66 |                                                   0.2716 |                                                   0.2240 |                                                   0.852 |                                                   91/473 |
-| <span style="white-space: nowrap">RapidOCR</span>               |                                                   0.1227 |                                                   76.97 |                                                   0.2314 |                                                   0.4893 |                                                   0.796 |                                                   15/473 |
-| <span style="white-space: nowrap">LiteParse</span>              |                                                   0.4107 |                                                   20.91 |                                                   0.3669 |                                                   0.9320 |                                                   0.313 |                                                  150/473 |
-| <span style="white-space: nowrap">Apple Vision (OS OCR)</span>  |                                                   0.1881 |                                                   50.68 |                                                   0.3812 |                                                   0.8097 |                                                   0.781 |                                                  166/473 |
-| <span style="white-space: nowrap">Qwen 3.6 (VLM)</span>         |                                                   0.0646 |                                                   80.86 |                                                   0.1762 |                                                   0.1286 |                                                   0.858 |                                                   27/473 |
-| <span style="white-space: nowrap">Claude Fable 5.1 (VLM)</span> |                                                   0.0463 | <b class="text-green-600 dark:text-green-400">89.86</b> |                                                   0.1337 |                                                   0.1309 |                                                   0.930 |                                                   16/473 |
-| <span style="white-space: nowrap">GPT-6 Astra (VLM)</span>      |                                               **0.0331** |                                                   88.71 |                                               **0.1189** |   <b class="text-blue-600 dark:text-blue-400">0.1055</b> |   <b class="text-blue-600 dark:text-blue-400">0.933</b> |                                                   23/473 |
-
-<figcaption>Table 2. Held-out results on all 1,250 pages, official OmniDocBench evaluator; best per column in black bold, second in blue bold, third in green bold. Order is
-reading-order edit distance; Found-only TEDS scores only the tables a reader detected; Missed is gold tables never detected, out of 473.</figcaption> </figure>
+The first eight readers are built for this job: Composite is MinerU2.5-Pro + dots.mocr, the production reader; MinerU2.5-Pro and dots.mocr are its two
+halves on their own; GLM-OCR and PaddleOCR-VL-1.6 are the two leaderboard pipelines, each run through its own SDK; Unlimited-OCR reads the page in one
+pass; RapidOCR is the CPU-only pipeline, and LiteParse the rule-based one. The last four are controls that were never built for document parsing:
+Apple Vision is the operating system's text recognizer, at the tuned text-height threshold, with no layout stage and no table model; Qwen 3.6 is an
+open-weights VLM on my own hardware, prompted to transcribe; Claude Fable 5.1 and GPT-6 Astra are the same prompt sent to Anthropic's and OpenAI's
+APIs, the first at the API's capped resolution with thinking off, the second at full page resolution with reasoning at its lowest setting. Two
+figure-only pages have zero ground-truth text and every reader is scored on them identically. A page a reader left empty counts as a total loss on
+every metric it carries; [Fig. 4](#figure-4) counts them per reader, and Claude Fable 5.1's twelve are pages the API declined to transcribe on every
+one of four attempts rather than pages it read as blank.
 
 <figure id="figure-3">
-  <img src="/blog/beyond-ocr-scores/headline_bars_light.svg" class="dark:hidden" alt="Six small horizontal bar charts, one per Table 2 metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Eleven readers in each, document readers first and the four controls set apart at the bottom; the values are those of Table 2." />
-  <img src="/blog/beyond-ocr-scores/headline_bars_dark.svg" class="hidden dark:block" alt="Six small horizontal bar charts, one per Table 2 metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Eleven readers in each, document readers first and the four controls set apart at the bottom; the values are those of Table 2." />
-  <figcaption>Figure 3. The six metrics of Table 2 on the held-out 1,250, one panel each; arrows give the direction of better. Document readers
+  <img src="/blog/beyond-ocr-scores/headline_bars_light.svg" class="dark:hidden" alt="Six small horizontal bar charts, one per metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Eleven readers in each, document readers first and the four controls set apart at the bottom;" />
+  <img src="/blog/beyond-ocr-scores/headline_bars_dark.svg" class="hidden dark:block" alt="Six small horizontal bar charts, one per metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Eleven readers in each, document readers first and the four controls set apart at the bottom;" />
+  <figcaption>Figure 3. The six metrics on the held-out 1,250, one panel each, every bar labelled with its value; arrows give the direction of better. Document readers
   first; the four controls, which were never built for this job, are set apart at the bottom.</figcaption>
 </figure>
 
@@ -378,7 +342,7 @@ reading-order edit distance; Found-only TEDS scores only the tables a reader det
   <figcaption>Figure 4. Pages each reader left empty, of 1,250. The orange part of a bar had ground-truth text and counts as a total loss on every metric; the grey part is figure-only pages, where an empty read costs nothing. Claude Fable 5.1's twelve are pages the API refused to transcribe on every one of four attempts, not pages it read as blank.</figcaption>
 </figure>
 
-These are the results worth pulling out of the table.
+These are the results worth pulling out.
 
 **The composite is the best reader you can run yourself, the best on structure of any kind, and it never loses a column to the model inside it.**
 0.0356 text, 0.1213 reading order, 91.63 TEDS and 8 of 473 tables missed, against MinerU2.5-Pro alone at 0.0401, 0.1263, 90.59 and 13. On display
@@ -401,44 +365,19 @@ at 0.6335, and that is bad transcription rather than absence: it emits LaTeX on 
 across the set. Twenty pages come back empty, and nineteen of those are mine as well — upstream ships a repair pass that salvages a truncated answer
 into a partial page, while my parse called `json.loads`, failed, and wrote nothing.
 
-**GLM-OCR through its own pipeline is a mid-table reader, and the layout stage is not what holds it there.** Its SDK lands at 0.0881 text, 68.15 TEDS
-with 83 of 473 tables missed, and 0.1524 reading order — 54 TEDS points and 309 tables better than the recognition-only row it replaces, and still
-behind Qwen 3.6 on text and every local specialist on tables. The layout stage is doing its job: PP-DocLayoutV3 finds 462 of the 473 gold tables.
-Seventy-two of the 83 it loses are tables it found and then lost — asked for a table, the recogniser returned running prose on 73 of its 545 table
-regions, and on dense pages it cut tables into fragments, 1.41 regions per gold table on the pages that lost one, so the matcher pairs the gold table
-with the wrong piece. The tables it keeps it reads well, median 0.94. Two ablations put a number on the front of the pipeline: swapping its
-reading-order head for a geometric sort costs 0.003 on text; swapping its detector for DocLayout-YOLO costs 0.088 — thirty times more — and turns
-every page of handwriting into a gallery of pictures, because YOLO labels the writing `image` and the SDK skips images. The published 95.22 is this
-pipeline scored through Z.ai's hosted service on a different page set; why the two are not comparable is
-[above](#why-i-report-six-numbers-instead-of-one).
-
-**The leaderboard's top pipeline finds tables like a specialist and reads formulas like it never saw the leaderboard.** PaddleOCR-VL-1.6 lands at
-0.0616 text, 77.92 TEDS and 0.1686 reading order, and misses only 14 of 473 tables — third in the study behind the composite's 8 and MinerU2.5-Pro's
-13, ahead of every hosted VLM — with a table on 322 of the 324 pages that carry one, in proper HTML. That is the layout stage its documentation
-insists on, doing its job. But the tables it finds it reads at 0.803 against the composite's 0.933, and its formula column is the worst of any
-two-stage parser here: 0.3545 by edit distance, and 60.34 by CDM, against the composite's 95.93 and its own published 97.53. Part of that is a defect
-of the pipeline as it runs on a Mac: 136 of its 1,693 matched formulas end in a stray second `\]`, which no LaTeX renderer accepts, so identical
-mathematics scores zero. Remove that closer and nothing else and its CDM would be 66.59 — one sixth of the gap; the other five sixths are fragments,
-blanks and equations it got wrong. It loses every column to the composite, so it replaces nothing in production — but it is the clearest evidence in
-this post that finding the blocks is a solved problem for a small layout model and transcribing them is not.
-
-**Thirty-two megabytes of OCR with a layout model in front of it finds more tables than any hosted frontier model.** RapidOCR alone — PP-OCRv6
-detection and recognition, no layout stage — reads at 0.4337 text and, by construction, 0 TEDS with all 473 tables missed: a line reader cannot emit a
-table. Put the RapidAI layout stage in front of the same recogniser and it reads at 0.1227, 76.97 TEDS with 15 tables missed, 0.2314 reading order and
-0.4893 on formulas, on the CPU. Nothing changed but the layout pass, and it is worth 13× on newspapers (0.939 → 0.073), 8× on academic papers and
-magazines, and nothing at all on handwriting (0.163 → 0.163), where there are no columns to recover. It also settles what decides GLM-OCR's table
-count. Both pipelines run PP-DocLayoutV3, and measured against the gold boxes their detection is indistinguishable — recall 0.970 against 0.977 — yet
-one misses 15 tables and the other 83. With detection held equal, the difference is the table recogniser: SLANet+ returns exactly one table per
-region, and a general OCR prompt does not.
-
-**A pipeline built from rules finds the columns and still reads like a line recogniser.** LiteParse lands at 0.4107 text, 20.91 TEDS with 150 tables
-missed, and 0.3669 reading order — the tier of RapidOCR with no layout stage at all, and nowhere near the 0.1227 and 76.97 the RapidAI pipeline gets
-from learned models. Its two halves come apart cleanly by page. The layout rules do real work: on English three-column pages it reads at 0.125, ahead
-of Apple Vision's 0.358 and within 0.05 of the RapidAI layout model, so column order can be recovered from text positions alone. Recognition is where
-it loses: on plain single-column English, where layout has nothing to do, it reads at 0.255 against Apple Vision's 0.113, and on Simplified Chinese it
-sits between 0.52 and 0.61 whatever the layout. And its tables are found but not read — 150 missed, close to Apple's 166, but 0.313 on the ones it
-finds against Apple's 0.781, because a grid inferred from where words sit is not a table structure. Tesseract's larger models moved none of this by
-more than a few thousandths. The pipeline is not what buys a specialist its structure; the learned models inside it are.
+**The four mid-table pipelines lose every column to the composite, and each loses it somewhere different.** GLM-OCR through its own SDK reads at
+0.0881 text and 68.15 TEDS with 83 of 473 tables missed — 54 TEDS points better than the recognition-only row it replaces, and still behind Qwen 3.6
+on text. Its layout stage is not the problem: PP-DocLayoutV3 finds 462 of the 473 gold tables, and 72 of the 83 losses are tables it found and then
+lost, because a recogniser asked for a table sometimes returns prose, and on dense pages it cuts one table into fragments. PaddleOCR-VL-1.6 is the
+opposite shape: 0.0616 text, 77.92 TEDS and only 14 tables missed, third in the study, but its formulas are the worst of any two-stage parser here at
+0.3545 by edit distance and 60.34 by CDM against its own published 97.53 — and 136 of its 1,693 formulas end in a stray second `\]` that no renderer
+accepts, which alone costs a sixth of that gap. RapidOCR is the cleanest experiment: the same 32 MB of CPU weights reads at 0.4337 text and 0 TEDS
+with every table missed, and behind the RapidAI layout stage at 0.1227 and 76.97 TEDS with 15 missed. Nothing changed but the layout pass, worth 13×
+on newspapers and nothing at all on handwriting, where there are no columns to recover. Both it and GLM-OCR run the same detector at indistinguishable
+recall, so what separates 15 missed tables from 83 is the table recogniser, not detection. And LiteParse, the one pipeline built from rules, finds
+columns and cannot read them: 0.4107 text, 20.91 TEDS, 150 tables missed, yet on English three-column pages it reads at 0.125 against Apple Vision's
+0.358. Column order can be recovered from where the text sits; recognition and tables cannot. The pipeline is not what buys a specialist its structure
+— the learned models inside it are.
 
 **An open-weights 35B VLM lands between the specialists and the free OCR.** Qwen 3.6 at 0.0646 is 0.025 behind MinerU2.5-Pro alone on text and 0.029
 behind the composite — respectable for a model tuned for nothing on this task — but the gap widens the moment structure matters: ten TEDS points
@@ -454,13 +393,13 @@ mice, were refused outright with no text at all, consistent with the model's dua
 retry. Set the twelve aside and score every reader on the 1,238 pages that remain: Claude Fable 5.1 reads at 0.0365 text, 90.43 TEDS and 0.1253
 reading order with 13 of 470 tables never found, against the composite's 0.0358, 91.60, 0.1223 and 8, and GPT-6 Astra's 0.0331, 88.66, 0.1199 and 23 —
 third on text, order and TEDS, and level with MinerU2.5-Pro on tables. Its formulas do not move, because none of the twelve carries one. It takes exam
-papers outright in [Tab. 3](#table-3) (0.0541 against the composite's 0.0575) and is second on research reports; its academic-literature and book
+papers outright in [Fig. 6](#figure-6) (0.0541 against the composite's 0.0575) and is second on research reports; its academic-literature and book
 cells carry four refusals each. Where it trails GPT-6 Astra most is where resolution matters most: the API reads any page past a 2,576-pixel long edge
 at reduced size, and its newspaper cell is 0.0508 against GPT-6 Astra's 0.0198. The set cost \$165, plus about \$3 of retries — and a reader that
 declines pages is a failure mode no local reader in this study has.
 
 **GPT-6 Astra is the best text reader in the study, and fourth on structure.** It reads at **0.0331** and orders at **0.1189**, ahead of the composite
-on both (0.0356, 0.1213), and wins five of the nine sources in [Tab. 3](#table-3): newspapers at 0.0198 against the composite's 0.0481, magazines at
+on both (0.0356, 0.1213), and wins five of the nine sources in [Fig. 6](#figure-6): newspapers at 0.0198 against the composite's 0.0481, magazines at
 0.0091, research reports at 0.0070, books and colour textbooks. On structure it is fourth, behind the two composite halves and Claude Fable 5.1: 88.71
 TEDS and **23 of 473 tables never found** against the composite's 8, at an identical 0.933 on the tables both do find — so the whole table gap is
 detection — and 0.1055 on formulas against 0.0874.
@@ -521,52 +460,31 @@ columns apart without being told where they are, while a line-by-line recognizer
 that order runs across the columns. The same signature explains Vision's table numbers: it transcribes the tables it finds at a respectable 0.781, but
 never finds 166 of 473 — table _detection_ is a layout problem too.
 
-[Tab. 3](#table-3) cuts text edit distance by page source, and the pattern repeats.
-
-<figure id="table-3" class="table-figure table-figure--wide">
-
-| Reader                                                          |                                     research_report (76) |                                            PPT2PDF (189) |                                           magazine (116) |                                academic_literature (135) |                                               book (193) |                                          newspaper (115) |                                         exam_paper (146) |                                  colorful_textbook (121) |                                                note (83) |
-| --------------------------------------------------------------- | -------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: | -------------------------------------------------------: |
-| <span style="white-space: nowrap">Composite</span>              |                                                   0.0232 |                                               **0.0125** |   <b class="text-blue-600 dark:text-blue-400">0.0146</b> |                                               **0.0247** |   <b class="text-blue-600 dark:text-blue-400">0.0330</b> | <b class="text-green-600 dark:text-green-400">0.0481</b> |   <b class="text-blue-600 dark:text-blue-400">0.0575</b> | <b class="text-green-600 dark:text-green-400">0.0659</b> |   <b class="text-blue-600 dark:text-blue-400">0.0530</b> |
-| <span style="white-space: nowrap">MinerU2.5-Pro</span>          | <b class="text-green-600 dark:text-green-400">0.0128</b> |   <b class="text-blue-600 dark:text-blue-400">0.0207</b> | <b class="text-green-600 dark:text-green-400">0.0223</b> | <b class="text-green-600 dark:text-green-400">0.0294</b> | <b class="text-green-600 dark:text-green-400">0.0338</b> |   <b class="text-blue-600 dark:text-blue-400">0.0440</b> |                                                   0.0640 |                                                   0.0683 |                                                   0.0759 |
-| <span style="white-space: nowrap">dots.mocr</span>              |                                                   0.0314 |                                                   0.0266 |                                                   0.0316 |                                                   0.0364 |                                                   0.0592 |                                                   0.0843 |                                                   0.0766 |                                                   0.0821 | <b class="text-green-600 dark:text-green-400">0.0584</b> |
-| <span style="white-space: nowrap">GLM-OCR</span>                |                                                   0.0211 |                                                   0.1395 |                                                   0.0892 |                                                   0.0445 |                                                   0.0763 |                                                   0.0666 |                                                   0.0967 |                                                   0.1310 |                                                   0.0824 |
-| <span style="white-space: nowrap">PaddleOCR-VL-1.6</span>       |                                                   0.0439 |                                                   0.0413 |                                                   0.0736 |                                                   0.0697 |                                                   0.0421 |                                                   0.0568 |                                                   0.0822 |                                                   0.1082 |                                               **0.0416** |
-| <span style="white-space: nowrap">Unlimited-OCR</span>          |                                                   0.1457 |                                                   0.0982 |                                                   0.1551 |                                                   0.2001 |                                                   0.1182 |                                                   0.6020 |                                                   0.3154 |                                                   0.1775 |                                                   0.1144 |
-| <span style="white-space: nowrap">RapidOCR</span>               |                                                   0.0766 |                                                   0.1268 |                                                   0.0759 |                                                   0.0716 |                                                   0.1167 |                                                   0.0728 |                                                   0.1623 |                                                   0.2138 |                                                   0.1632 |
-| <span style="white-space: nowrap">LiteParse</span>              |                                                   0.3705 |                                                   0.3946 |                                                   0.2702 |                                                   0.2441 |                                                   0.3699 |                                                   0.4066 |                                                   0.4373 |                                                   0.4276 |                                                   0.9591 |
-| <span style="white-space: nowrap">Apple Vision (OS OCR)</span>  |                                                   0.0588 |                                                   0.0611 |                                                   0.1387 |                                                   0.2109 |                                                   0.1675 |                                                   0.3984 |                                                   0.2575 |                                                   0.1958 |                                                   0.2484 |
-| <span style="white-space: nowrap">Qwen 3.6 (VLM)</span>         |                                                   0.0281 |                                                   0.0336 |                                                   0.0400 |                                                   0.0415 |                                                   0.0602 |                                                   0.0601 |                                                   0.1142 |                                                   0.1027 |                                                   0.1042 |
-| <span style="white-space: nowrap">Claude Fable 5.1 (VLM)</span> |   <b class="text-blue-600 dark:text-blue-400">0.0083</b> |                                                   0.0246 |                                                   0.0298 |                                                   0.0526 |                                                   0.0512 |                                                   0.0508 |                                               **0.0541** |   <b class="text-blue-600 dark:text-blue-400">0.0645</b> |                                                   0.0837 |
-| <span style="white-space: nowrap">GPT-6 Astra (VLM)</span>      |                                               **0.0070** | <b class="text-green-600 dark:text-green-400">0.0239</b> |                                               **0.0091** |   <b class="text-blue-600 dark:text-blue-400">0.0256</b> |                                               **0.0317** |                                               **0.0198** | <b class="text-green-600 dark:text-green-400">0.0579</b> |                                               **0.0457** |                                                   0.0812 |
-
-<figcaption>Table 3. Text edit distance by page source, held-out set; readers as rows in Table 2's order, sources as columns with their count of pages that
-carry ground-truth text; best per column in black bold, second in blue bold, third in green bold.</figcaption>
-</figure>
+[Fig. 6](#figure-6) cuts text edit distance by page source, and the pattern repeats.
 
 <figure id="figure-6">
-  <img src="/blog/beyond-ocr-scores/source_bars_light.svg" class="dark:hidden" alt="Nine small horizontal bar charts, one per page source in Table 3's order: research reports, slides, magazines, academic papers, books, newspapers, exam papers, textbooks and handwritten notes. Nine readers in each, document readers first and the four controls set apart; each panel on its own scale with the best reader's value in bold. The values are those of Table 3.">
-  <img src="/blog/beyond-ocr-scores/source_bars_dark.svg" class="hidden dark:block" alt="Nine small horizontal bar charts, one per page source in Table 3's order: research reports, slides, magazines, academic papers, books, newspapers, exam papers, textbooks and handwritten notes. Nine readers in each, document readers first and the four controls set apart; each panel on its own scale with the best reader's value in bold. The values are those of Table 3.">
-  <figcaption>Figure 6. Table 3 drawn to scale: text edit distance by page source, one panel per source in Table 3's order, twelve readers each,
+  <img src="/blog/beyond-ocr-scores/source_bars_light.svg" class="dark:hidden" alt="Nine small horizontal bar charts, one per page source: research reports, slides, magazines, academic papers, books, newspapers, exam papers, textbooks and handwritten notes. Nine readers in each, document readers first and the four controls set apart; each panel on its own scale with the best reader's value in bold.">
+  <img src="/blog/beyond-ocr-scores/source_bars_dark.svg" class="hidden dark:block" alt="Nine small horizontal bar charts, one per page source: research reports, slides, magazines, academic papers, books, newspapers, exam papers, textbooks and handwritten notes. Nine readers in each, document readers first and the four controls set apart; each panel on its own scale with the best reader's value in bold.">
+  <figcaption>Figure 6. Text edit distance by page source, one panel per source, twelve readers each,
   best per source in bold. Each panel has its own scale, so compare the numbers across panels, not the bar lengths.</figcaption>
 </figure>
 
-The other 73 held-out pages carry only tables, figures and page furniture, so they have no text score; [Fig. 6](#figure-6) draws the table. GPT-6
-Astra leads five of the nine sources — research reports at 0.0070, magazines at 0.0091, newspapers at 0.0198, books and colour textbooks — the
-composite three: slides, academic literature and handwritten notes, where the prose swap shows clearest at 0.0530 against 0.0759 for the MinerU2.5-Pro
-inside it and GPT-6 Astra is fourth at 0.0812; and Claude Fable 5.1 one, exam papers at 0.0541. The composite is second on four sources and the
-MinerU2.5-Pro inside it on two. Apple Vision is competitive only on corporate layouts and slides; Unlimited-OCR beats Apple Vision on books and
-handwritten notes and is the worst reader in the study on newspapers.
+The other 73 held-out pages carry only tables, figures and page furniture, so they have no text score. GPT-6 Astra leads five of the nine sources —
+research reports at 0.0070, magazines at 0.0091, newspapers at 0.0198, books and colour textbooks — the composite three: slides, academic literature
+and handwritten notes, where the prose swap shows clearest at 0.0530 against 0.0759 for the MinerU2.5-Pro inside it and GPT-6 Astra is fourth at
+0.0812; and Claude Fable 5.1 one, exam papers at 0.0541. The composite is second on four sources and the MinerU2.5-Pro inside it on two. Apple Vision
+is competitive only on corporate layouts and slides; Unlimited-OCR beats Apple Vision on books and handwritten notes and is the worst reader in the
+study on newspapers.
 
 **The open-weights VLM wins no source outright.** Against MinerU2.5-Pro alone, Qwen 3.6 is behind on every source — by 0.012 on journal papers, by
 0.050 on exam papers. A 35B model's language priors are real, but they are worth less than a layout stage.
 
 **Unlimited-OCR's column curve is not a runaway rate — it is where the decoder leaves the page.** It reads handwritten notes and books at 0.114 and
-0.118, better than Apple Vision on both, then posts 0.602 on newspapers, the worst source score in this table, and by layout it traces the free OCR's
-curve: 0.114 on single-column pages, 0.245 at two, 0.379 at three. The obvious explanation — dense pages make the decoder loop until the budget runs
-out — is wrong: its budget-hit rate is flat across layouts, 4–6% everywhere and zero on the forty three-column pages. What the outputs show instead is
-a decoder that abandons the page. On 71 of the 1,250 — 25 of the 115 newspapers, 45 of the dense "other layout" pages — the output contains the text
-of a data-labelling rubric that appears nowhere on the page, _"The Ground Truth image displays a single, solid horizontal line. According to Rule 2
+0.118, better than Apple Vision on both, then posts 0.602 on newspapers, its worst source by far, and by layout it traces the free OCR's curve: 0.114
+on single-column pages, 0.245 at two, 0.379 at three. The obvious explanation — dense pages make the decoder loop until the budget runs out — is
+wrong: its budget-hit rate is flat across layouts, 4–6% everywhere and zero on the forty three-column pages. What the outputs show instead is a
+decoder that abandons the page. On 71 of the 1,250 — 25 of the 115 newspapers, 45 of the dense "other layout" pages — the output contains the text of
+a data-labelling rubric that appears nowhere on the page, _"The Ground Truth image displays a single, solid horizontal line. According to Rule 2
 (UNDERSCORE & LINE)…"_, repeated ten times or more on 24 of them and 61 times on one newspaper; the 35-gram guard bans the exact repeat, so the model
 paraphrases around it. Those 71 pages read at 0.518. On newspapers, 49 of 115 outputs run past one and a half times the length of the gold text and 15
 stop under half of it — over-generation and under-reading, both of them the page being lost rather than misread. This is the DeepSeek-OCR lineage's
@@ -603,26 +521,14 @@ different purchases.
 
 ## Where the eight missing tables are
 
-The composite's tables _are_ MinerU2.5-Pro's — the merge keeps them untouched — so the interesting question is not why it misses eight but why the
-model alone misses thirteen. Every table the composite misses, MinerU2.5-Pro misses too: its missed set is a strict subset. The difference runs the
-other way, and the eight are worth seeing one by one.
-
-**All eight are detection failures, in five shapes** ([Fig. 7](#figure-7)). Four are one-row tables the reader writes as text, because that is what a
-single row of three cells looks like: two strips on a presentation slide (A) and two schedule lines on a newspaper scoreboard page (F). One is a
-six-by-four grid of short tokens on a linguistics slide, which the layout stage calls a list (B). One is a newspaper infographic whose figures sit on
-a photograph rather than in a grid, and only its title survives (C). One is the lower of two stacked regression panels, which the reader merges into a
-single grid — the upper panel pairs with its ground truth and the lower is left without a partner (D). And one is the signature block at the foot of a
-financial statement, four titles over four names, read as a run of headings (E). They are this layout head's blind spots, not the field's:
-MinerU2.5-Pro alone misses all eight, and the composite inherits that head untouched, but every one of the eight is read by someone. The RapidAI
-layout stage — the same PP-DocLayoutV3 that GLM-OCR and PaddleOCR-VL-1.6 run — finds all eight, reading them at 0.23 to 0.69; PaddleOCR-VL-1.6, Claude
-Fable 5.1 and LiteParse read six each (LiteParse four of them below 0.25), GLM-OCR, Qwen 3.6 and GPT-6 Astra five, and Unlimited-OCR one — the token
-grid, at 0.95. The signature block, which no reader in the first draft of this study found, is read at 0.99 by GLM-OCR.
-
-**Two of them score below zero, and that is the scorer rather than the page.** The scoreboard page carries twenty-six gold tables, and the readers
-emit ninety-six table regions on it — the transactions column, cut into two-row fragments — so the matcher has a partner for every gold table whether
-or not the right one exists. The two schedule lines the reader wrote as text are paired with a transactions fragment ("waived. | Sacramento: Forward
-Orlando Robin-"), and the similarity of two unrelated trees comes out at −0.19. The Missed column counts anything at or below zero, so the outcome is
-the same miss, recorded below zero instead of at it. MinerU2.5-Pro alone has the same two.
+The composite's tables _are_ MinerU2.5-Pro's, so the interesting question is not why it misses eight but why the model alone misses thirteen: the
+composite's missed set is a strict subset. **All eight are detection failures, in five shapes** ([Fig. 7](#figure-7)) — four one-row tables written as
+text, a grid of short tokens called a list, an infographic printed over a photograph, the lower of two stacked panels merged into the upper, and a
+signature block read as headings. They are this layout head's blind spots rather than the field's: the RapidAI layout stage finds all eight, and every
+one of the eight is read by someone. Two of them score below zero, which is the scorer and not the page — on a newspaper page where the readers emit
+ninety-six table regions, the matcher pairs a schedule line written as text with a fragment of the transactions column, and the similarity of two
+unrelated trees comes out at −0.19. The five the composite recovers are the mirror image, read at 0.96 to 1.00: a stage that only passes its base
+model's output through can still change what that output is measured against, because where a table sits decides what the scorer pairs it with.
 
 <figure id="figure-7">
   <img src="/blog/beyond-ocr-scores/missed_tables_light.jpg" class="dark:hidden" alt="Six panels of cropped document pages, each with a red box around a gold table the composite missed. A: two pink one-row strips on a presentation slide, emitted as list text. B: a six-by-four grid of tokens such as VO Pr NG RelN on a linguistics slide, emitted as six lines. C: a newspaper infographic, How budget will affect labour costs, printed over a photograph, of which only the title was emitted. D: two stacked regression panels, the upper outlined blue as paired, the lower red as missed, emitted as one table. E: the signature block of a Chinese financial statement, four titles over four names, emitted as headings. F: two single schedule lines on a newspaper scoreboard page, 8:30 p.m. USC at Maryland FS1 and Minnesota at LA Rams, emitted as text and scored minus 0.19 after the matcher paired them with a transactions fragment." />
@@ -633,10 +539,6 @@ the same miss, recorded below zero instead of at it. MinerU2.5-Pro alone has the
   ninety-six table fragments the matcher pairs them with the wrong one. Page images are from OmniDocBench v1.6 (OpenDataLab), released for research
   use, reproduced as crops.</figcaption>
 </figure>
-
-The five the composite recovers are the mirror image: pages where the model alone finds no table and the pipeline around it does, reading them at 0.96
-to 1.00. That is a useful thing to know about layered pipelines — a stage that only ever passes its base model's output through can still change what
-that output is measured against, because where a table sits on the page decides what the scorer pairs it with.
 
 ## Who controls what your system reads?
 
@@ -654,9 +556,9 @@ ability to go back and check is worth more here than in most places you would sp
 
 What that argues for is concrete and mostly independent of who runs the model: keep the original documents, keep an evaluation set drawn from your own
 corpus rather than a public one, and tie every stored parse to the parser build and configuration that produced it. The last of those is not
-bookkeeping — a library upgrade moved MinerU2.5-Pro further on this benchmark than the difference between the two best readers in Table 2, so "which
-parser" is not a complete description of what produced a chunk. Then keep a path to a second reader and a way to rebuild the entries a bad parse
-produced, because you will eventually need both.
+bookkeeping — a library upgrade moved MinerU2.5-Pro further on this benchmark than the difference between the two best readers here, so "which parser"
+is not a complete description of what produced a chunk. Then keep a path to a second reader and a way to rebuild the entries a bad parse produced,
+because you will eventually need both.
 
 I benchmarked one hosted model, GPT-6 Astra, and it read text better than anything I run; what I did not measure is total operating cost beyond the
 \$154 that run took. This is an argument for keeping evaluation and recovery in your own hands, not a claim that a local parser is more accurate — on
@@ -670,7 +572,7 @@ model you cannot pin to a build is exactly the case where that matters most.
    rebuilt by a larger model. The only remedy for a bad read is a better read.
 2. **Quote held-out numbers, from a sample large enough to carry them.** A 64-page selection has four times the table density of this benchmark as a
    whole, and a TEDS score computed on one swings by double-digit points in whichever direction a method's particular weakness lies. The 1,250 pages
-   nothing was tuned on are the only rows in this post I would bet on.
+   nothing was tuned on are the only numbers in this post I would bet on.
 3. **An open-weights VLM you already run is a credible reader, not a replacement.** Qwen 3.6 lands 0.025 behind MinerU2.5-Pro and 0.029 behind the
    composite on text, and far closer to them than the free OCR is, but it wins no source outright, and on tables it is ten TEDS points back. Use it
    when you have no specialist, not instead of one.
@@ -681,8 +583,8 @@ model you cannot pin to a build is exactly the case where that matters most.
    pinned build are acceptable; keep a layout model where tables, slides and handwriting are.
 5. **The free OCR in your Mac is a column detector away from being a contender.** Character recognition is solved in the OS; layout is not. Feed it
    single-column corporate paper and it is fine. Feed it a newspaper and two-fifths of the characters come back wrong.
-6. **"OCR model" is a description, not a rank — and "run it its authors' way" is the first rule of measuring one.** Three rows in the first draft of
-   this study measured my harness, not the model: GLM-OCR sent one text prompt instead of its own pipeline lost 54 TEDS points; dots.mocr pushed
+6. **"OCR model" is a description, not a rank — and "run it its authors' way" is the first rule of measuring one.** Three readers in the first draft
+   of this study measured my harness, not the model: GLM-OCR sent one text prompt instead of its own pipeline lost 54 TEDS points; dots.mocr pushed
    through a merge step built to discard its tables lost 81; Unlimited-OCR behind my layout stage, without its n-gram guard turned out to have
    measured the model after all: run its authors' way it lands within 0.005 of the withdrawn row on text (0.2083 against 0.2129), and the pages it
    loses are the same dense ones. Run their makers' way, the two leaderboard pipelines still lose every column to the composite on these pages, and
