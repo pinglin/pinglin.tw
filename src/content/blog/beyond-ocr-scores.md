@@ -53,7 +53,14 @@ tags: ['engineering', 'benchmark', 'ocr']
      failures) — Overall 49.75 -> 66.34, charts 0.79 -> 61.12, grounding 37.10 -> 60.31, tables/formatting/
      content flat; the 60-document subset estimates (charts 77.98, grounding 57.59) are GONE from the prose,
      and the leaderboard rank and the 35,439-box count come from that run's _leaderboard.html and raw outputs.
-     Backend record: FINAL_REPORT.md section 6 + RUNS.md 2026-09-17 (a40-labs/backend#1314). -->
+     Backend record: FINAL_REPORT.md section 6 + RUNS.md 2026-09-17 (a40-labs/backend#1314).
+     UPDATE 2026-09-20 (owner: "the article is way too long"): the ParseBench section ("The same reader on a
+     different benchmark", with Table 5) and the speed section ("How fast each reader reads", with Table 4) are
+     REMOVED — ParseBench opened a second storyline, and speed is not what this study is about. The preface now
+     states the accuracy-only scope. Speed claims elsewhere went with them (Apple 1.9 s / MinerU 16.1 s in the
+     readers section and the fails section, the one-shot-readers sentence in take-home 7). The removed text is
+     recoverable from git history (commit before this one) and the numbers stay in the backend report §5/§6.
+     gen_ocr_bench_tables.py still generates the speed table; it is simply unused by the article now. -->
 
 Every document system has a moment where it must turn a page — a real page, scanned or photographed or exported, with its columns and footnotes and
 smudged tables — into text a machine can use. Whatever you build downstream inherits the quality of that step. Retrieval cannot find a paragraph the
@@ -66,6 +73,10 @@ question: **of everything that can read a page today — including the OCR that 
 This post is that comparison, run the way I would want someone else to run it: one benchmark, one held-out page set nothing was tuned on, every reader
 scored by the benchmark's own published evaluator, and the failures broken down far enough that you can tell _which pages_ each reader cannot handle,
 not merely that its average is worse.
+
+It measures accuracy and nothing else. Speed, price and the hardware a reader needs are real constraints, and they are the easy ones: you can see them
+from the outside, and they change with the next chip or the next price list. What a reader gets wrong on your pages does not, and it is the only thing
+here that survives into the index and the answers built on it. So no seconds-per-page in this post, and no cost table.
 
 ## Where the reader sits in a RAG or agent system
 
@@ -278,15 +289,15 @@ layout stage in front of it.
 
 **LiteParse.** [LlamaIndex's open-source local parser](https://github.com/run-llama/liteparse) (Apache-2.0, March 2026), the free sibling of their
 hosted LlamaParse and a different kind of reader: no model of its own beyond Tesseract OCR, with the page's layout rebuilt from where the text sits
-rather than by a trained layout model. It runs through LlamaIndex's own ParseBench integration with OCR on, its default Tesseract models, and the OCR
+rather than by a trained layout model. It runs through LlamaIndex's own wrapper for it, with OCR on, its default Tesseract models, and the OCR
 languages set to the corpus's — English, Simplified and Traditional Chinese — because its English-only default reads half these pages as noise. It is
 the one reader in the study whose pipeline is built from rules instead of models.
 
 **Apple Vision.** The [`RecognizeDocumentsRequest`](https://developer.apple.com/documentation/vision/recognizedocumentsrequest) API built into macOS
-26 — the same engine behind Live Text. Zero download, zero GPU memory beyond the OS, and 1.9 s per page on an M4 Max against 16.1 s for the two-stage
-parser on the same machine ([Tab. 4](#table-4)). One configuration note that decides everything: Vision's `minimumTextHeightFraction` defaults to 1/32
-of the page height, which silently discards every newspaper body column before recognition begins. I set it to 0.005. At the default the engine never
-sees most of the text on a dense page, so a benchmark run out of the box measures that constant rather than the recognizer.
+26 — the same engine behind Live Text. Zero download and zero GPU memory beyond the OS. One configuration note that decides everything: Vision's
+`minimumTextHeightFraction` defaults to 1/32 of the page height, which silently discards every newspaper body column before recognition begins. I set
+it to 0.005. At the default the engine never sees most of the text on a dense page, so a benchmark run out of the box measures that constant rather
+than the recognizer.
 
 **Qwen 3.6.** [Alibaba's open-weights VLM](https://huggingface.co/Qwen) (April 2026), a model many teams already run for chat. The build is
 `qwen3.6-35b-a3b`: 35 billion parameters in total, arranged as a mixture of experts of which about 3 billion are active for any one token — the A3B —
@@ -566,9 +577,9 @@ documented behaviour on dense text — [endless repetition](https://github.com/b
 carry. So 0.2083 is a measurement of Unlimited-OCR as this stack serves it: a base-resolution single pass with no tiling on a community mxfp8 build,
 and a bf16 port checked on the densest page loops the same way.
 
-**Where the free OCR is genuinely enough.** On research reports and slide decks Apple Vision reads within 0.03–0.05 of the best reader — at zero
-marginal cost and 1.9 s a page with no GPU. If your corpus is corporate documents and presentations, the OCR already in the OS is a defensible parser.
-If it contains anything multi-column, it is not, and no amount of tuning changes that: the failure is architectural.
+**Where the free OCR is genuinely enough.** On research reports and slide decks Apple Vision reads within 0.03–0.05 of the best reader, at zero
+marginal cost and with no GPU. If your corpus is corporate documents and presentations, the OCR already in the OS is a defensible parser. If it
+contains anything multi-column, it is not, and no amount of tuning changes that: the failure is architectural.
 
 **Formulas split the field into three groups, and the gaps between them are the widest in the study.** The two-stage parsers built around MinerU sit
 at 0.0874 — the composite and the MinerU2.5-Pro inside it, identical because the composite hands every formula page over untouched. The readers that
@@ -627,89 +638,6 @@ The five the composite recovers are the mirror image: pages where the model alon
 to 1.00. That is a useful thing to know about layered pipelines — a stage that only ever passes its base model's output through can still change what
 that output is measured against, because where a table sits on the page decides what the scorer pairs it with.
 
-## How fast each reader reads
-
-[Tab. 4](#table-4) times every reader I can run myself on the same 50 held-out pages, drawn from every source in proportion and newspapers included,
-one reader at a time with its model already loaded. The two hosted readers have no row: how long an API takes to answer is its operator's serving
-decision, not a property of the reader.
-
-<figure id="table-4" class="table-figure table-figure--wide">
-
-| Reader                                                         | Runs on                         | Seconds per page ↓ | Pages per hour ↑ | Weights on disk |
-| -------------------------------------------------------------- | ------------------------------- | -----------------: | ---------------: | --------------: |
-| <span style="white-space: nowrap">Composite</span>             | fleet M3 Max, 1 page at a time  |               61.3 |               59 |         5.81 GB |
-| <span style="white-space: nowrap">MinerU2.5-Pro</span>         | M4 Max laptop, GPU              |               16.1 |              224 |         2.33 GB |
-| <span style="white-space: nowrap">dots.mocr</span>             | M4 Max laptop, GPU              |               78.4 |               46 |         3.48 GB |
-| <span style="white-space: nowrap">GLM-OCR</span>               | M4 Max laptop, GPU + CPU layout |               23.3 |              154 |         2.35 GB |
-| <span style="white-space: nowrap">PaddleOCR-VL-1.6</span>      | M4 Max laptop, GPU + CPU layout |               12.9 |              280 |         1.95 GB |
-| <span style="white-space: nowrap">Unlimited-OCR</span>         | M4 Max laptop, GPU              |               42.3 |               85 |         3.84 GB |
-| <span style="white-space: nowrap">RapidOCR</span>              | M4 Max laptop, CPU              |                5.4 |              668 |          349 MB |
-| <span style="white-space: nowrap">LiteParse</span>             | M4 Max laptop, CPU              |               14.8 |              243 |           42 MB |
-| <span style="white-space: nowrap">Apple Vision (OS OCR)</span> | M4 Max laptop, Neural Engine    |                1.9 |            1,938 |               0 |
-| <span style="white-space: nowrap">Qwen 3.6 (VLM)</span>        | M4 Max laptop, GPU              |               72.3 |               50 |        19.35 GB |
-
-<figcaption>Table 4. Seconds per page with model load excluded: the mean over pages 2 to 50 of a 50-page sample stratified by source. The
-composite is timed through the production load balancer on the fleet's M3 Max hosts, one page at a time; every other reader on one M4 Max
-laptop. The laptop was not otherwise idle, so the rows that lean on the CPU are upper bounds: re-timed with a scoring job running, dots.mocr on the
-GPU moved under 1% and MinerU2.5-Pro, whose layout stage runs on the CPU, took three times as long. Apple Vision's row was timed under heavy load, so it is an upper bound too.</figcaption> </figure>
-
-**On your own hardware the pipelines are the fast readers, and the one-shot readers are the slow ones.** PaddleOCR-VL-1.6 reads a page in 12.9 s,
-MinerU2.5-Pro in 16.1 and GLM-OCR through its SDK in 23.3: a small layout model, then a recogniser decoding short crops of the page. The readers that
-write the whole page in one pass take three to six times as long — Unlimited-OCR 42.3 s, Qwen 3.6 72.3, dots.mocr 78.4 — because a one-shot reader has
-to generate every token of the page in sequence, and its slow pages are slower still: a dense page is a long answer, and a runaway page is the whole
-output budget. GLM-OCR makes the trade concrete. Its pipeline is barely slower than its recogniser reading the whole page on its own, 23.3 s against
-21.8, and finds 309 more tables. The composite's 61.3 s buys the best row in [Tab. 2](#table-2) with two models per page, on the fleet's older chips.
-At the fast end the price is structure: Apple Vision reads a page in 1.9 s and misses a third of all tables, while the RapidAI pipeline adds a learned
-layout and table model and still reads a page in 5.4 s on the CPU alone. Rules are not the cheap route they sound like: LiteParse, with its default
-Tesseract models and three OCR languages, takes 14.8 s a page on the CPU — about MinerU2.5-Pro's time on the GPU — for the line recognisers' accuracy.
-
-## The same reader on a different benchmark
-
-Everything above is one benchmark, and a benchmark decides what counts. So I ran the composite through [ParseBench](https://arxiv.org/abs/2604.08538),
-LlamaIndex's benchmark of 2,037 insurance, finance and government pages, which scores five things: tables, charts, faithfulness to the page's text,
-semantic formatting, and where each element sits on the page. Two of those five, charts and element positions, OmniDocBench never asks about. The
-composite went through the same production front door, one page at a time, with each page rendered to an image first so the text-layer fast path could
-not answer for the readers.
-
-<figure id="table-5" class="table-figure table-figure--wide">
-
-| Reader                                                                        | Tables ↑ | Charts ↑ | Content ↑ | Formatting ↑ | Grounding ↑ | Overall ↑ |
-| ----------------------------------------------------------------------------- | -------: | -------: | --------: | -----------: | ----------: | --------: |
-| <span style="white-space: nowrap">Composite, as served now</span>             |    76.90 |    61.12 |     84.83 |        48.52 |       60.31 |     66.34 |
-| <span style="white-space: nowrap">Composite, before the two fixes</span>      |    76.91 |     0.79 |     85.41 |        48.52 |       37.10 |     49.75 |
-| <span style="white-space: nowrap">MinerU2.5-Pro (their leaderboard)</span>    |    77.59 |    61.64 |     87.88 |        57.49 |       79.30 |     72.78 |
-| <span style="white-space: nowrap">Claude Fable 5.1 (their leaderboard)</span> |    91.52 |    67.06 |     91.19 |        76.52 |       68.30 |     78.92 |
-| <span style="white-space: nowrap">LlamaParse Agentic (their product)</span>   |    88.88 |    88.68 |     91.78 |        81.44 |       84.25 |     87.01 |
-
-<figcaption>Table 5. The served composite on ParseBench, before and after the two fixes described below, against three rows from
-ParseBench's own leaderboard. Overall is the mean of the five dimensions. The composite's two rows are my runs, the whole corpus each time. The
-other three are LlamaIndex's own published results, read from
-<a href="https://github.com/run-llama/ParseBench/blob/main/leaderboard.csv">leaderboard.csv</a> in the benchmark repository (the raw data behind
-<a href="https://parsebench.ai">parsebench.ai</a>), at the commit this study ran against: they ran those readers, including LlamaParse Agentic, which
-is their own commercial product, and I ran mine through the same public evaluator on the same pages.</figcaption> </figure>
-
-**The reader that led every column of Table 2 was twenty-three points behind the model inside it here, and both reasons were mine, not the models'.**
-Tables held — 76.91 against MinerU's 77.59. Charts collapsed to 0.79 because production ran MinerU with its image analysis turned off, a flag set
-while fixing an API call and never revisited: a chart came back as its caption and the prose around it, and none of its data. With that pass on, the
-same model writes the chart's data points as a table, which is what the 61.64 measures. Element positions collapsed to 37.10 because on the pages the
-composite serves straight from MinerU it stamped every element with a box covering the whole page, and on the merged pages it never labelled a
-picture, a page header or a footer as what it was; the rest of the gap was boxes that are simply imprecise. Neither shows on OmniDocBench, whose
-columns never ask where a block sits or what a chart says — which is the point of running a second benchmark.
-
-Both are fixed in the parser now, and the whole corpus went through production a second time to see what the fixes were worth. Charts read 61.12,
-within half a point of the same model run by ParseBench themselves, so that dimension was never about the reader. Element positions read 60.31, and
-the whole-page boxes are gone: none of the 35,439 boxes in the second run covers a whole page, where a fifth of the pages carried one before. Nothing
-else moved, which is the part a small sample could not have shown me: tables changed by 0.01, formatting not at all, faithfulness by half a point, and
-the OmniDocBench text score of the same 50 pages by 0.0004 with tables and formulas unchanged. The composite's Overall goes from 49.75 to 66.34, which
-would place it 34th of the 99 rows on ParseBench's public leaderboard, and ahead of every rules-and-OCR parser listed there, the best of which scores
-53.49.
-
-What is left is worth naming, because it is the same kind of finding. The composite is still 6.44 behind the model inside it, and all of that is two
-habits of my serving path rather than anything either reader failed to read. It drops page headers and footers as furniture, which is right for a
-retrieval index and wrong for a benchmark that expects them as elements, so those score near zero. And its markdown carries titles and bold but not
-italics, superscripts, underlines or code blocks, so the formatting dimension stays at 48.52. A second benchmark did not change which reader I serve.
-It changed what I knew about the thing serving it.
-
 ## Who controls what your system reads?
 
 Notice what every specific finding in this post required. That Apple Vision's deficit is column structure rather than character recognition, that
@@ -764,10 +692,9 @@ model you cannot pin to a build is exactly the case where that matters most.
    in front of a 32 MB recogniser is worth 77 TEDS points. The two specialists that read the page in one pass, dots.mocr and Unlimited-OCR, are the
    two whose columns collapse somewhere: formulas for one, dense pages for the other. The hosted frontier models are the only one-shot readers in the
    study that keep tables, order and formulas at once — Claude Fable 5.1 within two TEDS points of the composite, GPT-6 Astra ahead of it on text —
-   which is the more elegant engineering, and it costs the resolution rule, the refusals and the unpinnable build of the section before this one. On
-   hardware you own the elegance runs the other way: the one-shot readers are the slowest here, three to six times the pipelines' time per page. The
-   stages have to be learned, too: LiteParse, a pipeline built from rules instead of models, finds the columns and still reads like the free OCR. A
-   specialist is a pipeline whether or not its README says so; a generalist is a prompt.
+   which is the more elegant engineering, and it costs the resolution rule, the refusals and the unpinnable build described above. The stages have to
+   be learned, too: LiteParse, a pipeline built from rules instead of models, finds the columns and still reads like the free OCR. A specialist is a
+   pipeline whether or not its README says so; a generalist is a prompt.
 8. **Split detection from transcription before you read a table score.** Apple "scores 51 TEDS" and "transcribes found tables at 78 while missing a
    third of them" are the same number — only the second tells you what to fix.
 9. **Small specialists earn their keep on structure most of all.** A 1.2B two-stage parser beats a 35B open-weights generalist on text by 0.025 and on
