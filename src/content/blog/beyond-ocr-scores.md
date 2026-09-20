@@ -165,8 +165,8 @@ formula it emits is MinerU2.5-Pro's own, untouched.
 ## Results
 
 <figure id="figure-2">
-  <img src="/blog/beyond-ocr-scores/headline_bars_light.svg" class="dark:hidden" alt="Six small horizontal bar charts, one per metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Twelve readers in each, document readers first and the four controls set apart at the bottom;" />
-  <img src="/blog/beyond-ocr-scores/headline_bars_dark.svg" class="hidden dark:block" alt="Six small horizontal bar charts, one per metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Twelve readers in each, document readers first and the four controls set apart at the bottom;" />
+  <img src="/blog/beyond-ocr-scores/headline_bars_light.svg" class="dark:hidden" alt="Six small horizontal bar charts, one per metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Twelve readers in each, document readers first and the four controls set apart at the bottom; every bar is labelled with its value." />
+  <img src="/blog/beyond-ocr-scores/headline_bars_dark.svg" class="hidden dark:block" alt="Six small horizontal bar charts, one per metric: text edit distance, table TEDS, reading order, formula edit distance, found-only TEDS and missed tables. Twelve readers in each, document readers first and the four controls set apart at the bottom; every bar is labelled with its value." />
   <figcaption>Figure 2. The six metrics on the held-out 1,250, one panel each, every bar labelled with its value; arrows give the direction of
   better. Document readers first; the four controls, which were never built for this job, are set apart at the bottom.</figcaption>
 </figure>
