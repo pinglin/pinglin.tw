@@ -1,7 +1,6 @@
 ---
 title: 'Beyond OCR Scores: Where Document Parsers Fail'
-pubDate: 2026-09-01
-draft: true
+pubDate: 2026-10-04
 description:
   'A 1,250-page OCR benchmark exposes the scrambled reading order, missing tables, and broken formulas that RAG pipelines and AI agents inherit. I
   compare document parsers, OCR specialists, the open-weights Qwen 3.6, the hosted Claude Fable 5.1 and GPT-6 Astra, and Apple Vision to show where
@@ -15,27 +14,6 @@ image:
     RAG or an AI agent.'
 tags: ['engineering', 'benchmark', 'ocr']
 ---
-
-<!-- DRAFT: do not publish with this comment present.
-     STATE 2026-09-20: the article was cut to roughly half its previous length at the owner's direction, in this
-     order: (1) the ParseBench section ("The same reader on a different benchmark", Table 5) and the speed
-     section ("How fast each reader reads", Table 4) removed, with the accuracy-only scope stated in the preface;
-     (2) the composite rationale and reader catalogue compressed; the four mid-table readers folded into one
-     Results paragraph; Tables 2 and 3 REMOVED in favour of Figures 3 and 6, which label every value; the
-     missed-tables section reduced to a paragraph; (3) this pass: the whole body rewritten at about half again,
-     and per the owner "remove the implementation details and error experiences" — gone are the precision and
-     library-pin paragraph, the three withdrawn rows (harness-vs-model), the dots.mocr merge-step and json.loads
-     stories, the Qwen per-host repetition-loop finding, PaddleOCR-VL's stray-delimiter defect, the below-zero
-     matcher pairing, API token budgets and billing arithmetic, and the "next composite" discussion.
-     FIGURES ARE RENUMBERED: old Fig. 3 (headline bars) is now Fig. 2, old Fig. 5 (layout) is Fig. 3, old Fig. 7
-     (missed tables) is Fig. 4. Old Fig. 2 (source thumbnails), Fig. 4 (empty pages), Fig. 6 (per-source bars)
-     and Table 1 (page sources) are REMOVED; their generators (gen_ocr_bench_sources.py, gen_ocr_bench_figs.py
-     panels, gen_ocr_bench_tables.py) still exist and still work.
-     EVERY NUMBER still comes from the evaluator files for the held-out 1,250 and was carried over unchanged from
-     the previous revision; nothing was recomputed or re-rounded in this pass. Provenance for every arm is in
-     ~/.shubo-bench/RESULTS-heldout-1250.md and the backend report (a40-labs/backend, FINAL_REPORT.md), which
-     also keeps the speed table (§5) and the ParseBench results (§6) that this article no longer carries.
-     The full previous text is in git history. -->
 
 Every document system has a moment where it must turn a page — a real page, scanned or photographed or exported, with its columns and footnotes and
 smudged tables — into text a machine can use. Whatever you build downstream inherits the quality of that step. Retrieval cannot find a paragraph the

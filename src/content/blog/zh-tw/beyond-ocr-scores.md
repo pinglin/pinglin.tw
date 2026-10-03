@@ -1,7 +1,6 @@
 ---
 title: 'OCR 分數之外：文件 parser 真正失敗的地方'
-pubDate: 2026-09-01
-draft: true
+pubDate: 2026-10-04
 description:
   '用 1,250 頁沒有調校過的 held-out 頁面，把十二個 Reader 各自用作者自己的協定跑一遍：MinerU2.5-Pro + dots.mocr 的 composite、OCR
   專用模型、open-weights VLM、兩個雲端 frontier 模型，以及每台 Mac 內建的免費 OCR。重點不是誰的平均分數漂亮，而是你的系統會在哪些頁面上直接失去資料。'
