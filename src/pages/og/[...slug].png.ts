@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 import { getBlogSections, type BlogSection } from '../../lib/blog-sections';
+import { blogPostPath } from '../../lib/blog-paths';
 import { renderSectionOgImage } from '../../lib/section-og';
 
 export const prerender = true;
@@ -16,17 +17,12 @@ export async function getStaticPaths() {
   const paths = await Promise.all(
     entries.map(async (entry) => {
       const sections = await getBlogSections(entry);
-      const imageRoots = [`blog/${entry.slug}`];
-      if (entry.id.startsWith('zh-tw/')) {
-        const localizedSlug = entry.slug.split('/').slice(1).join('/');
-        imageRoots.push(`zh-tw/blog/${localizedSlug}`);
-      }
-      return imageRoots.flatMap((imageRoot) =>
-        sections.map((section) => ({
-          params: { slug: `${imageRoot}/sections/${section.slug}` },
-          props: { entry, section } satisfies SectionImageProps,
-        })),
-      );
+      // One image per section, under the article's only public path.
+      const imageRoot = blogPostPath(entry).replace(/^\/|\/$/g, '');
+      return sections.map((section) => ({
+        params: { slug: `${imageRoot}/sections/${section.slug}` },
+        props: { entry, section } satisfies SectionImageProps,
+      }));
     }),
   );
   return paths.flat();

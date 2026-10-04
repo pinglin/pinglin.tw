@@ -1,5 +1,7 @@
 import { getCollection } from 'astro:content';
 
+import { blogPostPath } from '../lib/blog-paths';
+
 // llms.txt (https://llmstxt.org): a plain-text index for AI crawlers and
 // answer engines. Mirrors the sitemap's visibility rules — hidden and draft
 // posts stay out.
@@ -22,7 +24,7 @@ export async function GET() {
     '',
     '## Blog posts',
     '',
-    ...posts.map((post) => `- [${post.data.title}](${site}/blog/${post.slug}/): ${post.data.description}`),
+    ...posts.map((post) => `- [${post.data.title}](${site}${blogPostPath(post)}): ${post.data.description}`),
     '',
   ];
 

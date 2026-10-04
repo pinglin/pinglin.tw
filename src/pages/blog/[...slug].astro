@@ -3,14 +3,18 @@ import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 import MarkdownPostLayout from '../../layouts/MarkdownPostLayout.astro';
 import { getBlogSections, type BlogSection } from '../../lib/blog-sections';
+import { isZhTwPost } from '../../lib/blog-paths';
 
 export const prerender = true;
 
 export async function getStaticPaths() {
   // Drafts are previewable with `astro dev` but never generate a production
-  // route, so committing an unfinished post cannot publish it.
-  const blogEntries = await getCollection('blog', ({ data }) =>
-    import.meta.env.PROD ? !data.draft : true,
+  // route, so committing an unfinished post cannot publish it. Translations
+  // belong to zh-tw/blog/[...slug].astro; building them here too served each
+  // one a second time at /blog/zh-tw/<slug>/.
+  const blogEntries = await getCollection(
+    'blog',
+    (entry) => !isZhTwPost(entry) && (import.meta.env.PROD ? !entry.data.draft : true),
   );
   const paths = await Promise.all(
     blogEntries.map(async (entry: CollectionEntry<'blog'>) => {
