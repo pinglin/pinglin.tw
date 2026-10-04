@@ -3,5 +3,9 @@
   "trailingSlash": true,
   "devCommand": "pnpm run dev",
   "buildCommand": "pnpm build && node scripts/vercel-host-redirect.mjs",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/blog/zh-tw/:path(.*)", "destination": "/zh-tw/blog/:path", "permanent": true },
+    { "source": "/og/blog/zh-tw/:path(.*)", "destination": "/og/zh-tw/blog/:path", "permanent": true }
+  ]
 }

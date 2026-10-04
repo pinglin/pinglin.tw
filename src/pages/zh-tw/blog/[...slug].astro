@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 import MarkdownPostLayout from '../../../layouts/MarkdownPostLayout.astro';
 import { getBlogSections, type BlogSection } from '../../../lib/blog-sections';
+import { isZhTwPost } from '../../../lib/blog-paths';
 
 export const prerender = true;
 
@@ -14,11 +15,9 @@ export async function getStaticPaths() {
   const allEntries = await getCollection('blog', ({ data }) =>
     import.meta.env.PROD ? !data.draft : true,
   );
-  const zhEntries = allEntries.filter(({ id }) => id.startsWith('zh-tw/'));
+  const zhEntries = allEntries.filter(isZhTwPost);
   const zhSlugs = new Set(zhEntries.map((entry) => entry.slug.split('/').slice(1).join('/')));
-  const englishOnly = allEntries.filter(
-    ({ id, slug }) => !id.startsWith('zh-tw/') && !zhSlugs.has(slug),
-  );
+  const englishOnly = allEntries.filter((entry) => !isZhTwPost(entry) && !zhSlugs.has(entry.slug));
 
   const translatedPaths = await Promise.all(
     zhEntries.map(async (entry: CollectionEntry<'blog'>) => {

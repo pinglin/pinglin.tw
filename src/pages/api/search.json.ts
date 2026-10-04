@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { blogPostPath } from '../../lib/blog-paths';
 
 export const prerender = false;
 
@@ -28,7 +29,7 @@ export const GET: APIRoute = async ({ url }) => {
     })
     .map((post: CollectionEntry<'blog'>) => ({
       title: post.data.title,
-      url: `/blog/${post.slug}`,
+      url: blogPostPath(post),
       excerpt: post.body.substring(0, 100) + '...',
     }));
 

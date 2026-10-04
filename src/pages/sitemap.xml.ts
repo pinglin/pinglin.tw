@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 
 import { SitemapStream, streamToPromise } from 'sitemap';
 
+import { blogPostPath } from '../lib/blog-paths';
+
 export async function GET() {
   try {
     // Initialize the sitemap stream
@@ -42,31 +44,15 @@ export async function GET() {
     // Get all blog posts (excluding hidden ones)
     const blogPosts = await getCollection('blog', ({ data }) => !data.hidden && !data.draft);
 
-    // Add blog posts for each language
+    // Add each post at its one public path: translations under /zh-tw/blog/,
+    // English under /blog/.
     blogPosts.forEach((post) => {
-      const postDate = (post.data.updatedDate ?? post.data.pubDate).toISOString();
-
-      // Check if the slug already contains a language prefix
-      const slug = post.slug;
-      const hasLanguagePrefix = languages.some((lang) => slug.startsWith(`${lang}/`));
-
-      if (hasLanguagePrefix) {
-        // If slug already has language prefix, just add it directly
-        sitemapStream.write({
-          url: withSlash(`/blog/${slug}`),
-          lastmod: postDate,
-          changefreq: 'monthly',
-          priority: 0.7,
-        });
-      } else {
-        // Add default language version
-        sitemapStream.write({
-          url: withSlash(`/blog/${slug}`),
-          lastmod: postDate,
-          changefreq: 'monthly',
-          priority: 0.7,
-        });
-      }
+      sitemapStream.write({
+        url: blogPostPath(post),
+        lastmod: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+        changefreq: 'monthly',
+        priority: 0.7,
+      });
     });
 
     // End the sitemap stream
