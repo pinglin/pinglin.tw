@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
+import { URL } from 'node:url';
 
 import { defineConfig } from 'astro/config';
 import vercel from '@astrojs/vercel';
@@ -39,6 +40,22 @@ function collectHiddenSlugs(dir) {
 }
 
 const hiddenSlugs = collectHiddenSlugs('./src/content/blog');
+
+// Collect the slugs of English posts with no src/content/blog/zh-tw/ translation.
+// zh-tw/blog/[...slug].astro still builds /zh-tw/blog/<slug>/ for each, so the
+// zh-tw URL redirects instead of 404ing, but that stub is noindex and the
+// sitemap must not submit it. Same partition as the route: the zh-tw/ folder
+// decides the edition, and a translation shares its English post's slug.
+function collectEnglishOnlySlugs(dir) {
+  const slugs = (d) =>
+    readdirSync(d, { recursive: true })
+      .filter((path) => path.endsWith('.md'))
+      .map((path) => path.replace(/\.md$/, '').split(sep).join('/'));
+  const translated = new Set(slugs(join(dir, 'zh-tw')));
+  return new Set(slugs(dir).filter((slug) => !slug.startsWith('zh-tw/') && !translated.has(slug)));
+}
+
+const zhTwStubPaths = new Set([...collectEnglishOnlySlugs('./src/content/blog')].map((slug) => `/zh-tw/blog/${slug}/`));
 
 export default defineConfig({
   site: 'https://pinglin.tw',
@@ -89,7 +106,10 @@ export default defineConfig({
     preact(),
     tailwind(),
     sitemap({
-      filter: (page) => !page.includes('/sections/') && ![...hiddenSlugs].some((slug) => page.includes(`/${slug}/`)),
+      filter: (page) =>
+        !page.includes('/sections/') &&
+        ![...hiddenSlugs].some((slug) => page.includes(`/${slug}/`)) &&
+        !zhTwStubPaths.has(new URL(page).pathname.replace(/\/?$/, '/')),
     }),
   ],
   markdown: {

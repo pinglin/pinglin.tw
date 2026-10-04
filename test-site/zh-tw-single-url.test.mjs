@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join, relative, sep } from 'node:path';
+import { join } from 'node:path';
 import test from 'node:test';
-import { fileURLToPath, URL } from 'node:url';
+import { URL } from 'node:url';
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const output = join(root, 'dist', 'client');
+import { isBuilt, output, publicPath, root, walk } from './helpers.mjs';
+
 const vercelConfig = JSON.parse(readFileSync(join(root, 'vercel.json'), 'utf8'));
 
 // Translations that production builds: every src/content/blog/zh-tw post that
@@ -23,20 +23,6 @@ const translations = readdirSync(zhDir)
     };
   })
   .filter(({ draft }) => !draft);
-
-function walk(dir) {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? walk(join(dir, entry.name)) : [join(dir, entry.name)]));
-}
-
-// Public URL path of a built file: .../x/index.html -> /x/, .../x.png -> /x.png
-function publicPath(file) {
-  return `/${relative(output, file).split(sep).join('/')}`.replace(/index\.html$/, '');
-}
-
-function isBuilt(pathname) {
-  const path = decodeURIComponent(pathname);
-  return existsSync(join(output, path, path.endsWith('/') ? 'index.html' : ''));
-}
 
 test('translations build under /zh-tw/blog/ only, never /blog/zh-tw/', () => {
   assert.ok(translations.length > 0);
