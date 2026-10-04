@@ -134,6 +134,27 @@
   overflow-x: auto;
 }
 
+/* Display math is wide content too. KaTeX pins the equation tag to the right
+   edge of the box, so once an equation is wider than the box the tag lands on
+   top of it; below lg the tag follows the equation inline and scrolls with it.
+   Glyphs overhang KaTeX's struts by a few pixels, so half of its 1em margin
+   moves inside the scroll box, or the clip would shave fraction edges. */
+.markdown-content .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  margin-block: 0.5em;
+  padding-block: 0.5em;
+}
+
+@media (max-width: 1023px) {
+  .markdown-content .katex-display > .katex > .katex-html > .tag {
+    position: static;
+    margin-left: 1.5em;
+  }
+}
+
 .markdown-content :is(img, svg, figure) {
   max-width: 100%;
   height: auto;
