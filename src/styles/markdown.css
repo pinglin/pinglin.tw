@@ -50,7 +50,9 @@
   margin-left: 0.35em;
   align-items: center;
   justify-content: center;
-  vertical-align: -0.12em;
+  /* Baseline-aligned, a 1.15em box sits centred on the heading's text; a negative
+     offset dropped it ~0.12em low, which showed most beside CJK headings. */
+  vertical-align: 0;
   color: #898781;
   cursor: pointer;
   opacity: 0.55;
