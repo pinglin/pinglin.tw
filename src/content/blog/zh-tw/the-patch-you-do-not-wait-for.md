@@ -81,7 +81,7 @@ CVE 迴圈沿用 agent-ops 一貫的做法：agent 負責讀，唯一會寫出�
 攻擊者既然會用模型讀我們的程式碼，我們就要比他們先讀（[圖三](#figure-3)）。所以我們採用了 [Strix](https://github.com/usestrix/strix)，一套開源的 AI 滲透測試工具，由我們自己 host。它除了讀程式碼，也能對執行中的服務實際發動攻擊。一個跟我們 backend 差不多大的 repo，Strix 大約 25 分鐘就能讀完。找到的問題有兩種：一種是已知的 CVE，一般的掃描器也抓得到；另一種是我們自己寫出來的存取控制 bug，任何 CVE 掃描器都看不到。我們用 Strix，就是為了後面這一種。
 
 <figure id="figure-3">
-  <img src="/blog/the-patch-you-do-not-wait-for/mirror.webp" width="1672" height="917" class="rounded-lg border border-[#d8d7cd] dark:border-[#3a3a4e]" alt="兩隻卡通機器人分站兩邊，中間一隻小機器人標著「同一個模型」。左邊紅色的是攻擊者的模型，三個步驟是：讀已發布的 patch，修正本身就透露該往哪裡找；寫出攻擊程式，模型幾小時就好，人工要好幾天；找出還在跑舊版的系統。右邊綠色的是站在我們這邊的同一個模型：在變更上線前讀 pull request；找出掃描器漏掉的問題，包括我們自己寫錯的存取控制；在 release 前修好，早於進 main，也早於 patch note。底部橫幅寫著：先讀，先修。" />
+  <img src="/blog/the-patch-you-do-not-wait-for/mirror.webp" width="1672" height="933" class="rounded-lg border border-[#d8d7cd] dark:border-[#3a3a4e]" alt="兩隻卡通機器人分站兩邊，中間一隻小機器人標著「同一個模型」。左邊紅色的是攻擊者的模型，三個步驟是：讀已發布的 patch，修正本身就透露該往哪裡找；寫出攻擊程式，模型幾小時就好，人工要好幾天；找出還在跑舊版的系統。右邊綠色的是站在我們這邊的同一個模型：在變更上線前讀 pull request；找出掃描器漏掉的問題，包括我們自己寫錯的存取控制；在 release 前修好，早於進 main，也早於 patch note。底部橫幅寫著：先讀，先修。" />
   <figcaption>圖三。同一個模型，兩個方向。誰先讀到 diff，誰就佔上風。</figcaption>
 </figure>
 
